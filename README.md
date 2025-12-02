@@ -24,7 +24,7 @@ cd /path/to/your/project
 mkdir -p .cursor
 
 # Add this repository as a submodule
-git submodule add git@github.com:dapperfu/cursor_rules.git .cursor/rules
+git submodule add https://github.com/dapperfu/cursor_rules.git .cursor/rules
 
 # Initialize and update submodules
 git submodule update --init --recursive
@@ -47,7 +47,7 @@ git commit -m "Update cursor rules submodule"
 If you're cloning a project that already uses this submodule:
 
 ```bash
-git clone --recurse-submodules git@github.com:user/project.git
+git clone --recurse-submodules https://github.com/user/project.git
 ```
 
 Or if you've already cloned without submodules:
@@ -70,7 +70,7 @@ cd /path/to/your/project
 mkdir -p .cursor
 
 # Clone the repository directly
-git clone git@github.com:dapperfu/cursor_rules.git .cursor/rules
+git clone https://github.com/dapperfu/cursor_rules.git .cursor/rules
 
 # Remove the .git directory to make it part of your project
 rm -rf .cursor/rules/.git
@@ -89,7 +89,7 @@ cd /path/to/your/project
 mkdir -p .cursor
 
 # Clone your fork
-git clone git@github.com:YOUR_USERNAME/cursor_rules.git .cursor/rules
+git clone https://github.com/YOUR_USERNAME/cursor_rules.git .cursor/rules
 
 # Remove the .git directory to make it part of your project
 rm -rf .cursor/rules/.git
@@ -111,7 +111,7 @@ Or if you're using a fork:
 ```bash
 cd .cursor/rules
 # Add upstream if not already added
-git remote add upstream git@github.com:dapperfu/cursor_rules.git 2>/dev/null || true
+git remote add upstream https://github.com/dapperfu/cursor_rules.git 2>/dev/null || true
 # Fetch and merge upstream changes
 git fetch upstream
 git merge upstream/main
