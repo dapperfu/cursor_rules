@@ -122,11 +122,12 @@ def parse_verbosity(args) -> int:
     Parse verbosity from command-line arguments.
     
     Counts the number of 'v' characters in -v, -vv, -vvv, etc.
+    Accumulates verbosity across multiple -v flags.
     """
     verbosity = 0
     for arg in args:
         if arg.startswith('-v'):
-            verbosity = arg.count('v')
+            verbosity += arg.count('v')
     return verbosity
 
 # Example usage:
