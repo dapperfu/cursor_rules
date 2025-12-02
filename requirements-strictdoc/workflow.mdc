@@ -1,0 +1,55 @@
+# StrictDoc Workflow and Make Targets
+
+## Requirement
+
+SHALL use StrictDoc commands for requirements management workflow.
+
+SHALL provide make targets for all requirements management operations.
+
+## Make Targets
+
+The following make targets SHALL be implemented:
+
+- `make strictdoc-init`: Initialize StrictDoc project structure (one-time)
+- `make strictdoc-generate`: Generate HTML documentation from `.sdoc` files
+- `make strictdoc-validate`: Validate all StrictDoc documents
+- `make strictdoc-export`: Export requirements to various formats (HTML, PDF, etc.)
+- `make strictdoc-serve`: Start StrictDoc web server for viewing/editing
+- `make strictdoc-tree`: View document tree structure
+- `make strictdoc-help`: Show StrictDoc management help
+
+## Make Targets Requirement
+
+All requirements management operations SHALL have corresponding make targets.
+
+Make targets SHALL use the virtual environment Python and StrictDoc installation.
+
+Make targets SHALL follow the pattern: `make strictdoc-<operation>`
+
+## Adding Requirements
+
+When adding requirements, SHALL follow this process:
+
+1. Create or edit `.sdoc` files in the appropriate directory
+2. Use `make strictdoc-validate` to check document validity
+3. Use `make strictdoc-generate` to generate HTML output
+4. Commit both source `.sdoc` files and generated HTML files
+
+## Linking Requirements
+
+- SHALL use StrictDoc's requirement linking syntax
+- SHALL reference requirements by ID in code comments
+- SHALL maintain traceability between documents
+- SHALL link test descriptions to specific requirements
+
+## Validation
+
+- SHALL run `make strictdoc-validate` before committing changes
+- SHALL ensure all requirements have proper links
+- SHALL check for orphaned requirements
+- SHALL verify document structure follows MIL-STD-498 standards
+
+---
+description: StrictDoc workflow commands and make targets requirement
+globs: ["requirements/**/*.sdoc", "**/*.sdoc", "Makefile", "makefile", "**/Makefile", "**/makefile"]
+alwaysApply: false

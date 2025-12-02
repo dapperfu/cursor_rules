@@ -1,0 +1,41 @@
+# Requirements Document Hierarchy
+
+## Requirement
+
+Requirements management SHALL use the `doorstop` Python package with a hierarchical document structure.
+
+Requirements SHALL be organized in a three-level hierarchy:
+
+- **SYS** (System Requirements): High-level system requirements
+- **SRS** (Software Requirements): Detailed software requirements (child of SYS)
+- **TEST** (Test Cases): Test cases and validation criteria (child of SRS)
+
+## File Structure Requirement
+
+Requirements SHALL be stored in the following directory structure:
+
+```
+reqs/
+├── sys/           # System requirements (SYS)
+│   ├── .doorstop.yml
+│   └── SYS001.yml
+├── srs/           # Software requirements (SRS)
+│   ├── .doorstop.yml
+│   └── SRS001.yml
+└── test/          # Test cases (TEST)
+    ├── .doorstop.yml
+    └── TEST001.yml
+```
+
+## Requirement ID Format
+
+Requirement IDs SHALL follow these formats:
+
+- System Requirements: `SYS001`, `SYS002`, etc.
+- Software Requirements: `SRS001`, `SRS002`, etc.
+- Test Cases: `TEST001`, `TEST002`, etc.
+
+---
+description: Requirements document hierarchy structure
+globs: ["reqs/**/*.yml", "requirements/**/*.md", "reqs/**/*.yaml"]
+alwaysApply: false

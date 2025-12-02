@@ -1,0 +1,65 @@
+# Training Scripts
+
+## Requirement
+
+All machine learning models SHALL be accompanied by training scripts with appropriate help documentation.
+
+Training scripts SHALL accept command-line arguments for hyperparameters, data paths, and configuration.
+
+Each training script SHALL have a corresponding shell script wrapper with sane defaults.
+
+Shell wrapper scripts SHALL be executable and documented with usage examples.
+
+## Training Script Requirements
+
+Training scripts SHALL:
+- Provide `--help` or `-h` documentation explaining all arguments
+- Accept hyperparameters as command-line arguments
+- Accept data paths as command-line arguments
+- Accept configuration file paths as optional arguments
+- Use argparse, click, or similar argument parsing libraries with full help text
+
+## Rich Dashboard Requirements
+
+Training scripts SHALL include a Rich dashboard to display training progress and keep users informed.
+
+The Rich dashboard SHALL display:
+- Training loss and validation loss (current and history)
+- Other relevant metrics (accuracy, F1-score, etc.) as appropriate for the task
+- Current epoch/iteration and total progress
+- Training time elapsed and estimated time remaining
+- Learning rate and other key hyperparameters
+- System metrics (GPU/CPU utilization, memory usage)
+
+The dashboard SHALL update in real-time during training to provide live feedback.
+
+Training scripts SHALL display humorous quips from the `fortune` command every 30 seconds to keep the training process engaging.
+
+## Progress Display Fallback
+
+Training scripts SHALL support fallback progress display options:
+- `--tqdm` flag to use tqdm progress bars instead of Rich dashboard
+- `--no-rich` flag to disable Rich dashboard and display raw output
+
+When `--tqdm` or `--no-rich` flags are used, the script SHALL still display training metrics but without the Rich dashboard interface.
+
+## Shell Wrapper Requirements
+
+Shell wrapper scripts SHALL:
+- Be executable (have execute permissions)
+- Include usage examples in comments or help text
+- Provide sensible default values for common hyperparameters
+- Allow overriding defaults via command-line arguments
+- Document required environment variables (if any)
+
+## Example Structure
+
+```
+train_model.py          # Main training script with --help
+train_model.sh          # Shell wrapper with defaults
+```
+
+---
+description: Machine learning training scripts and shell wrappers requirement
+globs: ["*.py", "*.sh", "**/*.py", "**/*.sh"]
+alwaysApply: false

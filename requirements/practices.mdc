@@ -1,0 +1,41 @@
+# Requirements Management Best Practices
+
+## Requirement
+
+SHALL follow these best practices for requirements management:
+
+### Requirement Writing
+
+- SHALL write clear, testable requirements
+- SHALL use consistent terminology
+- SHALL include acceptance criteria
+
+### Traceability
+
+- SHALL link requirements to code implementation
+- SHALL maintain parent-child relationships
+- SHALL document requirement changes
+
+### Validation
+
+- SHALL run `make reqs-validate` regularly
+- SHALL ensure all requirements have proper links
+- SHALL check for orphaned requirements
+
+### Documentation
+
+- SHALL export requirements for stakeholders
+- SHALL maintain up-to-date requirement documents
+- SHALL use consistent formatting and structure
+
+## Migration Strategy
+
+- Existing requirements in `requirements/` directory SHALL remain unchanged
+- New requirements SHALL be added to doorstop
+- SHALL gradually migrate existing requirements over time
+- SHALL maintain backward compatibility with existing documentation
+
+---
+description: Requirements management best practices
+globs: ["reqs/**/*.yml", "requirements/**/*.md", "reqs/**/*.yaml"]
+alwaysApply: false

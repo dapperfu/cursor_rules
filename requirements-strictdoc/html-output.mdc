@@ -1,0 +1,56 @@
+# StrictDoc HTML Output Location
+
+## Requirement
+
+Generated HTML files SHALL be stored in a separate `requirements_html/` directory.
+
+The HTML directory structure SHALL mirror the source document structure.
+
+## Directory Structure
+
+HTML output SHALL follow this structure:
+
+```
+requirements_html/
+├── srs/              # HTML output for System Requirements
+│   └── SRS001.html
+├── sss/              # HTML output for Software Requirements
+│   └── SSS001.html
+├── sdd/              # HTML output for Design Documents
+│   └── SDD001.html
+├── irs/              # HTML output for Interface Requirements
+│   └── IRS001.html
+├── tp/               # HTML output for Test Plans
+│   └── TP001.html
+└── td/               # HTML output for Test Descriptions
+    └── TD001.html
+```
+
+## Source to HTML Mapping
+
+Each `.sdoc` source file SHALL have a corresponding HTML file in the `requirements_html/` directory.
+
+The HTML file SHALL be located in the same subdirectory structure as the source file.
+
+For example:
+- `requirements/srs/SRS001.sdoc` → `requirements_html/srs/SRS001.html`
+- `requirements/sss/SSS001.sdoc` → `requirements_html/sss/SSS001.html`
+
+## HTML Output Configuration
+
+StrictDoc SHALL be configured to output HTML to the `requirements_html/` directory.
+
+The HTML output directory SHALL be specified in StrictDoc configuration (e.g., `strictdoc.toml` or `strictdoc_config.py`).
+
+## HTML File Maintenance
+
+HTML files SHALL be regenerated whenever source `.sdoc` files are modified.
+
+HTML files SHALL be committed to version control alongside source files.
+
+HTML files SHALL NOT be manually edited; all changes SHALL be made to source `.sdoc` files.
+
+---
+description: HTML output directory structure and location requirements
+globs: ["requirements/**/*.sdoc", "requirements_html/**/*.html", "**/*.sdoc"]
+alwaysApply: false

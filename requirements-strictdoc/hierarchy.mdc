@@ -1,0 +1,60 @@
+# StrictDoc Document Hierarchy
+
+## Requirement
+
+Requirements management SHALL use the `strictdoc` Python package with a hierarchical document structure following MIL-STD-498 standards.
+
+Reference: https://github.com/AutomotiveDevOps/MIL-STD-498/tree/master/strictdoc_md
+
+## Document Types
+
+Requirements SHALL be organized using MIL-STD-498 document types:
+
+- **SRS** (System Requirements Specification): High-level system requirements
+- **SSS** (Software Requirements Specification): Detailed software requirements
+- **SDD** (Software Design Document): Design specifications
+- **IRS** (Interface Requirements Specification): Interface requirements
+- **TP** (Test Plan): Test planning documents
+- **TD** (Test Description): Test case descriptions
+
+## File Structure Requirement
+
+StrictDoc documents SHALL be stored in the following directory structure:
+
+```
+requirements/
+├── srs/              # System Requirements Specification
+│   └── SRS001.sdoc
+├── sss/              # Software Requirements Specification
+│   └── SSS001.sdoc
+├── sdd/              # Software Design Document
+│   └── SDD001.sdoc
+├── irs/              # Interface Requirements Specification
+│   └── IRS001.sdoc
+├── tp/               # Test Plan
+│   └── TP001.sdoc
+└── td/               # Test Description
+    └── TD001.sdoc
+```
+
+## File Format Requirement
+
+All requirements documents SHALL use the `.sdoc` file format as defined by StrictDoc.
+
+StrictDoc documents SHALL follow the StrictDoc grammar and syntax rules.
+
+## Requirement ID Format
+
+Requirement IDs SHALL follow MIL-STD-498 conventions:
+
+- System Requirements: `SRS001`, `SRS002`, etc.
+- Software Requirements: `SSS001`, `SSS002`, etc.
+- Design Documents: `SDD001`, `SDD002`, etc.
+- Interface Requirements: `IRS001`, `IRS002`, etc.
+- Test Plans: `TP001`, `TP002`, etc.
+- Test Descriptions: `TD001`, `TD002`, etc.
+
+---
+description: StrictDoc document hierarchy following MIL-STD-498 standards
+globs: ["requirements/**/*.sdoc", "**/*.sdoc", "requirements/**/*.sdoc"]
+alwaysApply: false

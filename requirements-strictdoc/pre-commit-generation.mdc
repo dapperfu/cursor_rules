@@ -1,0 +1,42 @@
+# StrictDoc Pre-Commit HTML Generation
+
+## Requirement
+
+HTML documentation SHALL be generated automatically before each git commit.
+
+A pre-commit hook SHALL be configured to run StrictDoc HTML generation.
+
+## Pre-Commit Hook Requirement
+
+A git pre-commit hook SHALL execute `make strictdoc-generate` before allowing commits.
+
+The pre-commit hook SHALL ensure HTML documentation is up-to-date with source `.sdoc` files.
+
+The pre-commit hook SHALL fail the commit if HTML generation fails.
+
+## Implementation
+
+The pre-commit hook SHALL be located at `.git/hooks/pre-commit` and SHALL be executable.
+
+The pre-commit hook SHALL run StrictDoc generation using the project's virtual environment.
+
+The pre-commit hook SHALL only run when `.sdoc` files are staged for commit or when HTML output is out of date.
+
+## HTML Output Synchronization
+
+Generated HTML files SHALL be committed alongside source `.sdoc` files.
+
+HTML generation SHALL occur automatically before each commit to ensure documentation consistency.
+
+If HTML generation fails, the commit SHALL be blocked until the issue is resolved.
+
+## Manual Generation
+
+While pre-commit hooks provide automatic generation, developers MAY manually run `make strictdoc-generate` at any time.
+
+Manual generation SHALL use the same make target as the pre-commit hook.
+
+---
+description: Pre-commit hook requirement for automatic StrictDoc HTML generation
+globs: [".git/hooks/pre-commit", "requirements/**/*.sdoc", "**/*.sdoc"]
+alwaysApply: false

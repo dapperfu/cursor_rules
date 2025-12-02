@@ -1,0 +1,64 @@
+# StrictDoc Best Practices
+
+## Requirement
+
+SHALL follow these best practices for StrictDoc requirements management:
+
+## Requirement Writing
+
+- SHALL write clear, testable requirements following MIL-STD-498 standards
+- SHALL use consistent terminology across all documents
+- SHALL include acceptance criteria for each requirement
+- SHALL use proper StrictDoc grammar and syntax
+- SHALL maintain requirement uniqueness and avoid duplication
+
+## Document Structure
+
+- SHALL organize documents according to MIL-STD-498 document types
+- SHALL maintain consistent document structure within each type
+- SHALL use proper document metadata (title, version, date, etc.)
+- SHALL follow StrictDoc document template conventions
+
+## Traceability
+
+- SHALL link requirements to code implementation using requirement IDs in comments
+- SHALL maintain parent-child relationships between documents
+- SHALL document requirement changes and version history
+- SHALL establish bidirectional traceability between requirements and tests
+- SHALL link design documents to corresponding requirements
+
+## Validation
+
+- SHALL run `make strictdoc-validate` before committing changes
+- SHALL ensure all requirements have proper links and references
+- SHALL check for orphaned requirements and broken links
+- SHALL verify requirement IDs follow naming conventions
+- SHALL validate document structure against MIL-STD-498 standards
+
+## Documentation Maintenance
+
+- SHALL keep requirements documentation up-to-date with code changes
+- SHALL regenerate HTML output after any source document changes
+- SHALL review and update requirements during code reviews
+- SHALL maintain consistent formatting across all documents
+- SHALL export requirements for stakeholders when needed
+
+## Integration with Development
+
+- SHALL reference requirement IDs in code comments
+- SHALL update requirements when implementing features
+- SHALL link test cases to specific requirements
+- SHALL maintain requirements during refactoring
+- SHALL document requirement changes in commit messages
+
+## Configuration Management
+
+- SHALL use StrictDoc configuration files (e.g., `strictdoc.toml` or `strictdoc_config.py`)
+- SHALL configure HTML output directory to `requirements_html/`
+- SHALL maintain consistent StrictDoc version across the project
+- SHALL document StrictDoc configuration in project documentation
+
+---
+description: StrictDoc requirements management best practices
+globs: ["requirements/**/*.sdoc", "**/*.sdoc"]
+alwaysApply: false

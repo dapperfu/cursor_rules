@@ -1,0 +1,42 @@
+# Requirements Management Workflow
+
+## Requirement
+
+SHALL use doorstop commands for requirements management workflow.
+
+## Commands
+
+- `make reqs-init`: Initialize doorstop structure (one-time)
+- `make reqs-add`: Add new requirement (interactive)
+- `make reqs-edit`: Edit requirements
+- `make reqs-validate`: Validate requirement links
+- `make reqs-export`: Export to HTML/Markdown/CSV/YAML
+- `make reqs-publish`: Generate and publish requirement docs
+- `make reqs-tree`: View document tree structure
+- `make reqs-help`: Show requirements management help
+
+## Adding Requirements
+
+When adding requirements, SHALL follow this process:
+
+1. **System Requirements**: SHALL use `make reqs-add` and select SYS
+2. **Software Requirements**: SHALL use `make reqs-add` and select SRS
+3. **Test Cases**: SHALL use `make reqs-add` and select TEST
+
+## Linking Requirements
+
+- SHALL use parent-child relationships in doorstop
+- SHALL reference requirements by ID in code comments
+- SHALL link test cases to specific software requirements
+
+## StrictDoc Compatibility
+
+- SHALL use doorstop as the primary requirements management tool
+- SHALL export doorstop documents to formats compatible with StrictDoc when needed
+- SHALL maintain parallel documentation where necessary
+- SHALL follow StrictDoc grammar rules when generating StrictDoc files from doorstop exports
+
+---
+description: Requirements management workflow commands
+globs: ["reqs/**/*.yml", "requirements/**/*.md", "reqs/**/*.yaml"]
+alwaysApply: false
