@@ -2,6 +2,111 @@
 
 Cursor rules organized into atomic, focused, and actionable units.
 
+## Installation
+
+### Adding as a Git Submodule
+
+To use these rules in your project, add this repository as a git submodule in your project's `.cursor/rules` directory:
+
+```bash
+# Navigate to your project root
+cd /path/to/your/project
+
+# Create .cursor directory if it doesn't exist
+mkdir -p .cursor
+
+# Add this repository as a submodule
+git submodule add git@github.com:dapperfu/cursor_rules.git .cursor/rules
+
+# Initialize and update submodules
+git submodule update --init --recursive
+```
+
+### Updating the Submodule
+
+To update to the latest rules in your project:
+
+```bash
+cd .cursor/rules
+git pull origin main
+cd ../..
+git add .cursor/rules
+git commit -m "Update cursor rules submodule"
+```
+
+### Cloning a Project with Submodules
+
+If you're cloning a project that already uses this submodule:
+
+```bash
+git clone --recurse-submodules git@github.com:user/project.git
+```
+
+Or if you've already cloned without submodules:
+
+```bash
+git submodule update --init --recursive
+```
+
+## Usage
+
+Once installed, Cursor will automatically load all `.mdc` files from `.cursor/rules/` and its subdirectories. Rules are applied based on their `globs` patterns and `alwaysApply` settings defined in each rule's frontmatter.
+
+### Rule Selection by Project Type
+
+Not all rules are relevant to every project. Here's guidance on which rule categories to use:
+
+**Universal Rules (Recommended for all projects):**
+- `safety/` - Safety rules (no sudo, no home directory deletion, command-line safety)
+- `git/` - Git workflow and commit formatting rules
+- `workflow.mdc` - General development workflow
+
+**Python Projects:**
+- `python/` - Python-specific rules (venv, typing, documentation, etc.)
+- `makefile/` - If using Makefiles for Python project management
+
+**AI/ML Projects:**
+- `ai/` - Machine learning specific rules (training, checkpoints, experiment tracking, etc.)
+- `python/` - Python rules (required for ML projects)
+- `makefile/` - If using Makefiles for ML workflows
+
+**API/Web Service Projects:**
+- `endpoints/` - API endpoint development rules
+- `python/` - If using Python for backend
+
+**Requirements Management Projects:**
+- `requirements/` - For projects using `doorstop` for requirements management
+- `requirements-strictdoc/` - For projects using `strictdoc` with MIL-STD-498 standards
+
+**Tool-Specific Rules:**
+- `tools/mitmproxy-logs.mdc` - Only if using mitmproxy for network debugging
+
+### Selective Rule Inclusion
+
+You can selectively include only the rules you need by:
+
+1. **Symlinking specific directories:**
+   ```bash
+   cd .cursor/rules
+   # Remove all, then symlink only what you need
+   rm -rf python ai endpoints
+   ln -s ../cursor_rules/python python
+   ln -s ../cursor_rules/git git
+   ```
+
+2. **Copying specific rule files:**
+   ```bash
+   # Copy only the rules you need
+   cp cursor_rules/git/*.mdc .cursor/rules/
+   cp cursor_rules/python/venv-*.mdc .cursor/rules/
+   ```
+
+3. **Using `.cursorignore`** (if supported by Cursor) to exclude specific rules
+
+### Verifying Rules are Loaded
+
+Cursor will automatically load rules from `.cursor/rules/`. You can verify rules are being applied by checking Cursor's settings or by observing rule behavior in AI-assisted coding sessions.
+
 ## Organization
 
 Rules are organized into category folders, with each rule file containing a single, atomic requirement:
@@ -16,8 +121,7 @@ Rules are organized into category folders, with each rule file containing a sing
 │   └── upstream-sync.mdc         # Upstream sync workflow
 ├── makefile/
 │   ├── variable-escaping.mdc     # Variable escaping
-│   ├── target-dependencies.mdc   # Target dependencies
-│   └── phony-venv.mdc            # .PHONY exclusion
+│   └── target-dependencies.mdc   # Target dependencies
 ├── python/
 │   ├── venv-required.mdc         # Virtual environment requirement
 │   ├── venv-naming.mdc            # Venv naming convention
