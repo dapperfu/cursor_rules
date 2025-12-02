@@ -1,0 +1,154 @@
+# Python Logging Levels
+
+## Requirement
+
+All Python projects SHALL implement custom logging levels between INFO (20) and DEBUG (10) to provide granular verbosity control. These levels SHALL correspond to command-line verbosity flags and use descriptive names for consistent use across Python projects.
+
+## Custom Logging Level Definitions
+
+The following custom logging levels SHALL be defined and used:
+
+- **VERBOSE (18)**: General verbose output, one level below INFO. Corresponds to `-v` flag.
+- **DETAIL (16)**: Detailed information about operations. Corresponds to `-vv` flag.
+- **TRACE (14)**: Execution flow tracing. Corresponds to `-vvv` flag.
+- **FINE (12)**: Fine-grained debugging information. Corresponds to `-vvvv` flag.
+
+Standard Python logging levels remain unchanged:
+- **INFO (20)**: Informational messages
+- **DEBUG (10)**: Debug-level messages
+
+## Implementation Requirements
+
+1. **Level Registration**: All Python projects SHALL register these custom logging levels using `logging.addLevelName()`.
+
+2. **Level Constants**: Projects SHALL define constants for these levels:
+   ```python
+   VERBOSE = 18
+   DETAIL = 16
+   TRACE = 14
+   FINE = 12
+   ```
+
+3. **Logger Methods**: Projects SHALL add convenience methods to logger instances for each custom level (e.g., `logger.verbose()`, `logger.detail()`, `logger.trace()`, `logger.fine()`).
+
+4. **Proper Usage**: All logging SHALL use Python's standard `logging` module, not print statements or custom logging implementations.
+
+5. **Verbosity Mapping**: Command-line verbosity flags SHALL map to logging levels as follows:
+   - No flag: INFO level (20)
+   - `-v`: VERBOSE (18)
+   - `-vv`: DETAIL (16)
+   - `-vvv`: TRACE (14)
+   - `-vvvv`: FINE (12)
+   - `-vvvvv` or more: DEBUG (10)
+
+## Implementation Example
+
+The following example demonstrates the complete implementation:
+
+```python
+import logging
+import sys
+
+# Define custom logging level constants
+VERBOSE = 18
+DETAIL = 16
+TRACE = 14
+FINE = 12
+
+# Register custom logging levels
+logging.addLevelName(VERBOSE, "VERBOSE")
+logging.addLevelName(DETAIL, "DETAIL")
+logging.addLevelName(TRACE, "TRACE")
+logging.addLevelName(FINE, "FINE")
+
+# Add convenience methods to Logger class
+def verbose(self, message, *args, **kwargs):
+    """Log a message with severity 'VERBOSE'."""
+    if self.isEnabledFor(VERBOSE):
+        self._log(VERBOSE, message, args, **kwargs)
+
+def detail(self, message, *args, **kwargs):
+    """Log a message with severity 'DETAIL'."""
+    if self.isEnabledFor(DETAIL):
+        self._log(DETAIL, message, args, **kwargs)
+
+def trace(self, message, *args, **kwargs):
+    """Log a message with severity 'TRACE'."""
+    if self.isEnabledFor(TRACE):
+        self._log(TRACE, message, args, **kwargs)
+
+def fine(self, message, *args, **kwargs):
+    """Log a message with severity 'FINE'."""
+    if self.isEnabledFor(FINE):
+        self._log(FINE, message, args, **kwargs)
+
+# Attach methods to Logger class
+logging.Logger.verbose = verbose
+logging.Logger.detail = detail
+logging.Logger.trace = trace
+logging.Logger.fine = fine
+
+def setup_logging(verbosity: int = 0) -> None:
+    """
+    Configure logging based on verbosity level.
+    
+    Parameters
+    ----------
+    verbosity : int
+        Number of -v flags (0-5). Maps to logging levels:
+        0 = INFO (20), 1 = VERBOSE (18), 2 = DETAIL (16),
+        3 = TRACE (14), 4 = FINE (12), 5+ = DEBUG (10)
+    """
+    level_map = {
+        0: logging.INFO,      # 20
+        1: VERBOSE,            # 18
+        2: DETAIL,            # 16
+        3: TRACE,             # 14
+        4: FINE,              # 12
+    }
+    
+    # For 5 or more -v flags, use DEBUG
+    level = level_map.get(verbosity, logging.DEBUG)
+    
+    logging.basicConfig(
+        level=level,
+        format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+        stream=sys.stderr
+    )
+
+# Example usage with argparse
+def parse_verbosity(args) -> int:
+    """
+    Parse verbosity from command-line arguments.
+    
+    Counts the number of 'v' characters in -v, -vv, -vvv, etc.
+    """
+    verbosity = 0
+    for arg in args:
+        if arg.startswith('-v'):
+            verbosity = arg.count('v')
+    return verbosity
+
+# Example usage:
+# logger = logging.getLogger(__name__)
+# logger.info("This is an info message")
+# logger.verbose("This is a verbose message")
+# logger.detail("This is a detail message")
+# logger.trace("This is a trace message")
+# logger.fine("This is a fine message")
+# logger.debug("This is a debug message")
+```
+
+## Usage Guidelines
+
+- Use **INFO** for normal operational messages that users should see by default.
+- Use **VERBOSE** for additional context that helps understand what the program is doing.
+- Use **DETAIL** for detailed information about operations, such as function parameters or intermediate results.
+- Use **TRACE** for execution flow information, such as function entry/exit points.
+- Use **FINE** for very detailed debugging information, such as variable values or state dumps.
+- Use **DEBUG** for the most detailed debugging information, typically only useful during development.
+
+---
+description: Python custom logging levels between INFO and DEBUG with verbosity flag mapping
+globs: ["*.py", "**/*.py"]
+alwaysApply: false
