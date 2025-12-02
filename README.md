@@ -2,9 +2,17 @@
 
 Cursor rules organized into atomic, focused, and actionable units.
 
+> 💡 **Want to customize these rules?** [Fork this repository](https://github.com/dapperfu/cursor_rules/fork) to create your own version with custom rules tailored to your needs.
+
 ## Installation
 
-### Adding as a Git Submodule
+You can use these rules in your project in two ways: as a git submodule (recommended for keeping rules in sync) or by cloning/copying the repository directly.
+
+### Option 1: Git Submodule (Recommended)
+
+This method keeps the rules as a git submodule, allowing you to easily update to the latest version while maintaining your project's git history.
+
+#### Adding as a Git Submodule
 
 To use these rules in your project, add this repository as a git submodule in your project's `.cursor/rules` directory:
 
@@ -22,7 +30,7 @@ git submodule add git@github.com:dapperfu/cursor_rules.git .cursor/rules
 git submodule update --init --recursive
 ```
 
-### Updating the Submodule
+#### Updating the Submodule
 
 To update to the latest rules in your project:
 
@@ -34,7 +42,7 @@ git add .cursor/rules
 git commit -m "Update cursor rules submodule"
 ```
 
-### Cloning a Project with Submodules
+#### Cloning a Project with Submodules
 
 If you're cloning a project that already uses this submodule:
 
@@ -46,6 +54,67 @@ Or if you've already cloned without submodules:
 
 ```bash
 git submodule update --init --recursive
+```
+
+### Option 2: Direct Clone/Copy (Non-Submodule)
+
+This method copies the rules directly into your project, giving you full control but requiring manual updates.
+
+#### Method A: Clone into .cursor/rules
+
+```bash
+# Navigate to your project root
+cd /path/to/your/project
+
+# Create .cursor directory if it doesn't exist
+mkdir -p .cursor
+
+# Clone the repository directly
+git clone git@github.com:dapperfu/cursor_rules.git .cursor/rules
+
+# Remove the .git directory to make it part of your project
+rm -rf .cursor/rules/.git
+```
+
+#### Method B: Fork and Clone Your Fork
+
+1. [Fork this repository](https://github.com/dapperfu/cursor_rules/fork) to your GitHub account
+2. Clone your fork into your project:
+
+```bash
+# Navigate to your project root
+cd /path/to/your/project
+
+# Create .cursor directory if it doesn't exist
+mkdir -p .cursor
+
+# Clone your fork
+git clone git@github.com:YOUR_USERNAME/cursor_rules.git .cursor/rules
+
+# Remove the .git directory to make it part of your project
+rm -rf .cursor/rules/.git
+```
+
+This allows you to customize the rules in your fork and merge updates from the upstream repository as needed.
+
+#### Updating Direct Clones
+
+To update a direct clone (non-submodule), you'll need to manually pull changes:
+
+```bash
+cd .cursor/rules
+git pull origin main
+```
+
+Or if you're using a fork:
+
+```bash
+cd .cursor/rules
+# Add upstream if not already added
+git remote add upstream git@github.com:dapperfu/cursor_rules.git 2>/dev/null || true
+# Fetch and merge upstream changes
+git fetch upstream
+git merge upstream/main
 ```
 
 ## Usage
