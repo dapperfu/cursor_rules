@@ -1,0 +1,53 @@
+# Click Library Requirement
+
+## Requirement
+
+All Python command-line interface (CLI) projects SHALL use the Click library for argument parsing and command definition.
+
+Python CLI projects SHALL NOT use argparse, sys.argv parsing, or other argument parsing libraries. Click SHALL be used as the standard CLI framework.
+
+## Rationale
+
+Click provides:
+- Consistent command-line interface patterns across projects
+- Built-in shell completion support (bash, zsh, fish)
+- Better help text generation
+- Command grouping and nesting capabilities
+- Type conversion and validation
+- Consistent error handling
+
+## Exceptions
+
+This requirement does NOT apply to:
+- Simple scripts that do not require command-line arguments
+- Scripts that are only used internally and not exposed as user-facing tools
+- Projects where Click is not available or incompatible with project constraints
+
+## Implementation
+
+All CLI entry points SHALL use Click decorators and commands:
+
+```python
+import click
+
+@click.group()
+def cli():
+    """Main CLI entry point."""
+    pass
+
+@cli.command()
+@click.option('--verbose', '-v', is_flag=True, help='Enable verbose output')
+@click.argument('input_file', type=click.Path(exists=True))
+def process(input_file, verbose):
+    """Process the input file."""
+    if verbose:
+        click.echo(f"Processing {input_file}")
+    # ... implementation
+```
+
+Projects SHALL follow the completion installation requirements defined in `python/click-completions.mdc`.
+
+---
+description: Requirement to use Click library for all Python CLI projects
+globs: ["*.py", "**/*.py"]
+alwaysApply: false

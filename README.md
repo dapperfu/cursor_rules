@@ -25,7 +25,18 @@ Rules are organized into category folders, with each rule file containing a sing
 │   ├── typing.mdc                 # Mypy typing
 │   ├── documentation.mdc          # NumPy docstrings
 │   ├── pyproject-toml.mdc          # pyproject.toml requirement
-│   └── python-version.mdc         # Python 3.10+ and modern practices
+│   ├── python-version.mdc         # Python 3.10+ and modern practices
+│   ├── click-required.mdc          # Click library requirement for CLI projects
+│   └── click-completions.mdc       # Click CLI shell completions (bash/zsh/fish)
+├── ai/
+│   ├── training-scripts.mdc       # Training scripts and shell wrappers
+│   ├── makefile-integration.mdc   # Makefile targets for ML workflows
+│   ├── model-naming.mdc           # Model naming conventions
+│   ├── checkpoints-resume.mdc     # Checkpointing and resume
+│   ├── experiment-tracking.mdc    # Experiment logging and tracking
+│   ├── data-versioning.mdc        # Data versioning and reproducibility
+│   ├── model-evaluation.mdc       # Model evaluation scripts
+│   └── config-management.mdc      # Configuration file management
 ├── safety/
 │   ├── no-home-rm.mdc             # Home directory protection
 │   ├── no-sudo.mdc                # Sudo prohibition
@@ -40,6 +51,12 @@ Rules are organized into category folders, with each rule file containing a sing
 │   ├── hierarchy.mdc              # Document hierarchy
 │   ├── workflow.mdc               # Workflow commands
 │   └── practices.mdc              # Best practices
+├── requirements-strictdoc/
+│   ├── hierarchy.mdc              # MIL-STD-498 document hierarchy
+│   ├── workflow.mdc               # StrictDoc workflow and make targets
+│   ├── pre-commit-generation.mdc  # Pre-commit HTML generation
+│   ├── html-output.mdc            # HTML output directory structure
+│   └── practices.mdc              # StrictDoc best practices
 └── workflow.mdc                    # General workflow
 ```
 
@@ -58,12 +75,22 @@ All rules:
 Rules use globs patterns in frontmatter to apply only to relevant files:
 - Python rules apply to `*.py` files
 - Makefile rules apply to `Makefile` and `makefile` files
+- AI/ML rules apply to ML-related files (`*.py`, `*.sh`, config files, Makefiles)
 - Safety and git rules apply to all files (universal requirements)
 - Tool rules apply to specific file types (e.g., `*.log` for mitmproxy)
 - Endpoint rules apply to test and API files
 - Requirements rules apply to requirements documentation files
+- StrictDoc rules apply to `.sdoc` files and StrictDoc-related operations
 
 This ensures rules like NumPy documentation requirements only apply to Python files, not MATLAB files.
+
+## Requirements Management Tool Selection
+
+Two requirements management systems are available:
+- **doorstop**: Rules in `requirements/` folder
+- **strictdoc**: Rules in `requirements-strictdoc/` folder
+
+Users SHALL choose which system to use by including the appropriate rules in their `.cursor/rules` directory. Both systems can coexist, but typically only one is used per project.
 
 ## Requirements Language
 

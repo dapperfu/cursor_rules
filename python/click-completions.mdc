@@ -1,0 +1,214 @@
+# Click CLI Completions
+
+## Requirement
+
+For all Click CLI projects, there SHALL be commands to install and uninstall shell completions with automatic shell detection.
+
+All Click-based CLI tools SHALL automatically detect the user's shell and install the appropriate completion script.
+
+## Supported Shells
+
+Completions SHALL be supported for the following shells:
+- **bash**: Bash shell completions
+- **zsh**: Zsh shell completions
+- **fish**: Fish shell completions
+
+## Required Commands
+
+All Click-based CLI tools SHALL provide the following commands:
+
+### Install Completions
+
+- `{tool} install-completions` - Auto-detect shell and install appropriate completions
+- `{tool} install-completions --shell {bash|zsh|fish}` - Install completions for specific shell
+- `{tool} install-completions --rc` - Install completions and add to shell RC file automatically
+
+### Uninstall Completions
+
+- `{tool} uninstall-completions` - Remove completions for detected shell
+- `{tool} uninstall-completions --shell {bash|zsh|fish}` - Remove completions for specific shell
+- `{tool} uninstall-completions --rc` - Remove completions and clean up shell RC file
+
+## Shell Detection
+
+The `install-completions` command SHALL automatically detect the user's shell by:
+1. Checking the `SHELL` environment variable
+2. Checking the parent process name if `SHELL` is not set
+3. Falling back to bash if detection fails
+
+Shell detection SHALL identify:
+- `bash` or `*/bash` → bash
+- `zsh` or `*/zsh` → zsh
+- `fish` or `*/fish` → fish
+
+## Implementation
+
+The `{tool}` placeholder SHALL be replaced with the actual CLI tool name.
+
+These commands SHALL use Click's built-in completion support (`click.Command.get_help()` with `_bashcomplete` or `_zsh_complete`).
+
+### Shell RC File Locations
+
+When using `--rc` flag, the commands SHALL modify the appropriate RC file:
+- **bash**: `~/.bashrc` or `~/.bash_profile` (check for existence)
+- **zsh**: `~/.zshrc`
+- **fish**: `~/.config/fish/config.fish`
+
+### RC File Management
+
+When using `--rc` flag, the commands SHALL:
+- Add completion script sourcing to the appropriate RC file (if installing)
+- Remove completion script sourcing from the appropriate RC file (if uninstalling)
+- Handle cases where entries already exist or don't exist gracefully
+- Preserve existing RC file content
+- Add comments to identify the completion installation
+
+## Makefile Targets
+
+Projects SHALL provide Makefile targets for completion installation:
+
+```makefile
+.PHONY: install-completions
+install-completions:
+	@${VENV}/bin/python -m ${PROJECT} install-completions --rc
+
+.PHONY: uninstall-completions
+uninstall-completions:
+	@${VENV}/bin/python -m ${PROJECT} uninstall-completions --rc
+```
+
+The Makefile targets SHALL use the virtual environment Python executable and SHALL automatically add completions to the shell RC file.
+
+## Implementation Example
+
+```python
+import click
+import os
+import shutil
+from pathlib import Path
+
+def detect_shell() -> str:
+    """
+    Detect the current shell.
+    
+    Returns
+    -------
+    str
+        Shell name: 'bash', 'zsh', or 'fish'
+    """
+    shell = os.environ.get('SHELL', '')
+    shell_name = os.path.basename(shell).lower()
+    
+    if 'zsh' in shell_name:
+        return 'zsh'
+    elif 'fish' in shell_name:
+        return 'fish'
+    else:
+        return 'bash'  # Default to bash
+
+def get_rc_file(shell: str) -> Path:
+    """
+    Get the RC file path for the given shell.
+    
+    Parameters
+    ----------
+    shell : str
+        Shell name: 'bash', 'zsh', or 'fish'
+    
+    Returns
+    -------
+    Path
+        Path to the shell RC file
+    """
+    home = Path.home()
+    rc_files = {
+        'bash': home / '.bashrc' if (home / '.bashrc').exists() else home / '.bash_profile',
+        'zsh': home / '.zshrc',
+        'fish': home / '.config' / 'fish' / 'config.fish',
+    }
+    return rc_files.get(shell, home / '.bashrc')
+
+@click.group()
+def cli():
+    """Main CLI entry point."""
+    pass
+
+@cli.command()
+@click.option('--shell', type=click.Choice(['bash', 'zsh', 'fish']), help='Shell to install completions for')
+@click.option('--rc', is_flag=True, help='Add completion to shell RC file')
+def install_completions(shell, rc):
+    """Install shell completions for this CLI tool."""
+    if not shell:
+        shell = detect_shell()
+        click.echo(f"Detected shell: {shell}")
+    
+    # Generate completion script using Click's built-in support
+    if shell == 'bash':
+        completion_script = f"__{cli.name}_COMPLETE=bash_source {cli.name}"
+    elif shell == 'zsh':
+        completion_script = f"__{cli.name}_COMPLETE=zsh_source {cli.name}"
+    elif shell == 'fish':
+        completion_script = f"__{cli.name}_COMPLETE=fish_source {cli.name}"
+    
+    click.echo(f"Installation command for {shell}:")
+    click.echo(f"  eval \"$({completion_script})\"")
+    
+    if rc:
+        rc_file = get_rc_file(shell)
+        completion_line = f'eval "$({completion_script})"'
+        
+        # Check if already installed
+        if rc_file.exists():
+            content = rc_file.read_text()
+            if completion_line in content:
+                click.echo(f"Completions already installed in {rc_file}")
+                return
+        
+        # Add to RC file
+        with rc_file.open('a') as f:
+            f.write(f"\n# {cli.name} completions\n")
+            f.write(f"{completion_line}\n")
+        
+        click.echo(f"Completions installed in {rc_file}")
+        click.echo(f"Restart your shell or run: source {rc_file}")
+
+@cli.command()
+@click.option('--shell', type=click.Choice(['bash', 'zsh', 'fish']), help='Shell to uninstall completions for')
+@click.option('--rc', is_flag=True, help='Remove completion from shell RC file')
+def uninstall_completions(shell, rc):
+    """Uninstall shell completions for this CLI tool."""
+    if not shell:
+        shell = detect_shell()
+        click.echo(f"Detected shell: {shell}")
+    
+    if rc:
+        rc_file = get_rc_file(shell)
+        if not rc_file.exists():
+            click.echo(f"RC file {rc_file} does not exist")
+            return
+        
+        content = rc_file.read_text()
+        lines = content.split('\n')
+        new_lines = []
+        skip_next = False
+        
+        for i, line in enumerate(lines):
+            if f"# {cli.name} completions" in line:
+                skip_next = True
+                continue
+            if skip_next and cli.name in line and 'COMPLETE' in line:
+                skip_next = False
+                continue
+            skip_next = False
+            new_lines.append(line)
+        
+        rc_file.write_text('\n'.join(new_lines))
+        click.echo(f"Completions removed from {rc_file}")
+    else:
+        click.echo("Completions removed (RC file not modified)")
+```
+
+---
+description: Click CLI shell completion installation with automatic shell detection
+globs: ["*.py", "**/*.py", "Makefile", "makefile"]
+alwaysApply: false
