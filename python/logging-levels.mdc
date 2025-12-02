@@ -41,6 +41,8 @@ Standard Python logging levels remain unchanged:
    - `-vvvv`: FINE (12)
    - `-vvvvv` or more: DEBUG (10)
 
+6. **Click for Verbosity Parsing**: Projects SHALL use Click's built-in verbosity parsing with `count=True` option parameter. Custom verbosity parsing functions SHALL NOT be implemented. Use `@click.option('--verbose', '-v', count=True)` to automatically count verbosity flags.
+
 ## Implementation Example
 
 The following example demonstrates the complete implementation:
@@ -122,12 +124,11 @@ def parse_verbosity(args) -> int:
     Parse verbosity from command-line arguments.
     
     Counts the number of 'v' characters in -v, -vv, -vvv, etc.
-    Accumulates verbosity across multiple -v flags.
     """
     verbosity = 0
     for arg in args:
         if arg.startswith('-v'):
-            verbosity += arg.count('v')
+            verbosity = arg.count('v')
     return verbosity
 
 # Example usage:
