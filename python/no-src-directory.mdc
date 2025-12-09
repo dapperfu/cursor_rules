@@ -1,0 +1,14 @@
+# Python Source Code Directory Structure
+
+## Requirement
+
+The `src/` directory SHALL NOT be used for source code in Python projects.
+
+Source code SHALL be placed directly in the project root or in appropriately named directories that reflect the project structure.
+
+This rule prevents the use of the `src/` layout pattern in favor of simpler, more direct project structures.
+
+---
+description: Prohibition of src/ directory for Python source code
+globs: ["*.py", "**/*.py", "pyproject.toml", "setup.py", "setup.cfg"]
+alwaysApply: false

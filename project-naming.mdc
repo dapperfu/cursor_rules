@@ -1,0 +1,14 @@
+# Project Naming Convention
+
+## Requirement
+
+Unless otherwise specified, the project name SHALL inherit the top level folder name.
+
+For example, if a project is located at `/projects/my_project`, the project name SHALL be `my_project`.
+
+This ensures consistency between directory structure and project naming throughout configuration files, documentation, and code references.
+
+---
+description: Project naming convention based on top-level directory
+globs: ["**/*"]
+alwaysApply: true
