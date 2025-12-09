@@ -4,7 +4,35 @@
 
 Before committing, the git user SHALL be configured to `"$(whoami) | Cursor.sh | <model>"` to identify automated commits from AI assistance.
 
+## Model Name Specification
+
+The `<model>` placeholder SHALL be replaced with the actual model name. The literal strings `"<model>"` or `"model"` SHALL NOT be used.
+
+### Valid Model Names
+
+The following are valid model names that SHALL be used:
+- **Auto** - For Auto (agent router)
+- **Composer 1** - For Composer 1
+- **GPT-5.1** - For GPT-5.1
+- **Claude Sonnet 4** - For Claude Sonnet 4
+- Any other actual model name currently in use
+
+### Examples
+
+**Correct Usage:**
+```bash
+git config user.name "$(whoami) | Cursor.sh | Auto"
+git config user.name "$(whoami) | Cursor.sh | Composer 1"
+git config user.name "$(whoami) | Cursor.sh | GPT-5.1"
+```
+
+**Incorrect Usage (SHALL NOT be used):**
+```bash
+git config user.name "$(whoami) | Cursor.sh | <model>"  # Literal placeholder
+git config user.name "$(whoami) | Cursor.sh | model"     # Literal string "model"
+```
+
 ---
-description: Git user configuration for automated commits
+description: Git user configuration for automated commits with model name specification
 globs: []
 alwaysApply: true
