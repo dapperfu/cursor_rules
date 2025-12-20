@@ -1,0 +1,14 @@
+# C++ Code Formatting
+
+## Requirement
+
+All C++ code SHALL be formatted using clang-format.
+
+C++ code SHALL have a maximum line length of 120 characters.
+
+Projects SHALL include a `.clang-format` configuration file that specifies formatting rules.
+
+---
+description: C++ clang-format requirement with 120 character line length
+globs: ["*.cpp", "*.hpp", "*.h", "*.cc", "*.cxx", "*.hxx"]
+alwaysApply: false
