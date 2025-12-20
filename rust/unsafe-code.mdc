@@ -1,0 +1,144 @@
+# Rust Unsafe Code
+
+## Requirement
+
+All unsafe code blocks SHALL include justification comments explaining why unsafe code is necessary and documenting the safety invariants that must be maintained.
+
+Unsafe code SHALL be used only when necessary and SHALL be properly documented with safety requirements.
+
+## Rationale
+
+Unsafe code requires careful consideration:
+- Unsafe code bypasses Rust's safety guarantees
+- Requires manual verification of safety invariants
+- Can lead to undefined behavior if used incorrectly
+- Justification comments help reviewers understand the necessity
+- Documentation ensures safety invariants are maintained
+
+## Implementation
+
+### Justification Comments
+
+All unsafe blocks SHALL include a comment explaining:
+- Why unsafe code is necessary
+- What safety invariants must be maintained
+- How those invariants are guaranteed
+
+```rust
+// SAFETY: We know that the pointer is valid because:
+// 1. It was obtained from a Box, which guarantees non-null
+// 2. The Box has not been dropped
+// 3. No other references exist (we have exclusive access)
+unsafe {
+    let raw = Box::into_raw(data);
+    process_raw_pointer(raw);
+}
+```
+
+### Safety Documentation
+
+Unsafe functions SHALL document their safety requirements in rustdoc comments:
+
+```rust
+/// Processes a raw pointer.
+///
+/// # Safety
+///
+/// The caller must ensure:
+/// - `ptr` is non-null
+/// - `ptr` points to valid, initialized data
+/// - No other references to the data exist
+/// - The data is not dropped while this function is executing
+///
+/// # Examples
+///
+/// ```
+/// use std::ptr;
+///
+/// let data = Box::new(42);
+/// let raw = Box::into_raw(data);
+/// // SAFETY: raw is non-null and points to valid data
+/// unsafe {
+///     process_raw_pointer(raw);
+/// }
+/// ```
+pub unsafe fn process_raw_pointer(ptr: *mut i32) {
+    // ... implementation
+}
+```
+
+### When Unsafe is Acceptable
+
+Unsafe code is acceptable in the following scenarios:
+- FFI (Foreign Function Interface) with C code
+- Implementing unsafe traits (e.g., `Send`, `Sync`)
+- Performance-critical code where safety can be proven
+- Low-level systems programming
+- Implementing safe abstractions over unsafe operations
+
+### Safety Invariants
+
+When using unsafe code, projects SHALL document and maintain safety invariants:
+
+```rust
+/// A wrapper around a raw pointer that maintains safety invariants.
+pub struct SafePointer<T> {
+    // SAFETY: This pointer is always valid and non-null
+    // Invariant: The data it points to is never dropped while this struct exists
+    ptr: *mut T,
+}
+
+impl<T> SafePointer<T> {
+    /// Creates a new SafePointer from a Box.
+    ///
+    /// # Safety
+    ///
+    /// The caller must ensure the Box is not dropped while the SafePointer exists.
+    pub unsafe fn new(data: Box<T>) -> Self {
+        // SAFETY: Box::into_raw returns a non-null pointer
+        // The caller guarantees the Box won't be dropped
+        Self {
+            ptr: Box::into_raw(data),
+        }
+    }
+    
+    /// Gets a reference to the data.
+    ///
+    /// # Safety
+    ///
+    /// The pointer must still be valid and the data must not have been dropped.
+    pub unsafe fn get(&self) -> &T {
+        // SAFETY: Caller guarantees pointer is valid
+        &*self.ptr
+    }
+}
+```
+
+### Minimizing Unsafe Code
+
+Projects SHALL:
+- Minimize the scope of unsafe blocks
+- Prefer safe abstractions over direct unsafe code
+- Use existing safe wrappers when available
+- Isolate unsafe code in well-documented modules
+
+```rust
+// Prefer: Use safe abstractions
+let value = safe_wrapper.get_value();
+
+// Avoid: Direct unsafe code when safe alternatives exist
+unsafe {
+    let value = *raw_pointer;
+}
+```
+
+## Exceptions
+
+This requirement does NOT apply to:
+- Generated code that includes unsafe blocks
+- Code that is part of a well-established unsafe abstraction (with documentation)
+
+---
+description: Rust unsafe code requirements with justification comments and safety documentation
+globs: ["*.rs", "**/*.rs"]
+alwaysApply: false
