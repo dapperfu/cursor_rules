@@ -1,0 +1,14 @@
+# C++ Build Systems
+
+## Requirement
+
+C++ projects SHALL support both Makefile and CMake build systems.
+
+Build targets SHALL be consistent across both build systems (e.g., `build`, `test`, `clean`, `format`, `lint`).
+
+Formatting and linting tools SHALL be integrated into both Makefile and CMake build systems.
+
+---
+description: C++ build system requirements (Makefile and CMake support)
+globs: ["Makefile", "makefile", "**/Makefile", "**/makefile", "CMakeLists.txt", "**/CMakeLists.txt"]
+alwaysApply: false
