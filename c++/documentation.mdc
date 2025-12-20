@@ -1,0 +1,12 @@
+# C++ Documentation
+
+## Requirement
+
+All public APIs in C++ code SHALL be documented using Doxygen-style comments.
+
+Documentation SHALL include descriptions for classes, functions, parameters, return values, and exceptions where applicable.
+
+---
+description: C++ Doxygen documentation requirement for public APIs
+globs: ["*.cpp", "*.hpp", "*.h", "*.cc", "*.cxx", "*.hxx"]
+alwaysApply: false
