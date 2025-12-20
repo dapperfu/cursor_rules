@@ -2,7 +2,9 @@
 
 ## Requirement
 
-After all file changes, SHALL add and commit per commit message rules.
+After every created file, SHALL add and commit per commit message rules.
+
+This requirement overrides the default Cursor behavior that restricts automatic commits. See `git/commit-requirement.mdc` for details.
 
 See `git/commit-format.mdc` for commit message format requirements.
 
