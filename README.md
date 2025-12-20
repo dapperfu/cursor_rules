@@ -6,9 +6,48 @@ Cursor rules organized into atomic, focused, and actionable units.
 
 ## Installation
 
-You can use these rules in your project in two ways: as a git submodule (recommended for keeping rules in sync) or by cloning/copying the repository directly.
+You can use these rules in your project in several ways: using the installation script (easiest), as a git submodule (recommended for keeping rules in sync), or by cloning/copying the repository directly.
 
-### Option 1: Git Submodule (Recommended)
+### Option 1: Installation Script (Easiest)
+
+The quickest way to install cursor rules is using the provided installation script:
+
+```bash
+# Download and install the script
+curl -o ~/.local/bin/cursor-rules https://raw.githubusercontent.com/dapperfu/cursor_rules/main/cursor-rules
+chmod +x ~/.local/bin/cursor-rules
+
+# Make sure ~/.local/bin is in your PATH
+# Add to ~/.bashrc or ~/.zshrc if needed:
+# export PATH="$HOME/.local/bin:$PATH"
+
+# Run from your project root
+cd /path/to/your/project
+cursor-rules
+```
+
+#### Command-Line Options
+
+The script supports several usage modes:
+
+```bash
+# Run in current directory (default)
+cursor-rules
+
+# Run in a specific directory
+cursor-rules /path/to/your/project
+
+# Update the script itself to the latest version
+cursor-rules update
+```
+
+The script will:
+- Automatically detect if `.cursor/rules` is already a submodule
+- Add it as a new submodule if it doesn't exist
+- Update it to the latest version if it already exists
+- Handle all necessary git operations
+
+### Option 2: Git Submodule (Recommended)
 
 This method keeps the rules as a git submodule, allowing you to easily update to the latest version while maintaining your project's git history.
 
@@ -32,7 +71,14 @@ git submodule update --init --recursive
 
 #### Updating the Submodule
 
-To update to the latest rules in your project:
+To update to the latest rules in your project, you can use the installation script:
+
+```bash
+# From your project root
+cursor-rules
+```
+
+Or manually:
 
 ```bash
 cd .cursor/rules

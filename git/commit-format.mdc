@@ -16,6 +16,7 @@ All git commit messages SHALL follow this format:
 ```
 Prompt: {{prompt}}
 Context: {{brief_description_of_what_this_code_does}}
+Justification: {{justification_of_changes}}
 
 Technical details:
 - Model: {{specific_llm_model}}
