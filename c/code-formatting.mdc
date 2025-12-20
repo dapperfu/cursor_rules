@@ -1,0 +1,22 @@
+# clang-format Code Formatting
+
+## Requirement
+
+All C source and header files SHALL be formatted using clang-format.
+
+A `.clang-format` configuration file SHALL be present in the project root or appropriate directory.
+
+The `.clang-format` file SHALL be committed to version control.
+
+All C files SHALL conform to the formatting style defined in `.clang-format`.
+
+The Makefile `format` target SHALL use clang-format to check or apply formatting.
+
+Formatting SHALL be checked in pre-commit hooks or CI/CD pipelines.
+
+Code formatting SHALL be consistent across all C files in the project.
+
+---
+description: clang-format code formatting requirements for C code
+globs: ["*.c", "**/*.c", "*.h", "**/*.h", ".clang-format", "**/.clang-format"]
+alwaysApply: false

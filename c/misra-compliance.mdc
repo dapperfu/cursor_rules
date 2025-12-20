@@ -1,0 +1,18 @@
+# MISRA C Compliance
+
+## Requirement
+
+All C code SHALL comply with MISRA C:2023 guidelines, with fallback to MISRA C:2012 where necessary.
+
+All C code SHALL be checked using cppcheck with the MISRA addon enabled.
+
+MISRA compliance checking SHALL be enforced in CI/CD pipelines.
+
+Any deviations from MISRA guidelines SHALL be documented with justification in code comments or project documentation.
+
+MISRA rule violations SHALL be addressed before code is merged, unless a documented deviation exists.
+
+---
+description: MISRA C compliance requirements for C code
+globs: ["*.c", "**/*.c", "*.h", "**/*.h"]
+alwaysApply: false

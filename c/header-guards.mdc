@@ -1,0 +1,18 @@
+# Header File Guards
+
+## Requirement
+
+All header files SHALL use include guards to prevent multiple inclusion.
+
+Header files SHALL prefer `#pragma once` as the primary protection mechanism.
+
+Header files SHALL also include traditional `#ifndef/#define/#endif` guards as a fallback for compilers that do not support `#pragma once`.
+
+Include guard names SHALL follow a consistent naming convention, typically based on the file path (e.g., `PROJECT_MODULE_FILENAME_H`).
+
+Include guards SHALL be placed immediately after any file-level comments and before any includes or other preprocessor directives.
+
+---
+description: Header file include guard requirements
+globs: ["*.h", "**/*.h"]
+alwaysApply: false

@@ -1,0 +1,22 @@
+# Linux Kernel Style Naming Conventions
+
+## Requirement
+
+All function names SHALL use snake_case (lowercase with underscores).
+
+All variable names SHALL use snake_case (lowercase with underscores).
+
+All type names (typedefs, structs, enums) SHALL use snake_case with appropriate suffixes (e.g., `_t` for typedefs, `_s` for structs).
+
+All constant names SHALL use UPPER_CASE with underscores.
+
+Function and variable names SHALL use module prefixes to avoid namespace collisions (e.g., `module_function_name`).
+
+Names SHALL be descriptive and avoid abbreviations unless they are widely understood.
+
+Single-letter variable names SHALL only be used for loop counters or mathematical variables where the meaning is clear from context.
+
+---
+description: Linux kernel style naming conventions for C code
+globs: ["*.c", "**/*.c", "*.h", "**/*.h"]
+alwaysApply: false

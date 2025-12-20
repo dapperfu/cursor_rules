@@ -1,0 +1,26 @@
+# C89/C90 (ANSI C) Standard Compliance
+
+## Requirement
+
+All C code SHALL conform to the C89/C90 (ANSI C) standard.
+
+C99 and later standard features SHALL NOT be used, including but not limited to:
+- Variable-length arrays (VLAs)
+- Single-line comments (//)
+- Designated initializers
+- Compound literals
+- Variable declarations anywhere in a block
+- Flexible array members
+- Long long type
+- Boolean type (_Bool or stdbool.h)
+
+All function declarations SHALL appear before their first use.
+
+All variable declarations SHALL be at the beginning of a block, before any executable statements.
+
+Compiler flags SHALL be set to enforce C89/C90 compliance (e.g., `-std=c89` or `-ansi`).
+
+---
+description: ANSI C (C89/C90) standard compliance requirements
+globs: ["*.c", "**/*.c", "*.h", "**/*.h"]
+alwaysApply: false

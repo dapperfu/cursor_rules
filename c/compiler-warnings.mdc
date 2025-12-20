@@ -1,0 +1,20 @@
+# Compiler Warning Enforcement
+
+## Requirement
+
+All C code SHALL be compiled with strict warning flags enabled.
+
+For GCC, the following flags SHALL be used: `-Wall -Wextra -Werror`.
+
+For Clang, equivalent flags SHALL be used: `-Wall -Wextra -Werror` or `-Weverything -Werror` (with appropriate suppressions).
+
+No warnings SHALL be allowed in production builds.
+
+Warning suppressions SHALL only be used when absolutely necessary and SHALL be documented with justification.
+
+Warning suppressions SHALL be as specific as possible (suppress specific warnings, not all warnings).
+
+---
+description: Strict compiler warning enforcement for C code
+globs: ["*.c", "**/*.c", "*.h", "**/*.h", "Makefile", "makefile", "**/Makefile", "**/makefile"]
+alwaysApply: false

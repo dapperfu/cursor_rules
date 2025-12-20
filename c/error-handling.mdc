@@ -1,0 +1,24 @@
+# Return Code Error Handling
+
+## Requirement
+
+All functions that can fail SHALL return an integer status code.
+
+Return value of 0 SHALL indicate success.
+
+Return value of a negative number SHALL indicate an error condition.
+
+Error codes SHALL be defined consistently, either as macros or enum values, with descriptive names.
+
+Error codes SHALL be documented in function documentation.
+
+Callers SHALL check return values from functions that can fail.
+
+Error conditions SHALL be propagated to callers unless they can be handled locally.
+
+When a function encounters an error, it SHALL clean up any resources it has allocated before returning.
+
+---
+description: Return code error handling patterns for C code
+globs: ["*.c", "**/*.c", "*.h", "**/*.h"]
+alwaysApply: false

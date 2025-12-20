@@ -1,0 +1,20 @@
+# Makefile Targets for Formatting and Linting
+
+## Requirement
+
+All Makefiles SHALL provide a `format` target that runs clang-format on all C source and header files.
+
+All Makefiles SHALL provide a `lint` target that runs cppcheck with MISRA addon on all C source files.
+
+All Makefiles SHALL provide a `clean` target that removes generated files and build artifacts.
+
+The `format` target SHALL check formatting and fail if files are not properly formatted, or SHALL automatically format files in-place (preference should be specified).
+
+The `lint` target SHALL run cppcheck with MISRA C compliance checking enabled.
+
+The `format` and `lint` targets SHALL be integrated with pre-commit hooks where applicable.
+
+---
+description: Makefile target requirements for C code formatting and linting
+globs: ["Makefile", "makefile", "**/Makefile", "**/makefile"]
+alwaysApply: false

@@ -1,0 +1,25 @@
+# Doxygen Documentation Standards
+
+## Requirement
+
+All public functions SHALL be documented using Doxygen comment style.
+
+All function documentation SHALL include:
+- A brief description of the function's purpose
+- Documentation for each parameter using `@param`
+- Documentation for the return value using `@return`
+- Any relevant notes or warnings using `@note` or `@warning`
+
+All source files SHALL include file-level documentation with:
+- A brief description of the file's purpose
+- Author information (if applicable)
+- Copyright information (if applicable)
+
+Doxygen comments SHALL use the `/** */` style for block comments.
+
+Inline documentation SHALL be provided for complex algorithms or non-obvious code sections.
+
+---
+description: Doxygen documentation requirements for C code
+globs: ["*.c", "**/*.c", "*.h", "**/*.h"]
+alwaysApply: false

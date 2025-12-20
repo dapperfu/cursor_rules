@@ -1,0 +1,22 @@
+# Strict Memory Management
+
+## Requirement
+
+All calls to `malloc()`, `calloc()`, `realloc()`, or similar memory allocation functions SHALL check the return value for NULL.
+
+Memory allocation failures SHALL be handled appropriately (error return, cleanup, or graceful degradation).
+
+All allocated memory SHALL be freed using `free()` when no longer needed.
+
+Memory leaks SHALL NOT be allowed in production code.
+
+Static analysis tools (such as cppcheck, valgrind, or similar) SHALL be used to detect memory leaks.
+
+Each `malloc()` or `calloc()` call SHALL have a corresponding `free()` call, or SHALL be documented if memory is intentionally not freed (e.g., for program lifetime allocations).
+
+Memory allocated in a function SHALL either be freed within that function or returned/assigned to a caller who is responsible for freeing it.
+
+---
+description: Strict memory management requirements for C code
+globs: ["*.c", "**/*.c"]
+alwaysApply: false
