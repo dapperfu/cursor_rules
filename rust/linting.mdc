@@ -1,0 +1,85 @@
+# Rust Linting
+
+## Requirement
+
+All Rust projects SHALL use Clippy for linting and SHALL deny all warnings in the codebase.
+
+Projects SHALL include `#![deny(warnings)]` at the crate root (in `lib.rs` or `main.rs`) to enforce zero-warning policy. Projects SHALL include Makefile targets for linting operations.
+
+## Rationale
+
+Clippy provides:
+- Additional lints beyond the Rust compiler
+- Best practice enforcement
+- Common mistake detection
+- Code quality improvements
+
+Denying warnings ensures:
+- Code quality is maintained at a high standard
+- Warnings are addressed immediately rather than accumulating
+- CI/CD pipelines fail on linting issues, preventing regressions
+- Consistent code quality across the project
+
+## Implementation
+
+### Crate-Level Configuration
+
+Projects SHALL include the following at the top of `lib.rs` or `main.rs`:
+
+```rust
+#![deny(warnings)]
+#![deny(clippy::all)]
+#![deny(clippy::pedantic)]
+```
+
+Alternatively, for more flexibility, projects MAY use:
+
+```rust
+#![deny(warnings)]
+#![warn(clippy::all)]
+#![warn(clippy::pedantic)]
+```
+
+### Clippy Configuration
+
+Projects MAY include a `clippy.toml` file for custom lint configuration:
+
+```toml
+# Example: Allow specific lints
+avoid-breaking-exported-api = false
+too-many-arguments-threshold = 10
+```
+
+### Makefile Targets
+
+Projects SHALL include the following Makefile targets for linting:
+
+```makefile
+# Run Clippy lints
+lint:
+	cargo clippy -- -D warnings
+
+# Run Clippy and automatically fix issues
+lint-fix:
+	cargo clippy --fix --allow-dirty --allow-staged
+```
+
+The `lint` target SHALL run Clippy and treat warnings as errors. The `lint-fix` target SHALL attempt to automatically fix linting issues where possible.
+
+### CI/CD Integration
+
+Projects SHOULD integrate Clippy checks into CI/CD pipelines to ensure code quality standards are maintained.
+
+## Exceptions
+
+This requirement does NOT apply to:
+- Generated code files that are automatically created
+- Third-party dependencies in `target/` directory
+- Specific lints that are explicitly allowed via `clippy.toml` or `#[allow(...)]` attributes with justification
+
+When using `#[allow(...)]` attributes, projects SHALL include a comment explaining why the lint is being suppressed.
+
+---
+description: Rust linting requirements using Clippy with deny warnings policy
+globs: ["*.rs", "**/*.rs", "Cargo.toml", "clippy.toml", "Makefile", "makefile"]
+alwaysApply: false
