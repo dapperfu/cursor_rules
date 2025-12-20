@@ -1,0 +1,127 @@
+# Rust Project Structure
+
+## Requirement
+
+All Rust projects SHALL follow a consistent project structure with proper organization of source code, examples, and tests.
+
+Projects using multiple crates SHALL use Cargo workspaces. Projects SHALL include `examples/` and `tests/` directories as appropriate.
+
+## Rationale
+
+Consistent project structure:
+- Makes projects easier to navigate and understand
+- Enables proper separation of concerns
+- Facilitates code organization and maintenance
+- Provides clear locations for examples and tests
+- Supports workspace-based multi-crate projects
+
+## Implementation
+
+### Basic Project Structure
+
+All Rust projects SHALL follow this structure:
+
+```
+project-name/
+├── Cargo.toml
+├── Cargo.lock          # For applications, not libraries
+├── src/
+│   ├── main.rs         # For binaries
+│   └── lib.rs          # For libraries
+├── examples/           # Example programs
+│   └── example1.rs
+├── tests/              # Integration tests
+│   └── integration_test.rs
+├── benches/            # Benchmark tests (optional)
+│   └── bench1.rs
+└── README.md
+```
+
+### Cargo Workspace Structure
+
+Projects with multiple crates SHALL use a Cargo workspace:
+
+```
+workspace-root/
+├── Cargo.toml          # Workspace configuration
+├── crate1/
+│   ├── Cargo.toml
+│   └── src/
+│       └── lib.rs
+├── crate2/
+│   ├── Cargo.toml
+│   └── src/
+│       └── lib.rs
+└── examples/           # Shared examples directory
+    └── example.rs
+```
+
+Workspace `Cargo.toml` SHALL include:
+
+```toml
+[workspace]
+members = ["crate1", "crate2"]
+resolver = "2"  # For Rust 2021 edition
+```
+
+### Source Directory Layout
+
+The `src/` directory SHALL contain:
+- `lib.rs` for library crates
+- `main.rs` for binary crates
+- Additional modules organized in subdirectories or separate files
+
+For larger projects, modules SHALL be organized in a clear hierarchy:
+
+```
+src/
+├── lib.rs
+├── module1.rs
+├── module2/
+│   ├── mod.rs
+│   └── submodule.rs
+└── utils.rs
+```
+
+### Examples Directory
+
+Projects SHALL include an `examples/` directory for example programs that demonstrate library usage:
+
+```rust
+// examples/example1.rs
+use project_name::function;
+
+fn main() {
+    println!("{}", function());
+}
+```
+
+Examples SHALL be executable with `cargo run --example example1`.
+
+### Tests Directory
+
+Projects SHALL include a `tests/` directory for integration tests:
+
+```rust
+// tests/integration_test.rs
+use project_name;
+
+#[test]
+fn test_functionality() {
+    assert_eq!(project_name::function(), expected_value);
+}
+```
+
+Integration tests SHALL test the public API of the library as an external user would use it.
+
+## Exceptions
+
+This requirement does NOT apply to:
+- Very simple single-file projects
+- Generated projects with specific structure requirements
+- Projects following domain-specific conventions
+
+---
+description: Rust project structure requirements including workspace, examples, and tests directories
+globs: ["Cargo.toml", "**/Cargo.toml", "src/**/*.rs"]
+alwaysApply: false
