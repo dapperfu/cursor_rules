@@ -1,0 +1,12 @@
+# C++ Static Analysis
+
+## Requirement
+
+All C++ code SHALL be analyzed using clang-tidy, cppcheck, and cpplint.
+
+Static analysis tools SHALL be integrated into the build system and run as part of the linting process.
+
+---
+description: C++ static analysis tools requirement (clang-tidy, cppcheck, cpplint)
+globs: ["*.cpp", "*.hpp", "*.h", "*.cc", "*.cxx", "*.hxx"]
+alwaysApply: false
