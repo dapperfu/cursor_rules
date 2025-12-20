@@ -24,6 +24,7 @@ Technical details:
 - Generation method: AI-assisted pair programming
 - Code style: {{language_specific_style_guide}}
 - Dependencies: {{key_dependencies}}
+- Tokens: {{estimated_tokens_used_for_changes}}
 ```
 
 ---
