@@ -1,0 +1,12 @@
+# C++ MISRA Compliance
+
+## Requirement
+
+All C++ code SHALL comply with MISRA C++:2023 guidelines.
+
+Static analysis tools SHALL be configured to check for MISRA C++:2023 compliance violations.
+
+---
+description: C++ MISRA C++:2023 compliance requirement
+globs: ["*.cpp", "*.hpp", "*.h", "*.cc", "*.cxx", "*.hxx"]
+alwaysApply: false
