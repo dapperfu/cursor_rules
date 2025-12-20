@@ -1,0 +1,60 @@
+# Rust Formatting
+
+## Requirement
+
+All Rust projects SHALL use rustfmt for code formatting with a maximum line length of 120 characters.
+
+All Rust source files SHALL be formatted using `cargo fmt` before being committed. Projects SHALL include Makefile targets for formatting operations.
+
+## Rationale
+
+Consistent code formatting:
+- Improves code readability across the project
+- Reduces merge conflicts from formatting differences
+- Makes code reviews focus on logic rather than style
+- Enables automated formatting checks in CI/CD pipelines
+
+The 120 character line length provides a balance between readability and modern wide-screen displays while maintaining reasonable line lengths.
+
+## Implementation
+
+### rustfmt Configuration
+
+Projects SHALL include a `rustfmt.toml` file in the project root with the following configuration:
+
+```toml
+max_width = 120
+edition = "2021"
+```
+
+### Makefile Targets
+
+Projects SHALL include the following Makefile targets for formatting:
+
+```makefile
+# Format all Rust code
+format: rustfmt.toml
+	cargo fmt
+
+# Check if code is formatted (for CI)
+fmt-check: rustfmt.toml
+	cargo fmt --check
+```
+
+The `format` target SHALL format all Rust code in the project. The `fmt-check` target SHALL verify that code is properly formatted without making changes, suitable for use in CI/CD pipelines.
+
+### Pre-commit Integration
+
+Projects SHOULD integrate formatting checks into pre-commit hooks to ensure all code is formatted before commits.
+
+## Exceptions
+
+This requirement does NOT apply to:
+- Generated code files that are automatically created
+- Files explicitly excluded via `rustfmt.toml` configuration
+- Third-party dependencies in `target/` directory
+
+---
+description: Rust formatting requirements using rustfmt with 120 character line length
+globs: ["*.rs", "**/*.rs", "Cargo.toml", "rustfmt.toml", "Makefile", "makefile"]
+alwaysApply: false
