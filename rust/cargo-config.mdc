@@ -1,0 +1,98 @@
+# Cargo Configuration
+
+## Requirement
+
+All Rust projects SHALL include required metadata fields in `Cargo.toml`, specify the Rust edition, and properly document Cargo features.
+
+Projects SHALL include Makefile targets for cargo check operations.
+
+## Rationale
+
+Proper Cargo configuration:
+- Ensures projects are properly identified and documented
+- Enables proper dependency resolution and workspace management
+- Makes projects discoverable and maintainable
+- Provides clear feature documentation for users
+
+## Implementation
+
+### Required Metadata Fields
+
+All `Cargo.toml` files SHALL include the following metadata fields:
+
+```toml
+[package]
+name = "project-name"
+version = "0.1.0"
+edition = "2021"  # SHALL be explicitly specified
+authors = ["Author Name <email@example.com>"]
+license = "MIT OR Apache-2.0"  # Or appropriate license
+description = "Brief description of the project"
+repository = "https://github.com/user/repo"  # If applicable
+```
+
+### Edition Specification
+
+The `edition` field SHALL be explicitly specified. Supported editions:
+- `"2015"` - Original Rust edition
+- `"2018"` - Module system improvements
+- `"2021"` - Current recommended edition (default for new projects)
+
+### Feature Documentation
+
+All Cargo features SHALL be documented in `Cargo.toml`:
+
+```toml
+[features]
+default = ["feature1", "feature2"]
+
+# Feature descriptions
+feature1 = ["dep1"]  # Description: Enables feature1 functionality
+feature2 = []        # Description: Enables feature2 functionality
+```
+
+For better documentation, use the `[package.metadata.docs.rs]` section or document features in `README.md`.
+
+### Default Features Policy
+
+Projects SHOULD carefully consider which features are included in `default`:
+- Default features should provide a useful baseline experience
+- Optional dependencies should typically be behind features
+- Consider the impact of default features on compile time and binary size
+
+### Optional Dependencies
+
+Optional dependencies SHALL be marked with the appropriate feature flag:
+
+```toml
+[dependencies]
+serde = { version = "1.0", optional = true, features = ["derive"] }
+
+[features]
+default = []
+serde = ["dep:serde"]  # Use dep: prefix for optional deps
+```
+
+### Makefile Targets
+
+Projects SHALL include the following Makefile target for cargo check:
+
+```makefile
+# Check code without building
+check:
+	cargo check
+```
+
+The `check` target SHALL verify that code compiles without producing binaries, useful for quick validation.
+
+## Exceptions
+
+This requirement does NOT apply to:
+- Workspace-only `Cargo.toml` files (which may have minimal metadata)
+- Example or test-only crates within a workspace
+- Generated `Cargo.toml` files
+
+---
+description: Cargo.toml configuration requirements including metadata, edition, and feature documentation
+globs: ["Cargo.toml", "**/Cargo.toml"]
+alwaysApply: false
