@@ -1,0 +1,142 @@
+# Rust Documentation
+
+## Requirement
+
+All public items in Rust projects SHALL be documented with rustdoc comments, and all documentation SHALL include executable examples.
+
+Projects SHALL enforce missing documentation via the `missing_docs` lint.
+
+## Rationale
+
+Comprehensive documentation:
+- Makes APIs easier to understand and use
+- Provides examples that demonstrate proper usage
+- Enables automatic documentation generation via `cargo doc`
+- Improves code maintainability
+- Serves as executable tests through doctests
+
+## Implementation
+
+### Documentation Comments
+
+All public items SHALL be documented using triple-slash (`///`) comments:
+
+```rust
+/// Calculates the factorial of a number.
+///
+/// # Arguments
+///
+/// * `n` - The number to calculate the factorial for
+///
+/// # Returns
+///
+/// The factorial of `n`, or `None` if `n` is negative.
+///
+/// # Examples
+///
+/// ```
+/// use project_name::factorial;
+///
+/// assert_eq!(factorial(5), Some(120));
+/// assert_eq!(factorial(-1), None);
+/// ```
+pub fn factorial(n: i32) -> Option<i64> {
+    if n < 0 {
+        return None;
+    }
+    // ... implementation
+}
+```
+
+### Documentation Sections
+
+Documentation SHALL include the following sections as appropriate:
+- Brief description (first line)
+- `# Arguments` - For functions with parameters
+- `# Returns` - For functions that return values
+- `# Errors` - For functions that return `Result` or `Option`
+- `# Panics` - For functions that may panic
+- `# Safety` - For unsafe functions
+- `# Examples` - Executable examples (required)
+
+### Module Documentation
+
+All public modules SHALL be documented using `//!` (inner doc comments):
+
+```rust
+//! This module provides utilities for string manipulation.
+//!
+//! # Examples
+//!
+//! ```
+//! use project_name::string_utils;
+//!
+//! let result = string_utils::capitalize("hello");
+//! assert_eq!(result, "Hello");
+//! ```
+
+pub mod string_utils;
+```
+
+### Enforcing Documentation
+
+Projects SHALL enable the `missing_docs` lint in `lib.rs` or `main.rs`:
+
+```rust
+#![deny(missing_docs)]
+#![deny(missing_doc_examples)]
+```
+
+Alternatively, for warnings:
+
+```rust
+#![warn(missing_docs)]
+#![warn(missing_doc_examples)]
+```
+
+### Documentation Examples
+
+All public functions SHALL include at least one executable example:
+
+```rust
+/// Adds two numbers together.
+///
+/// # Examples
+///
+/// ```
+/// use project_name::add;
+///
+/// assert_eq!(add(2, 3), 5);
+/// ```
+pub fn add(a: i32, b: i32) -> i32 {
+    a + b
+}
+```
+
+Examples SHALL:
+- Be executable and pass when run with `cargo test --doc`
+- Demonstrate typical usage
+- Show edge cases when relevant
+- Use `unwrap()` or `?` appropriately for error handling examples
+
+### Generating Documentation
+
+Projects SHALL generate documentation using:
+
+```bash
+cargo doc --open
+```
+
+Documentation SHALL be kept up-to-date with code changes.
+
+## Exceptions
+
+This requirement does NOT apply to:
+- Generated code
+- Re-exports where documentation is provided in the original module
+- Items that are self-explanatory (with documented justification)
+
+---
+description: Rust documentation requirements with rustdoc comments and executable examples for all public items
+globs: ["*.rs", "**/*.rs", "Cargo.toml"]
+alwaysApply: false
