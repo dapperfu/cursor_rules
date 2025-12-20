@@ -1,0 +1,151 @@
+# Rust Testing
+
+## Requirement
+
+All Rust projects SHALL include comprehensive tests:
+- Unit tests for all modules
+- Integration tests in the `tests/` directory
+- Documentation tests (doctests) for all public functions
+- Projects SHALL maintain a minimum of 90% test coverage
+
+Projects SHALL include Makefile targets for running tests and checking coverage.
+
+## Rationale
+
+Comprehensive testing:
+- Ensures code correctness and prevents regressions
+- Documents expected behavior through tests
+- Enables confident refactoring
+- Provides examples of API usage
+- Maintains code quality standards
+
+The 90% coverage threshold ensures that the majority of code paths are tested while allowing for practical exceptions.
+
+## Implementation
+
+### Unit Tests
+
+All modules SHALL include unit tests in the same file using the `#[cfg(test)]` module:
+
+```rust
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_function() {
+        assert_eq!(function(2), 4);
+    }
+
+    #[test]
+    #[should_panic(expected = "invalid input")]
+    fn test_function_panics() {
+        function(-1);
+    }
+}
+```
+
+Unit tests SHALL test:
+- Public API functions
+- Internal functions that are non-trivial
+- Edge cases and error conditions
+- Boundary conditions
+
+### Integration Tests
+
+Projects SHALL include integration tests in the `tests/` directory:
+
+```rust
+// tests/integration_test.rs
+use project_name;
+
+#[test]
+fn test_public_api() {
+    let result = project_name::public_function();
+    assert!(result.is_ok());
+}
+```
+
+Integration tests SHALL:
+- Test the public API as an external user would
+- Be placed in the `tests/` directory at the project root
+- Be separate from unit tests
+
+### Documentation Tests
+
+All public functions SHALL include documentation examples that are executable:
+
+```rust
+/// Calculates the square of a number.
+///
+/// # Examples
+///
+/// ```
+/// use project_name::square;
+///
+/// assert_eq!(square(3), 9);
+/// ```
+pub fn square(x: i32) -> i32 {
+    x * x
+}
+```
+
+Documentation tests SHALL:
+- Be executable with `cargo test --doc`
+- Demonstrate proper usage of the function
+- Include realistic examples
+
+### Test Coverage
+
+Projects SHALL maintain a minimum of 90% test coverage. Coverage SHALL be measured using `cargo-tarpaulin` or similar tools:
+
+```bash
+cargo install cargo-tarpaulin
+cargo tarpaulin --out Html
+```
+
+### Makefile Targets
+
+Projects SHALL include the following Makefile targets:
+
+```makefile
+# Run all tests
+test:
+	cargo test
+
+# Run tests with output
+test-verbose:
+	cargo test -- --nocapture
+
+# Run documentation tests
+test-doc:
+	cargo test --doc
+
+# Check test coverage
+test-coverage:
+	cargo tarpaulin --out Html --output-dir coverage
+```
+
+The `test` target SHALL run all tests (unit, integration, and documentation). The `test-coverage` target SHALL generate coverage reports.
+
+### Test Organization
+
+Tests SHALL be organized as follows:
+- Unit tests: In `#[cfg(test)]` modules within source files
+- Integration tests: In `tests/*.rs` files
+- Documentation tests: In doc comments of public items
+- Benchmarks: In `benches/*.rs` files (optional)
+
+## Exceptions
+
+This requirement does NOT apply to:
+- Generated code that is tested elsewhere
+- Trivial functions where testing adds no value
+- Code that is difficult to test (with documented justification)
+
+The 90% coverage threshold MAY be adjusted for specific modules with documented justification.
+
+---
+description: Rust testing requirements including unit, integration, and documentation tests with 90% coverage threshold
+globs: ["*.rs", "**/*.rs", "tests/**/*.rs", "Cargo.toml", "Makefile", "makefile"]
+alwaysApply: false
