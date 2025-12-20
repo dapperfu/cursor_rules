@@ -1,0 +1,123 @@
+# Rust Error Handling
+
+## Requirement
+
+All Rust projects SHALL use appropriate error handling libraries based on project type:
+- Application projects SHALL use `anyhow` for error handling
+- Library projects SHALL use `thiserror` for error handling
+
+Projects SHALL use `Result<T, E>` types for fallible operations and SHALL properly propagate errors.
+
+## Rationale
+
+Proper error handling:
+- Provides clear error messages and context
+- Enables proper error propagation and handling
+- Distinguishes between application errors (anyhow) and library errors (thiserror)
+- Makes error handling consistent across the codebase
+- Improves debugging and user experience
+
+`anyhow` is designed for applications where:
+- Error messages are primarily for developers and logs
+- Context can be added throughout the call stack
+- Error types don't need to be part of the public API
+
+`thiserror` is designed for libraries where:
+- Error types are part of the public API
+- Callers need to match on specific error variants
+- Error types should implement standard traits
+
+## Implementation
+
+### Application Error Handling (anyhow)
+
+Application projects SHALL use `anyhow::Result<T>` as the return type:
+
+```rust
+use anyhow::{Context, Result};
+
+fn read_config(path: &str) -> Result<Config> {
+    let content = std::fs::read_to_string(path)
+        .with_context(|| format!("Failed to read config from {}", path))?;
+    
+    toml::from_str(&content)
+        .context("Failed to parse config as TOML")?;
+}
+```
+
+Error propagation SHALL use the `?` operator with context added via `with_context()` or `context()`.
+
+### Library Error Handling (thiserror)
+
+Library projects SHALL define custom error types using `thiserror`:
+
+```rust
+use thiserror::Error;
+
+#[derive(Error, Debug)]
+pub enum MyError {
+    #[error("IO error: {0}")]
+    Io(#[from] std::io::Error),
+    
+    #[error("Parse error: {0}")]
+    Parse(String),
+    
+    #[error("Validation error: field {field} is invalid")]
+    Validation { field: String },
+}
+
+pub type Result<T> = std::result::Result<T, MyError>;
+```
+
+Error types SHALL implement `std::error::Error` (via `thiserror::Error`) and SHALL provide meaningful error messages.
+
+### Error Propagation
+
+Errors SHALL be propagated using the `?` operator:
+
+```rust
+fn function_that_might_fail() -> Result<Value> {
+    let value = another_function()?;  // Propagate error
+    Ok(process(value))
+}
+```
+
+When adding context, use appropriate methods:
+- `anyhow`: `with_context()` or `context()`
+- `thiserror`: Convert errors using `From` trait or manual conversion
+
+### Error Handling Patterns
+
+Projects SHALL handle errors explicitly:
+
+```rust
+match result {
+    Ok(value) => process(value),
+    Err(e) => {
+        eprintln!("Error: {}", e);
+        // Handle error appropriately
+    }
+}
+```
+
+For application code, errors MAY be propagated to the main function:
+
+```rust
+fn main() -> Result<()> {
+    let config = read_config("config.toml")?;
+    run_application(config)?;
+    Ok(())
+}
+```
+
+## Exceptions
+
+This requirement does NOT apply to:
+- Projects with existing error handling that follows Rust best practices
+- Projects where error handling libraries are incompatible with project constraints
+- Simple scripts where error handling overhead is not justified
+
+---
+description: Rust error handling requirements using anyhow for applications and thiserror for libraries
+globs: ["*.rs", "**/*.rs", "Cargo.toml"]
+alwaysApply: false
