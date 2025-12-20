@@ -1,0 +1,156 @@
+# Rust Code Style
+
+## Requirement
+
+All Rust code SHALL follow consistent naming conventions, module organization, and comment style. Projects using async code SHALL use Tokio as the async runtime.
+
+Code style SHALL follow rustfmt defaults for import/module ordering, with additional conventions for naming and comments.
+
+## Rationale
+
+Consistent code style:
+- Improves code readability and maintainability
+- Makes code easier to understand for new contributors
+- Reduces cognitive load when reading code
+- Ensures consistency across the project
+- Follows Rust community standards
+
+## Implementation
+
+### Naming Conventions
+
+Code SHALL follow Rust naming conventions:
+
+- **Functions and variables**: `snake_case`
+  ```rust
+  fn calculate_total() -> i32 { }
+  let user_name = "Alice";
+  ```
+
+- **Types, structs, enums, traits**: `PascalCase`
+  ```rust
+  struct UserAccount { }
+  enum ErrorType { }
+  trait DataProcessor { }
+  ```
+
+- **Constants and static variables**: `SCREAMING_SNAKE_CASE`
+  ```rust
+  const MAX_RETRIES: u32 = 3;
+  static DEFAULT_TIMEOUT: Duration = Duration::from_secs(30);
+  ```
+
+- **Lifetime parameters**: Single lowercase letter, typically `'a`, `'b`, etc.
+  ```rust
+  fn process<'a>(data: &'a str) -> &'a str { }
+  ```
+
+- **Type parameters**: `PascalCase`, typically single letters for simple cases
+  ```rust
+  fn identity<T>(value: T) -> T { value }
+  ```
+
+### Module and Import Organization
+
+Module organization SHALL follow rustfmt defaults, which automatically organizes imports. Manual organization SHALL follow this order when needed:
+
+1. Standard library imports
+2. External crate imports
+3. Local/crate imports
+
+```rust
+// Standard library
+use std::collections::HashMap;
+use std::io::Read;
+
+// External crates
+use serde::{Deserialize, Serialize};
+use tokio::time::sleep;
+
+// Local modules
+use crate::utils::helper;
+use super::parent_module;
+```
+
+### Comment Style
+
+Comments SHALL follow these conventions:
+
+- **Line comments**: Use `//` for single-line comments
+  ```rust
+  // This is a line comment
+  let value = 42;
+  ```
+
+- **Block comments**: Use `/* */` for multi-line comments when appropriate
+  ```rust
+  /* This is a block comment
+     that spans multiple lines */
+  ```
+
+- **Documentation comments**: Use `///` for public items, `//!` for module-level docs
+  ```rust
+  /// This function does something important.
+  pub fn important_function() { }
+  ```
+
+- **TODO comments**: Include context and issue numbers when applicable
+  ```rust
+  // TODO: Optimize this algorithm (issue #123)
+  ```
+
+### Async Patterns (Tokio)
+
+Projects using async code SHALL use Tokio as the async runtime:
+
+```rust
+use tokio::time::{sleep, Duration};
+
+#[tokio::main]
+async fn main() -> Result<()> {
+    let handle = tokio::spawn(async {
+        sleep(Duration::from_secs(1)).await;
+        println!("Task completed");
+    });
+    
+    handle.await?;
+    Ok(())
+}
+```
+
+Async functions SHALL:
+- Use `#[tokio::main]` for main functions
+- Use `tokio::spawn` for concurrent tasks
+- Properly handle `await` points
+- Use `tokio::select!` for concurrent operations when appropriate
+
+### Code Organization
+
+Code SHALL be organized with:
+- Related functionality grouped together
+- Public items before private items
+- Types defined before functions that use them
+- Helper functions after main functions
+
+```rust
+// Type definitions
+pub struct Config { }
+
+// Public functions
+pub fn new() -> Config { }
+
+// Private helper functions
+fn helper_function() { }
+```
+
+## Exceptions
+
+This requirement does NOT apply to:
+- Generated code
+- Code that must follow external API conventions
+- Legacy code being gradually migrated
+
+---
+description: Rust code style conventions including naming, imports, comments, and Tokio async patterns
+globs: ["*.rs", "**/*.rs"]
+alwaysApply: false
