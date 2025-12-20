@@ -1,0 +1,12 @@
+# C++ Testing Framework
+
+## Requirement
+
+All C++ projects SHALL use Google Test (gtest) as the unit testing framework.
+
+Test files SHALL be organized in a `tests/` directory or follow a consistent naming convention (e.g., `*_test.cpp`, `test_*.cpp`).
+
+---
+description: C++ Google Test framework requirement
+globs: ["*.cpp", "*.hpp", "*.h", "*.cc", "*.cxx", "*.hxx"]
+alwaysApply: false
