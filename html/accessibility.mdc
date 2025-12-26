@@ -1,0 +1,98 @@
+# HTML Accessibility
+
+## Requirement
+
+All HTML files SHALL be accessible and SHALL follow WCAG 2.1 Level AA guidelines.
+
+## Image Alt Attributes
+
+All `<img>` elements SHALL include an `alt` attribute:
+
+```html
+<img src="photo.jpg" alt="Description of the image">
+```
+
+- Decorative images SHALL use empty alt text: `alt=""`
+- Informative images SHALL have descriptive alt text
+- Alt text SHALL accurately describe the image content and function
+
+## Heading Hierarchy
+
+HTML files SHALL maintain proper heading hierarchy:
+
+- There SHALL be exactly one `<h1>` element per page
+- Headings SHALL NOT skip levels (e.g., h1 → h3 without h2)
+- Heading hierarchy SHALL be logical: h1 → h2 → h3 → h4 → h5 → h6
+
+Example of proper hierarchy:
+
+```html
+<h1>Main Page Title</h1>
+  <h2>Section Title</h2>
+    <h3>Subsection Title</h3>
+  <h2>Another Section</h2>
+```
+
+## Form Labels
+
+All form input elements SHALL be associated with labels:
+
+```html
+<label for="username">Username:</label>
+<input type="text" id="username" name="username">
+```
+
+Or using implicit association:
+
+```html
+<label>
+  Username:
+  <input type="text" name="username">
+</label>
+```
+
+## ARIA Attributes
+
+ARIA attributes SHALL be used when semantic HTML is insufficient:
+
+- Use `aria-label` when text is not visible but needed for screen readers
+- Use `aria-labelledby` to reference visible text
+- Use `aria-describedby` for additional descriptions
+- Use `role` attributes when semantic HTML cannot express the purpose
+
+ARIA attributes SHALL NOT be used when semantic HTML can express the same meaning.
+
+## Keyboard Navigation
+
+All interactive elements SHALL be keyboard accessible:
+
+- Links and buttons SHALL be focusable
+- Focus indicators SHALL be visible
+- Tab order SHALL be logical
+- Interactive elements SHALL have keyboard event handlers if they have mouse event handlers
+
+## Color Contrast
+
+Text SHALL meet WCAG 2.1 Level AA contrast requirements:
+
+- Normal text: minimum 4.5:1 contrast ratio
+- Large text (18pt+ or 14pt+ bold): minimum 3:1 contrast ratio
+
+Color SHALL NOT be the only means of conveying information.
+
+## Semantic HTML
+
+HTML files SHALL use semantic HTML elements to improve accessibility:
+
+- Use `<button>` for buttons, not `<div>` or `<span>` with click handlers
+- Use `<nav>` for navigation
+- Use proper form elements (`<input>`, `<select>`, `<textarea>`)
+- Use `<label>` for form labels
+
+## Focus Management
+
+Interactive elements SHALL manage focus appropriately:
+
+- Focus SHALL be visible and clear
+- Focus order SHALL be logical
+- Focus SHALL not be trapped unless necessary (modals, etc.)

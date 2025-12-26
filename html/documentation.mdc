@@ -1,0 +1,135 @@
+# HTML Documentation
+
+## Requirement
+
+All HTML files SHALL include appropriate comments and documentation for complex sections.
+
+## File-Level Comments
+
+HTML files SHOULD include a file-level comment at the beginning describing the file's purpose:
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    User Profile Page
+    Displays user information and profile settings.
+    Template: Jinja2
+  -->
+  <meta charset="UTF-8">
+  <title>User Profile</title>
+</head>
+```
+
+## Section Comments
+
+Complex sections of HTML SHOULD be documented with comments:
+
+```html
+<!-- Navigation Menu -->
+<nav>
+  <!-- Main navigation items -->
+  <ul>...</ul>
+  
+  <!-- User account menu -->
+  <div class="user-menu">...</div>
+</nav>
+
+<!-- Main Content Area -->
+<main>
+  <!-- User profile header -->
+  <header>...</header>
+  
+  <!-- Profile settings form -->
+  <form>...</form>
+</main>
+```
+
+## Template Documentation
+
+HTML files using template engines SHOULD document template variables and logic:
+
+```html
+<!--
+  Template Variables:
+  - user: User object with name, email, avatar
+  - settings: UserSettings object
+  - csrf_token: CSRF token for form submission
+-->
+<form method="post">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+  <input type="text" name="name" value="{{ user.name }}">
+</form>
+```
+
+## Complex DOM Structures
+
+Complex DOM structures SHOULD be documented:
+
+```html
+<!--
+  Responsive Grid Layout:
+  - Desktop: 3 columns
+  - Tablet: 2 columns
+  - Mobile: 1 column
+  Uses CSS Grid with auto-fit
+-->
+<div class="grid-container">
+  <div class="grid-item">...</div>
+</div>
+```
+
+## Comment Style
+
+HTML comments SHALL use the standard HTML comment syntax:
+
+```html
+<!-- Comment text here -->
+```
+
+Multi-line comments SHALL be formatted consistently:
+
+```html
+<!--
+  Multi-line comment
+  with additional details
+-->
+```
+
+## What to Document
+
+Comments SHOULD be used for:
+
+- File purpose and context
+- Complex DOM structures
+- Template variables and logic
+- Non-obvious implementation details
+- Workarounds or temporary solutions
+- Integration points with external systems
+
+Comments SHALL NOT be used for:
+
+- Obvious code (self-documenting HTML)
+- Styling information (use CSS comments)
+- Redundant information
+
+## Comment Maintenance
+
+Comments SHALL be kept up to date:
+
+- When code changes, update related comments
+- Remove outdated or incorrect comments
+- Comments SHALL reflect the current implementation
+
+## Accessibility Notes
+
+When HTML includes accessibility features that may not be obvious, document them:
+
+```html
+<!--
+  Skip link for keyboard navigation:
+  Allows users to skip to main content
+-->
+<a href="#main-content" class="skip-link">Skip to main content</a>
+```

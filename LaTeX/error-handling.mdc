@@ -1,0 +1,56 @@
+# LaTeX Compilation Error Handling
+
+## Requirement
+
+All LaTeX documents SHALL compile without errors before being committed.
+
+LaTeX compilation errors SHALL be resolved before committing changes.
+
+LaTeX warnings SHALL be reviewed and addressed when they indicate potential issues.
+
+Projects SHALL include mechanisms to verify successful compilation, such as Makefile targets or CI/CD checks.
+
+## Implementation
+
+### Compilation Verification
+
+Projects SHALL include a Makefile target or script to verify successful compilation:
+
+```makefile
+# Check if LaTeX document compiles
+check: main.tex
+	pdflatex -interaction=nonstopmode main.tex
+	@if [ $$? -ne 0 ]; then \
+		echo "LaTeX compilation failed"; \
+		exit 1; \
+	fi
+```
+
+### Error Resolution
+
+When LaTeX compilation errors occur:
+- Errors SHALL be resolved before committing
+- Common error patterns SHALL be documented
+- Undefined references SHALL be resolved or explicitly handled
+- Missing packages SHALL be added to the document preamble
+
+### Warning Handling
+
+LaTeX warnings SHOULD be addressed when they indicate:
+- Undefined references or citations
+- Overfull or underfull boxes that affect document layout
+- Package compatibility issues
+- Deprecated commands or packages
+
+## Rationale
+
+Ensuring LaTeX documents compile successfully:
+- Prevents broken documents from being committed
+- Maintains document integrity across the project
+- Reduces debugging time for other developers
+- Enables automated document generation in CI/CD pipelines
+
+---
+description: LaTeX compilation error handling requirements
+globs: ["*.tex", "**/*.tex", "Makefile", "makefile"]
+alwaysApply: false

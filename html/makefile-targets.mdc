@@ -1,0 +1,119 @@
+# Makefile Targets for HTML
+
+## Requirement
+
+All HTML projects SHALL include a Makefile with targets for formatting and linting HTML files.
+
+## Required Targets
+
+The Makefile SHALL include the following targets:
+
+### `format`
+
+The `format` target SHALL format all HTML files using HTML Tidy.
+
+```makefile
+format:
+	tidy -i -m -w 80 --tidy-mark no --drop-empty-elements no \
+		--drop-proprietary-attributes no html/*.html
+```
+
+### `lint`
+
+The `lint` target SHALL validate all HTML files using the W3C Validator.
+
+```makefile
+lint:
+	@echo "Validating HTML files..."
+	@for file in html/*.html; do \
+		validator.w3.org/nu/?out=json "$$file" || exit 1; \
+	done
+```
+
+### `check`
+
+The `check` target SHALL run both formatting and linting.
+
+```makefile
+check: format lint
+	@echo "Formatting and linting complete"
+```
+
+## Tool Installation
+
+The Makefile SHOULD check for required tools and provide installation instructions:
+
+```makefile
+TIDY := $(shell command -v tidy 2> /dev/null)
+VALIDATOR := $(shell command -v vnu 2> /dev/null)
+
+check-tools:
+ifndef TIDY
+	@echo "HTML Tidy not found. Install with: apt-get install tidy"
+	@exit 1
+endif
+ifndef VALIDATOR
+	@echo "W3C Validator not found. Install with: npm install -g vnu-jar"
+	@exit 1
+endif
+```
+
+## Individual File Operations
+
+The Makefile MAY support formatting and linting individual files:
+
+```makefile
+format-file:
+	@read -p "Enter file path: " file; \
+	tidy -i -m -w 80 --tidy-mark no "$$file"
+
+lint-file:
+	@read -p "Enter file path: " file; \
+	validator.w3.org/nu/?out=json "$$file"
+```
+
+## Directory Support
+
+The Makefile SHALL support operations on:
+
+- All HTML files in the `html/` directory
+- HTML files in subdirectories (if applicable)
+- Individual files when specified
+
+## Error Handling
+
+The Makefile SHALL handle errors appropriately:
+
+- Formatting errors SHALL be reported
+- Validation errors SHALL cause the lint target to fail
+- Missing tools SHALL be detected and reported
+
+## Integration with Root Makefile
+
+If a root Makefile exists, the HTML Makefile targets MAY be integrated:
+
+```makefile
+# In root Makefile
+.PHONY: html-format html-lint html-check
+
+html-format:
+	$(MAKE) -C html format
+
+html-lint:
+	$(MAKE) -C html lint
+
+html-check:
+	$(MAKE) -C html check
+```
+
+## Tool Configuration
+
+The Makefile SHALL use consistent tool configuration:
+
+- HTML Tidy: 4-space indentation, HTML5 output
+- W3C Validator: JSON output format for parsing
+- Tool paths: Support both system-installed and package-manager-installed tools
+
+## Example Makefile
+
+See `html/Makefile` for a complete example implementation.

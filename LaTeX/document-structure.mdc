@@ -1,0 +1,48 @@
+# LaTeX Document Structure
+
+## Requirement
+
+All LaTeX documents SHALL follow a basic document structure with proper ordering of elements.
+
+LaTeX documents SHALL begin with a `\documentclass` declaration.
+
+Package imports SHALL appear after the `\documentclass` declaration and before the `\begin{document}` command.
+
+Document content SHALL be placed between `\begin{document}` and `\end{document}` commands.
+
+## Structure
+
+LaTeX documents SHALL follow this basic structure:
+
+```latex
+\documentclass[options]{class}
+
+% Package imports
+\usepackage{package1}
+\usepackage{package2}
+
+% Document metadata and settings
+\title{Document Title}
+\author{Author Name}
+
+\begin{document}
+
+\maketitle
+
+% Document content
+
+\end{document}
+```
+
+## Rationale
+
+Consistent document structure:
+- Improves readability and maintainability
+- Makes it easier for developers to navigate LaTeX documents
+- Follows LaTeX best practices and conventions
+- Reduces errors from misplaced commands
+
+---
+description: Basic LaTeX document structure requirements
+globs: ["*.tex", "**/*.tex"]
+alwaysApply: false

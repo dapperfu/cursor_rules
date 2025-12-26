@@ -1,0 +1,31 @@
+# TeX Live Distribution Requirement
+
+## Requirement
+
+All LaTeX projects SHALL use the TeX Live distribution.
+
+Projects SHALL specify TeX Live installation requirements in documentation or configuration files.
+
+## Rationale
+
+TeX Live provides:
+- A comprehensive and maintained LaTeX distribution
+- Consistent package availability across platforms
+- Standard tooling for LaTeX development
+- Regular updates and security patches
+
+Using TeX Live ensures that all developers working on a project have access to the same LaTeX packages and tools, reducing compatibility issues.
+
+## Implementation
+
+Projects SHOULD document TeX Live requirements in:
+- README files
+- Project documentation
+- Build system configuration
+
+Projects MAY specify minimum TeX Live version requirements when necessary for specific package dependencies.
+
+---
+description: Requirement to use TeX Live distribution for LaTeX projects
+globs: ["*.tex", "**/*.tex", "README.md", "README.rst", "*.md"]
+alwaysApply: false

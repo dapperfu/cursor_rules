@@ -1,0 +1,24 @@
+# Cursor Plans Question Requirements
+
+## Requirement
+
+All plans SHALL ask at least 10 questions, minimum, to ensure the plan is designed according to how the user would like it.
+
+These questions SHALL prompt users with edge cases they may not have thought about, helping to identify potential issues, clarify requirements, and ensure comprehensive planning.
+
+## Rationale
+
+Asking comprehensive questions ensures:
+- Requirements are fully understood before implementation
+- Edge cases are identified early
+- Potential issues are discovered during planning
+- User preferences are captured before work begins
+- Plans are more robust and less likely to need major revisions
+
+---
+description: Requirement that all CURSOR plans must ask at least 10 questions
+globs: []
+alwaysApply: true
+
+
+

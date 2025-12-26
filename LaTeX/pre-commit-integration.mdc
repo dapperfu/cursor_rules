@@ -1,0 +1,52 @@
+# LaTeX Pre-commit Integration
+
+## Requirement
+
+Projects SHOULD integrate LaTeX formatting checks into pre-commit hooks.
+
+Pre-commit hooks SHOULD verify that LaTeX files are properly formatted using tex-fmt before allowing commits.
+
+## Implementation
+
+### Pre-commit Hook Configuration
+
+Projects SHOULD include a pre-commit hook configuration that checks LaTeX formatting:
+
+```yaml
+# .pre-commit-config.yaml
+repos:
+  - repo: local
+    hooks:
+      - id: latex-format-check
+        name: Check LaTeX formatting
+        entry: tex-fmt --check
+        language: system
+        files: \.(tex|sty|cls|dtx|ins)$
+```
+
+Alternatively, projects MAY use a simple pre-commit script:
+
+```bash
+#!/bin/bash
+# .git/hooks/pre-commit
+tex-fmt --check *.tex **/*.tex *.sty **/*.sty *.cls **/*.cls *.dtx **/*.dtx *.ins **/*.ins
+if [ $? -ne 0 ]; then
+    echo "LaTeX files are not properly formatted. Run 'make format' to fix."
+    exit 1
+fi
+```
+
+## Rationale
+
+Pre-commit formatting checks:
+- Ensure consistent formatting across all commits
+- Catch formatting issues before they enter the repository
+- Reduce the need for formatting-only commits
+- Maintain code quality standards automatically
+
+While recommended, this is not a strict requirement as some projects may prefer different workflows or manual formatting checks.
+
+---
+description: Recommendation to integrate LaTeX formatting checks into pre-commit hooks
+globs: [".pre-commit-config.yaml", ".git/hooks/pre-commit", "*.tex", "**/*.tex"]
+alwaysApply: false

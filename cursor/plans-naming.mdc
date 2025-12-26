@@ -1,0 +1,22 @@
+# Cursor Plans File Naming
+
+## Requirement
+
+Plan file names SHALL be descriptive of what the plan is doing. The name should clearly indicate the purpose and scope of the plan.
+
+## Rationale
+
+Descriptive file names ensure:
+- Easy identification of plan purpose
+- Quick understanding of plan scope
+- Better organization when multiple plans exist
+- Clear communication of intent to team members
+- Easier navigation of planning history
+
+---
+description: Requirement that CURSOR plan file names must be descriptive
+globs: []
+alwaysApply: true
+
+
+

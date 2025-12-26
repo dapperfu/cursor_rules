@@ -1,0 +1,22 @@
+# Cursor Plans File Commit Requirement
+
+## Requirement
+
+All plan files SHALL be committed to git following the standard commit message format requirements (see `git/commit-format.mdc`).
+
+## Rationale
+
+Committing plan files ensures:
+- Plans are preserved in git history
+- Planning decisions are traceable
+- Audit trail exists for development approach
+- Historical context is available for future reference
+- Team members can review planning approaches
+
+---
+description: Requirement that all plan files must be committed to git with proper format
+globs: []
+alwaysApply: true
+
+
+

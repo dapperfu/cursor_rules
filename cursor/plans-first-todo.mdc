@@ -1,0 +1,21 @@
+# Cursor Plans First TODO Item
+
+## Requirement
+
+When creating a plan, saving the plan to the `plans/` folder SHALL be written as the first TODO item in the plan.
+
+## Rationale
+
+Making plan persistence the first TODO item ensures:
+- Plans are saved before execution begins
+- No planning work is lost if execution is interrupted
+- Plans are committed to git for traceability
+- Planning decisions are preserved for review
+
+---
+description: Requirement that saving plan to plans/ folder must be first TODO item
+globs: []
+alwaysApply: true
+
+
+

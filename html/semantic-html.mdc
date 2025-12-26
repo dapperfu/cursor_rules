@@ -1,0 +1,113 @@
+# Semantic HTML
+
+## Requirement
+
+All HTML files SHALL use semantic HTML5 elements instead of generic `<div>` and `<span>` elements where appropriate.
+
+## Semantic Elements
+
+HTML files SHALL prefer semantic elements over generic containers:
+
+- `<header>` instead of `<div class="header">`
+- `<nav>` instead of `<div class="nav">`
+- `<main>` instead of `<div class="main">`
+- `<article>` instead of `<div class="article">`
+- `<section>` instead of `<div class="section">`
+- `<aside>` instead of `<div class="sidebar">`
+- `<footer>` instead of `<div class="footer">`
+
+## Document Structure
+
+HTML files SHALL use semantic elements to structure the document:
+
+```html
+<body>
+  <header>
+    <nav>...</nav>
+  </header>
+  <main>
+    <article>
+      <section>...</section>
+    </article>
+    <aside>...</aside>
+  </main>
+  <footer>...</footer>
+</body>
+```
+
+## Lists
+
+HTML files SHALL use proper list elements instead of divs for lists:
+
+- `<ul>` for unordered lists
+- `<ol>` for ordered lists
+- `<dl>` for definition lists
+
+```html
+<ul>
+  <li>Item 1</li>
+  <li>Item 2</li>
+</ul>
+```
+
+SHALL NOT use:
+
+```html
+<div class="list">
+  <div class="item">Item 1</div>
+  <div class="item">Item 2</div>
+</div>
+```
+
+## Forms
+
+HTML files SHALL use proper form elements and structure:
+
+- Use `<form>` element to wrap form controls
+- Use `<fieldset>` to group related form controls
+- Use `<legend>` to provide a caption for fieldset
+- Use proper input types (`type="email"`, `type="tel"`, etc.)
+
+```html
+<form>
+  <fieldset>
+    <legend>Contact Information</legend>
+    <label for="email">Email:</label>
+    <input type="email" id="email" name="email">
+  </fieldset>
+</form>
+```
+
+## Headings
+
+HTML files SHALL use proper heading elements (`<h1>` through `<h6>`) for document structure:
+
+- Headings SHALL reflect the document outline
+- Headings SHALL NOT be used for styling purposes
+- Headings SHALL maintain proper hierarchy (see `html/accessibility.mdc`)
+
+## Text Semantics
+
+HTML files SHALL use semantic text elements:
+
+- `<strong>` for important text (not `<b>`)
+- `<em>` for emphasized text (not `<i>`)
+- `<mark>` for highlighted text
+- `<time>` for dates and times
+- `<address>` for contact information
+- `<code>` for code snippets
+- `<pre>` for preformatted text
+
+## When to Use Div and Span
+
+Generic `<div>` and `<span>` elements MAY be used when:
+
+- No semantic element exists for the purpose
+- The element is purely presentational and has no semantic meaning
+- The element is used as a container for styling purposes only
+
+However, semantic alternatives SHALL be preferred whenever possible.
+
+## Template Engines
+
+When using template engines, semantic HTML structure SHALL be maintained in the template files. Template syntax within semantic HTML is acceptable.

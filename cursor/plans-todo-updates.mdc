@@ -1,0 +1,22 @@
+# Cursor Plans TODO Updates
+
+## Requirement
+
+TODOs in CURSOR plans SHALL be updated to reflect completion status as work progresses. When a TODO item is completed, it SHALL be marked as completed in the plan file.
+
+## Rationale
+
+Updating TODOs in plans as they are completed ensures:
+- Design decisions and planning context are preserved
+- Requirements traceability is maintained (linking code to requirements)
+- Project evolution history is accurately documented
+- Clear status of what has been completed vs. what remains
+- Plans serve as living requirements documentation
+- Code changes can be traced back to their originating requirements
+
+---
+description: Requirement that TODOs in CURSOR plans must be updated as they are completed
+globs: []
+alwaysApply: true
+
+

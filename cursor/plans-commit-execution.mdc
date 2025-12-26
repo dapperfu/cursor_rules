@@ -1,0 +1,33 @@
+# Cursor Plans Commit Requirements During Execution
+
+## Requirement
+
+When executing a CURSOR plan:
+
+1. **After Every Created File**: There SHALL be a git commit after every created file to track the number of tokens used as well as having an atomic git commit per plan.
+
+2. **During Editing**: There SHALL be a git commit after each prompt with changes made, including the prompt in the commit message per git message rules to track the number of tokens used as well as having an atomic git commit per plan.
+
+3. **Commit Format**: All commits SHALL follow the commit message format specified in `git/commit-format.mdc` and include the prompt in the technical attribution section.
+
+4. **Atomicity**: All commits SHALL follow the atomic commit rule specified in `git/commit-atomicity.mdc`, with exceptions for tightly coupled files and TODO checkoffs as documented in that rule.
+
+## Rationale
+
+Atomic commits during plan execution enable:
+- Accurate token usage tracking per file and per prompt
+- Project cost estimation based on token consumption
+- Better git history with granular change tracking
+- Easier rollback if issues are discovered
+- Clear attribution of changes to specific prompts
+
+This rule implements the general atomic commit principle from `git/commit-atomicity.mdc` in the context of plan execution, with plan-specific requirements for token tracking.
+
+---
+description: Requirement for atomic git commits during CURSOR plan execution
+globs: []
+alwaysApply: true
+
+
+
+

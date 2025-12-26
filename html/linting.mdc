@@ -1,0 +1,53 @@
+# HTML Linting and Validation
+
+## Requirement
+
+All HTML files SHALL be validated using the W3C HTML Validator before commits.
+
+All HTML files SHALL pass W3C HTML5 validation without errors.
+
+## W3C Validator
+
+HTML files SHALL be validated using the W3C HTML Validator. The validator SHALL be run as part of the linting process defined in the Makefile.
+
+## Validation Requirements
+
+- All HTML files SHALL pass W3C validation with zero errors
+- Warnings SHOULD be addressed but are not blocking
+- Validation SHALL check for HTML5 compliance
+- Validation SHALL check for proper tag nesting and structure
+- Validation SHALL check for required attributes
+
+## Local Validation
+
+Developers SHALL run validation locally before committing changes. The `make lint` target SHALL run validation on all HTML files.
+
+## Validation Tools
+
+The W3C Validator can be used via:
+
+1. Command-line tool (if available)
+2. W3C Validator API
+3. Online validator at https://validator.w3.org/
+
+The Makefile SHALL integrate W3C validation into the linting process.
+
+## Template Files
+
+HTML files containing template engine syntax (Jinja2, Handlebars, etc.) MAY require special handling:
+
+- Template blocks MAY be temporarily replaced with valid HTML before validation
+- Validation SHOULD be performed on the rendered output when possible
+- Template syntax within otherwise valid HTML structure is acceptable
+
+## Pre-commit Validation
+
+HTML validation SHALL be integrated into the development workflow. The `make lint` target SHALL be run before commits.
+
+## Error Handling
+
+When validation errors are found:
+
+1. Errors SHALL be fixed before committing
+2. Validation errors SHALL NOT be ignored or suppressed
+3. If template syntax causes false positives, document the exception and validate the rendered output

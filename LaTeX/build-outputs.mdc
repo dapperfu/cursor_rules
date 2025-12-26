@@ -1,0 +1,51 @@
+# LaTeX Build Output Management
+
+## Requirement
+
+All LaTeX build artifacts SHALL be excluded from version control via .gitignore.
+
+The .gitignore file SHALL include patterns for common LaTeX build outputs.
+
+## Required .gitignore Patterns
+
+The .gitignore file SHALL include the following patterns for LaTeX build artifacts:
+
+```
+# LaTeX build artifacts
+*.aux
+*.log
+*.out
+*.toc
+*.bbl
+*.blg
+*.fdb_latexmk
+*.fls
+*.synctex.gz
+*.pdf
+*.dvi
+*.ps
+*.eps
+*.figlist
+*.makefile
+*.figlist
+*.auxlock
+```
+
+## Rationale
+
+Excluding LaTeX build artifacts from version control:
+- Prevents repository bloat from generated files
+- Avoids merge conflicts from build artifacts
+- Keeps the repository focused on source files
+- Follows standard practice for compiled languages
+
+LaTeX build artifacts are generated during compilation and should not be tracked in version control, similar to compiled binaries in other languages.
+
+## Implementation
+
+Projects SHALL ensure that .gitignore includes appropriate patterns for all LaTeX build outputs used in the project. Additional patterns MAY be added for project-specific build tools or workflows.
+
+---
+description: Requirement to exclude LaTeX build artifacts from version control
+globs: [".gitignore"]
+alwaysApply: true

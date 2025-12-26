@@ -1,0 +1,86 @@
+# StrictDoc Directory Structure for GitHub Pages
+
+## Requirement
+
+StrictDoc requirements source files SHALL be stored in the `reqs/` directory.
+
+Generated HTML files SHALL be stored in the `reqs/html/` directory for GitHub Pages publishing.
+
+## Directory Structure
+
+Requirements SHALL follow this directory structure:
+
+```
+reqs/
+├── html/              # Generated HTML output (for GitHub Pages)
+│   ├── srs/          # HTML output for System Requirements
+│   ├── sss/          # HTML output for Software Requirements
+│   ├── sdd/          # HTML output for Design Documents
+│   ├── irs/          # HTML output for Interface Requirements
+│   ├── tp/           # HTML output for Test Plans
+│   └── td/           # HTML output for Test Descriptions
+├── srs/              # System Requirements source files
+│   └── *.sdoc
+├── sss/              # Software Requirements source files
+│   └── *.sdoc
+├── sdd/              # Design Documents source files
+│   └── *.sdoc
+├── irs/              # Interface Requirements source files
+│   └── *.sdoc
+├── tp/               # Test Plans source files
+│   └── *.sdoc
+└── td/               # Test Descriptions source files
+    └── *.sdoc
+```
+
+## Source Files Location
+
+- All `.sdoc` source files SHALL be located in `reqs/` or its subdirectories
+- Source files SHALL be organized by document type in subdirectories (e.g., `reqs/srs/`, `reqs/sss/`)
+- Source files SHALL NOT be placed in the `reqs/html/` directory
+
+## HTML Output Location
+
+- Generated HTML files SHALL be stored in `reqs/html/` directory
+- HTML output SHALL mirror the source document structure within `reqs/html/`
+- The `reqs/html/` directory SHALL be configured as the StrictDoc HTML output directory
+
+## Source to HTML Mapping
+
+Each `.sdoc` source file SHALL have a corresponding HTML file in the `reqs/html/` directory.
+
+The HTML file SHALL be located in the same subdirectory structure as the source file.
+
+For example:
+- `reqs/srs/SRS001.sdoc` → `reqs/html/srs/SRS001.html`
+- `reqs/sss/SSS001.sdoc` → `reqs/html/sss/SSS001.html`
+
+## GitHub Pages Configuration
+
+- The `reqs/html/` directory SHALL be configured as the GitHub Pages source directory
+- HTML files in `reqs/html/` SHALL be published to GitHub Pages
+- StrictDoc SHALL be configured to output HTML to `reqs/html/` directory
+
+## StrictDoc Configuration
+
+StrictDoc SHALL be configured to output HTML to the `reqs/html/` directory.
+
+The HTML output directory SHALL be specified in StrictDoc configuration (e.g., `strictdoc.toml` or `strictdoc_config.py`).
+
+Example configuration:
+```toml
+[project]
+title = "Requirements"
+html_root = "reqs/html"
+```
+
+## HTML File Maintenance
+
+- HTML files SHALL be regenerated whenever source `.sdoc` files are modified
+- HTML files SHALL be committed to version control alongside source files
+- HTML files SHALL NOT be manually edited; all changes SHALL be made to source `.sdoc` files
+
+---
+description: StrictDoc directory structure requirement for reqs/ and reqs/html/ for GitHub Pages
+globs: ["reqs/**/*.sdoc", "reqs/html/**/*.html", "**/*.sdoc", "**/strictdoc.toml", "**/strictdoc_config.py"]
+alwaysApply: false

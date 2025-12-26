@@ -1,0 +1,21 @@
+# Cursor Plans Folder Location
+
+## Requirement
+
+All CURSOR plans SHALL be saved to a `plans/` folder located at the project root (same level as `.cursor/`, `src/`, etc.).
+
+## Rationale
+
+Centralizing plans in a dedicated folder at the project root ensures:
+- Easy discovery of planning documents
+- Consistent organization across projects
+- Clear separation from implementation code
+- Standard location for all team members
+
+---
+description: Requirement that all CURSOR plans must be saved to plans/ folder at project root
+globs: []
+alwaysApply: true
+
+
+

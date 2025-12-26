@@ -1,0 +1,34 @@
+# Top-Level Makefile Requirement
+
+## Requirement
+
+All projects SHALL have a top-level Makefile to orchestrate the project.
+
+## Required Targets
+
+The top-level Makefile SHALL provide the following standard targets:
+
+1. **`make clean`** - Clean the project (remove build artifacts, temporary files, etc.)
+
+2. **`make build`** - Build binary projects. For interpreted projects, this target may be a no-op or may perform setup/installation tasks.
+
+3. **`make run`** - Run the project. For binary projects, this SHALL execute the built binary. For interpreted projects, this SHALL execute the project using the appropriate interpreter.
+
+## Additional Targets
+
+The Makefile SHALL include other make targets as appropriate for the project type, such as:
+
+- `make test` - Run tests
+- `make install` - Install the project
+- `make lint` - Run linting tools
+- `make format` - Format code
+- `make help` - Display available targets and their descriptions
+
+## Rationale
+
+A standardized top-level Makefile provides a consistent interface for building, running, and maintaining projects across different languages and build systems. This enables developers to quickly understand and work with any project using familiar commands.
+
+---
+description: Requirement for all projects to have a top-level Makefile with standard targets
+globs: []
+alwaysApply: true

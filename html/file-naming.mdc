@@ -1,0 +1,76 @@
+# HTML File Naming
+
+## Requirement
+
+All HTML files SHALL follow consistent naming conventions.
+
+## File Extension
+
+All HTML files SHALL use the `.html` file extension.
+
+## Naming Convention
+
+All HTML files SHALL use lowercase letters and hyphens (kebab-case):
+
+- File names SHALL be lowercase
+- Words SHALL be separated by hyphens (`-`)
+- File names SHALL NOT contain spaces
+- File names SHALL NOT contain underscores (except when required by framework conventions)
+- File names SHALL NOT contain special characters except hyphens
+
+## Examples
+
+Valid file names:
+
+- `index.html`
+- `user-profile.html`
+- `contact-form.html`
+- `about-us.html`
+- `product-detail-page.html`
+
+Invalid file names:
+
+- `Index.html` (uppercase)
+- `user_profile.html` (underscore)
+- `contact form.html` (space)
+- `aboutUs.html` (camelCase)
+- `product@detail.html` (special character)
+
+## Directory Structure
+
+HTML files SHOULD be organized in a logical directory structure:
+
+- Root level: `index.html`
+- Pages: `pages/` or similar directory
+- Components: `components/` or `partials/` (for template systems)
+- Templates: `templates/` (for template engine files)
+
+## Template Files
+
+Template files (Jinja2, Handlebars, etc.) MAY use framework-specific extensions:
+
+- Jinja2: `.jinja` or `.html`
+- Handlebars: `.hbs` or `.handlebars`
+- Mustache: `.mustache`
+
+However, when possible, `.html` extension SHOULD be used for consistency.
+
+## Special Files
+
+Common HTML file names:
+
+- `index.html` - Default page for a directory
+- `404.html` - Error page (may be required by hosting)
+- `robots.txt` - Not HTML, but may be in HTML directory
+
+## File Name Length
+
+File names SHOULD be descriptive but concise:
+
+- Avoid overly long file names
+- Use abbreviations when commonly understood
+- Balance descriptiveness with readability
+
+## Case Sensitivity
+
+File names SHALL be lowercase to avoid case-sensitivity issues across different operating systems and web servers.

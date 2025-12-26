@@ -1,0 +1,23 @@
+# Cursor Plans Git Tracking
+
+## Requirement
+
+The `plans/` folder SHALL be tracked in git. It SHALL NOT be added to `.gitignore`.
+
+## Rationale
+
+Tracking plans in git ensures:
+- Full traceability of planning decisions
+- Audit trail of development approach
+- Historical record of project evolution
+- Ability to review past planning approaches
+- Recovery of planning context
+- Team members can review planning decisions
+
+---
+description: Requirement that plans/ folder must be tracked in git and not ignored
+globs: []
+alwaysApply: true
+
+
+

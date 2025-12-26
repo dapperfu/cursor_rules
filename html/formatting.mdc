@@ -1,0 +1,62 @@
+# HTML Formatting
+
+## Requirement
+
+All HTML files SHALL be formatted using HTML Tidy with consistent indentation and style.
+
+## Indentation
+
+All HTML files SHALL use 4 spaces for indentation. Tabs SHALL NOT be used for indentation.
+
+## HTML Tidy Configuration
+
+HTML files SHALL be formatted using HTML Tidy with the following configuration:
+
+- Indentation: 4 spaces
+- Output format: HTML5
+- Quote style: Consistent (either single or double quotes throughout)
+- Wrap: 80 characters (recommended)
+- Drop empty elements: No
+- Drop proprietary attributes: No
+- Tidy mark: No
+
+## Quote Style
+
+HTML files SHALL use consistent quote style throughout. Either single quotes (`'`) or double quotes (`"`) may be used, but all attributes in a file SHALL use the same style.
+
+Double quotes are recommended for HTML attributes:
+
+```html
+<div class="container" id="main-content">
+```
+
+## Tag Closing and Nesting
+
+All HTML tags SHALL be properly closed and nested. Self-closing tags SHALL use the HTML5 syntax:
+
+```html
+<img src="image.jpg" alt="Description">
+<br>
+<hr>
+<input type="text" name="username">
+```
+
+Void elements (img, br, hr, input, etc.) SHALL NOT have closing tags.
+
+## Trailing Newline
+
+All HTML files SHALL end with a trailing newline character.
+
+## Formatting Command
+
+HTML files SHALL be formatted using HTML Tidy. The formatting target in the Makefile SHALL use HTML Tidy with appropriate configuration.
+
+Example HTML Tidy command:
+
+```bash
+tidy -i -m -w 80 --tidy-mark no --drop-empty-elements no --drop-proprietary-attributes no file.html
+```
+
+## Template Engines
+
+When formatting HTML files containing template syntax, HTML Tidy SHOULD be configured to preserve template blocks, or template blocks SHOULD be temporarily replaced before formatting and restored after.

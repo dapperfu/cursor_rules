@@ -1,0 +1,59 @@
+# LaTeX Makefile Targets
+
+## Requirement
+
+All LaTeX projects SHALL include Makefile targets for common LaTeX operations.
+
+## Required Targets
+
+The Makefile SHALL provide the following standard targets:
+
+1. **`make format`** - Format all LaTeX files using tex-fmt
+
+2. **`make fmt-check`** - Check if LaTeX files are properly formatted (for CI)
+
+3. **`make build`** - Compile LaTeX documents to PDF
+
+4. **`make clean`** - Remove LaTeX build artifacts (.aux, .log, .out, .toc, .bbl, .blg, etc.)
+
+## Implementation
+
+### Formatting Targets
+
+```makefile
+# Format all LaTeX code
+format:
+	tex-fmt *.tex **/*.tex *.sty **/*.sty *.cls **/*.cls *.dtx **/*.dtx *.ins **/*.ins
+
+# Check if code is formatted (for CI)
+fmt-check:
+	tex-fmt --check *.tex **/*.tex *.sty **/*.sty *.cls **/*.cls *.dtx **/*.dtx *.ins **/*.ins
+```
+
+### Build Targets
+
+```makefile
+# Build LaTeX document to PDF
+build: main.tex
+	pdflatex main.tex
+	bibtex main || true
+	pdflatex main.tex
+	pdflatex main.tex
+
+# Clean build artifacts
+clean:
+	rm -f *.aux *.log *.out *.toc *.bbl *.blg *.fdb_latexmk *.fls *.synctex.gz
+```
+
+The `format` target SHALL format all LaTeX code in the project. The `fmt-check` target SHALL verify that code is properly formatted without making changes, suitable for use in CI/CD pipelines.
+
+The `build` target SHALL compile LaTeX documents to PDF, including bibliography processing when necessary. The `clean` target SHALL remove all LaTeX build artifacts.
+
+## Rationale
+
+Standardized Makefile targets provide a consistent interface for formatting, building, and maintaining LaTeX projects. This enables developers to quickly understand and work with any LaTeX project using familiar commands.
+
+---
+description: Requirement for LaTeX projects to have Makefile targets for formatting, building, and cleaning
+globs: ["Makefile", "makefile", "*.tex", "**/*.tex"]
+alwaysApply: false

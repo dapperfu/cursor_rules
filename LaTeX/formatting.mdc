@@ -1,0 +1,51 @@
+# LaTeX Formatting
+
+## Requirement
+
+All LaTeX files SHALL be formatted using tex-fmt.
+
+LaTeX files SHALL be formatted using tex-fmt before being committed. Projects SHALL include Makefile targets for formatting operations.
+
+## Rationale
+
+Consistent LaTeX formatting:
+- Improves code readability across the project
+- Reduces merge conflicts from formatting differences
+- Makes code reviews focus on content rather than style
+- Enables automated formatting checks in CI/CD pipelines
+
+tex-fmt provides LaTeX-specific formatting rules that handle the unique syntax and structure of LaTeX documents.
+
+## Implementation
+
+### Makefile Targets
+
+Projects SHALL include the following Makefile targets for formatting:
+
+```makefile
+# Format all LaTeX code
+format:
+	tex-fmt *.tex **/*.tex *.sty **/*.sty *.cls **/*.cls *.dtx **/*.dtx *.ins **/*.ins
+
+# Check if code is formatted (for CI)
+fmt-check:
+	tex-fmt --check *.tex **/*.tex *.sty **/*.sty *.cls **/*.cls *.dtx **/*.dtx *.ins **/*.ins
+```
+
+The `format` target SHALL format all LaTeX code in the project. The `fmt-check` target SHALL verify that code is properly formatted without making changes, suitable for use in CI/CD pipelines.
+
+### Pre-commit Integration
+
+Projects SHOULD integrate formatting checks into pre-commit hooks to ensure all code is formatted before commits.
+
+## Exceptions
+
+This requirement does NOT apply to:
+- Bibliography files (.bib)
+- Generated files that are automatically created
+- Third-party package files in distribution directories
+
+---
+description: LaTeX formatting requirements using tex-fmt
+globs: ["*.tex", "**/*.tex", "*.sty", "**/*.sty", "*.cls", "**/*.cls", "*.dtx", "**/*.dtx", "*.ins", "**/*.ins"]
+alwaysApply: false

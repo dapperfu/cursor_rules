@@ -1,0 +1,59 @@
+# StrictDoc MCP Integration
+
+## Requirement
+
+SHALL use strictdoc-mcp (Model Context Protocol server) when available for StrictDoc requirements management operations.
+
+SHALL prefer strictdoc-mcp tools over direct StrictDoc commands when the MCP server is configured and available.
+
+## MCP Operations
+
+When strictdoc-mcp is available, SHALL use MCP tools for the following operations:
+
+### Listing Requirements
+
+- SHALL use `list_requirement_kinds` to discover available requirement kinds
+- SHALL use `list_requirements(kind)` to list requirements of a specific kind
+- SHALL use HRIDs (Human-Readable IDs) returned by MCP tools for requirement references
+
+### Fetching Requirement Details
+
+- SHALL use `get_requirement(hrid)` to fetch detailed requirement information
+- SHALL use MCP-provided requirement data instead of parsing `.sdoc` files directly when possible
+
+### Creating Requirements
+
+- SHALL use `create_requirement_kind` to create new requirement kinds when needed
+- SHALL use `create_requirement` to create new requirements via MCP when available
+
+### Hierarchy Traversal
+
+- SHALL use `get_children(hrid)` to retrieve child requirements
+- SHALL use `get_parents(hrid)` to retrieve parent requirements
+- SHALL use `get_ancestors(hrid)` to retrieve ancestor requirements
+- SHALL use `get_descendants(hrid)` to retrieve descendant requirements
+- SHALL use MCP hierarchy tools instead of manual file parsing when available
+
+### Link Drift Review
+
+- SHALL use `review` to identify suspect child→parent links (fingerprint mismatches)
+- SHALL use `review_requirement` to accept links if the child still satisfies the parent
+- SHALL use MCP link drift tools to maintain requirement traceability
+
+## Availability Check
+
+- SHALL check for strictdoc-mcp availability before performing requirements operations
+- SHALL fall back to direct StrictDoc commands when strictdoc-mcp is not available
+- SHALL use MCP tools when available to ensure consistency and proper requirement management
+
+## Workflow Integration
+
+- SHALL start with `list_requirement_kinds` to understand the requirements structure
+- SHALL use HRIDs from MCP tools for all requirement references
+- SHALL traverse requirement hierarchies using MCP tools rather than file system navigation
+- SHALL perform link drift reviews using MCP tools before committing requirement changes
+
+---
+description: StrictDoc MCP integration requirement for requirements management operations
+globs: ["requirements/**/*.sdoc", "**/*.sdoc", "requirements/**/*", "**/strictdoc.toml", "**/strictdoc_config.py"]
+alwaysApply: false

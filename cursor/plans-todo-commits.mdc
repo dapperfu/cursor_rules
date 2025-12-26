@@ -1,0 +1,33 @@
+# Cursor Plans TODO Commit Traceability
+
+## Requirement
+
+TODO checkoffs in CURSOR plan files SHALL be committed together with the file changes that complete those TODOs. This enables traceability: you can see when a TODO was checked off and which code changes completed it in the same commit.
+
+This is an exception to the general atomic commit rule specified in `git/commit-atomicity.mdc` (Exception 2: TODO Checkoff Traceability).
+
+When 2 files are tightly coupled and must change together atomically (per Exception 1 in `git/commit-atomicity.mdc`), the TODO checkoff may be committed together with these 2 files if the TODO is completed by the changes in those files, or separately if it completes a different TODO.
+
+## Rationale
+
+Committing TODO checkoffs together with the code changes that complete them ensures:
+- Traceability between requirements (plans) and implementation (code)
+- Clear git history showing when each TODO was completed and by which changes
+- Ability to trace code changes back to their originating requirements
+- Better understanding of project evolution through linked commits
+- Requirements documentation remains synchronized with code changes
+
+## Integration
+
+This rule complements:
+- `git/commit-atomicity.mdc` - general atomic commit rule (this is Exception 2)
+- `cursor/plans-todo-updates.mdc` - ensures TODOs are updated as work progresses
+- `cursor/plans-commit-execution.mdc` - ensures atomic commits during plan execution
+- `git/commit-format.mdc` - ensures proper commit message format
+
+---
+description: Requirement that TODO checkoffs in CURSOR plans must be committed together with the file changes that complete them
+globs: []
+alwaysApply: true
+
+

@@ -1,0 +1,92 @@
+# HTML Performance
+
+## Requirement
+
+All HTML files SHALL be optimized for performance and SHALL follow performance best practices.
+
+## Script Loading
+
+All `<script>` elements SHALL include appropriate loading attributes:
+
+- `async` for scripts that are independent and can load in parallel
+- `defer` for scripts that must execute in order but can be deferred
+
+```html
+<script src="analytics.js" async></script>
+<script src="main.js" defer></script>
+```
+
+Scripts that block rendering SHALL be avoided. Critical scripts MAY be placed at the end of the body.
+
+## Image Loading
+
+Images below the fold SHALL use lazy loading:
+
+```html
+<img src="image.jpg" alt="Description" loading="lazy">
+```
+
+Above-the-fold images SHALL NOT use lazy loading.
+
+Images SHALL include appropriate attributes for performance:
+
+- `width` and `height` attributes to prevent layout shift
+- Appropriate image formats (WebP, AVIF when supported)
+- Responsive images using `<picture>` or `srcset` when appropriate
+
+## Inline Resources
+
+Inline resources SHALL be minimized. See `html/no-inline-code.mdc` for requirements regarding inline CSS and JavaScript.
+
+## Asset Loading Order
+
+HTML files SHALL optimize asset loading order:
+
+- Critical CSS SHOULD be inlined or loaded early in the head
+- Non-critical CSS SHOULD be loaded asynchronously or deferred
+- JavaScript SHOULD be loaded at the end of the body or with async/defer
+- Fonts SHOULD be preloaded if critical
+
+## Resource Hints
+
+HTML files SHOULD use resource hints where appropriate:
+
+- `<link rel="preload">` for critical resources
+- `<link rel="prefetch">` for resources likely to be needed
+- `<link rel="dns-prefetch">` for external domains
+- `<link rel="preconnect">` for external resources
+
+Example:
+
+```html
+<link rel="preload" href="font.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="prefetch" href="next-page.html">
+<link rel="dns-prefetch" href="https://cdn.example.com">
+```
+
+## Minimize HTTP Requests
+
+HTML files SHALL minimize the number of HTTP requests:
+
+- Combine CSS files when possible
+- Combine JavaScript files when possible
+- Use CSS sprites for icons when appropriate
+- Minimize external dependencies
+
+## Document Size
+
+HTML files SHALL be kept as small as possible:
+
+- Remove unnecessary whitespace (handled by formatter)
+- Remove comments in production (if minification is used)
+- Avoid deeply nested structures when possible
+
+## Third-Party Scripts
+
+Third-party scripts SHALL be loaded asynchronously when possible:
+
+```html
+<script src="https://example.com/widget.js" async></script>
+```
+
+Third-party scripts that block rendering SHALL be avoided or loaded with appropriate attributes.

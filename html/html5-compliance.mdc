@@ -1,0 +1,68 @@
+# HTML5 Compliance
+
+## Requirement
+
+All HTML files SHALL be HTML5 compliant and SHALL include the HTML5 DOCTYPE declaration.
+
+All HTML files SHALL include a proper charset meta tag in the document head.
+
+## DOCTYPE Declaration
+
+All HTML files SHALL begin with the HTML5 DOCTYPE declaration:
+
+```html
+<!DOCTYPE html>
+```
+
+HTML files SHALL NOT use legacy DOCTYPE declarations (HTML 4.01, XHTML 1.0, etc.).
+
+## Charset Meta Tag
+
+All HTML files SHALL include the charset meta tag as the first element in the `<head>` section:
+
+```html
+<head>
+  <meta charset="UTF-8">
+  <!-- other head elements -->
+</head>
+```
+
+The charset meta tag SHALL be placed before any other content in the head, including the title element.
+
+## Viewport Meta Tag
+
+HTML files intended for responsive design SHOULD include a viewport meta tag:
+
+```html
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+```
+
+This is recommended for all HTML files that will be viewed on mobile devices.
+
+## HTML5 Semantic Elements
+
+HTML files SHALL use HTML5 semantic elements where appropriate instead of generic `<div>` elements:
+
+- `<header>` for page headers
+- `<nav>` for navigation sections
+- `<main>` for main content
+- `<article>` for independent content
+- `<section>` for thematic grouping
+- `<aside>` for sidebar content
+- `<footer>` for page footers
+
+## Language Attribute
+
+The root `<html>` element SHOULD include a `lang` attribute:
+
+```html
+<html lang="en">
+```
+
+## Reference
+
+All HTML files SHALL conform to the W3C HTML5 specification: https://www.w3.org/TR/html5/
+
+## Template Engines
+
+When using template engines (Jinja2, Handlebars, etc.), the rendered output SHALL be HTML5 compliant. Template syntax within HTML5-compliant structure is acceptable.
