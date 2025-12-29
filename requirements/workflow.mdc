@@ -1,3 +1,9 @@
+---
+description: Requirements management workflow commands
+globs: ["reqs/**/*.yml", "requirements/**/*.md", "reqs/**/*.yaml"]
+alwaysApply: false
+---
+
 # Requirements Management Workflow
 
 ## Requirement
@@ -35,8 +41,3 @@ When adding requirements, SHALL follow this process:
 - SHALL export doorstop documents to formats compatible with StrictDoc when needed
 - SHALL maintain parallel documentation where necessary
 - SHALL follow StrictDoc grammar rules when generating StrictDoc files from doorstop exports
-
----
-description: Requirements management workflow commands
-globs: ["reqs/**/*.yml", "requirements/**/*.md", "reqs/**/*.yaml"]
-alwaysApply: false
