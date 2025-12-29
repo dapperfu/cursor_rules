@@ -1,3 +1,9 @@
+---
+description: LaTeX compilation error handling requirements
+globs: ["*.tex", "**/*.tex", "Makefile", "makefile"]
+alwaysApply: false
+---
+
 # LaTeX Compilation Error Handling
 
 ## Requirement
@@ -49,8 +55,3 @@ Ensuring LaTeX documents compile successfully:
 - Maintains document integrity across the project
 - Reduces debugging time for other developers
 - Enables automated document generation in CI/CD pipelines
-
----
-description: LaTeX compilation error handling requirements
-globs: ["*.tex", "**/*.tex", "Makefile", "makefile"]
-alwaysApply: false
