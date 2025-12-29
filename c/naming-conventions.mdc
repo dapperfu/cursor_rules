@@ -1,3 +1,9 @@
+---
+description: Linux kernel style naming conventions for C code
+globs: ["*.c", "**/*.c", "*.h", "**/*.h"]
+alwaysApply: false
+---
+
 # Linux Kernel Style Naming Conventions
 
 ## Requirement
@@ -15,8 +21,3 @@ Function and variable names SHALL use module prefixes to avoid namespace collisi
 Names SHALL be descriptive and avoid abbreviations unless they are widely understood.
 
 Single-letter variable names SHALL only be used for loop counters or mathematical variables where the meaning is clear from context.
-
----
-description: Linux kernel style naming conventions for C code
-globs: ["*.c", "**/*.c", "*.h", "**/*.h"]
-alwaysApply: false
