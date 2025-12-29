@@ -1,3 +1,9 @@
+---
+description: Requirement that CURSOR plan file names must be descriptive
+globs: []
+alwaysApply: true
+---
+
 # Cursor Plans File Naming
 
 ## Requirement
@@ -12,11 +18,5 @@ Descriptive file names ensure:
 - Better organization when multiple plans exist
 - Clear communication of intent to team members
 - Easier navigation of planning history
-
----
-description: Requirement that CURSOR plan file names must be descriptive
-globs: []
-alwaysApply: true
-
 
 
