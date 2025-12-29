@@ -1,3 +1,9 @@
+---
+description: Python virtual environment naming convention
+globs: ["*.py", "**/*.py"]
+alwaysApply: false
+---
+
 # Python Virtual Environment Naming
 
 ## Requirement
@@ -9,8 +15,3 @@ This makes them unique among multiple venv environment projects.
 So given a project `/project/foo` the venv in that project SHALL be `venv_foo`.
 
 This naming convention SHALL be used to identify which environment is active in bash.
-
----
-description: Python virtual environment naming convention
-globs: ["*.py", "**/*.py"]
-alwaysApply: false
