@@ -1,3 +1,9 @@
+---
+description: Requirement to avoid inline CSS and JavaScript in HTML files
+globs: ["*.html", "**/*.html"]
+alwaysApply: false
+---
+
 # No Inline CSS and JavaScript
 
 ## Requirement
