@@ -1,3 +1,9 @@
+---
+description: Authentication handling for endpoint tests
+globs: ["**/*test*.py", "**/api/**/*.py", "**/tests/**/*.py"]
+alwaysApply: false
+---
+
 # Endpoint Authentication Handling
 
 ## Requirement
@@ -11,8 +17,3 @@ SHALL NOT proceed with unauthenticated requests to live endpoints.
 All test suites SHALL attempt real authentication first.
 
 Authentication failures SHALL trigger graceful test exit with clear error message.
-
----
-description: Authentication handling for endpoint tests
-globs: ["**/*test*.py", "**/api/**/*.py", "**/tests/**/*.py"]
-alwaysApply: false
