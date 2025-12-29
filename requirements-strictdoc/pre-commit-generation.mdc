@@ -1,3 +1,9 @@
+---
+description: Pre-commit hook requirement for automatic StrictDoc HTML generation
+globs: [".git/hooks/pre-commit", "requirements/**/*.sdoc", "**/*.sdoc"]
+alwaysApply: false
+---
+
 # StrictDoc Pre-Commit HTML Generation
 
 ## Requirement
@@ -35,8 +41,3 @@ If HTML generation fails, the commit SHALL be blocked until the issue is resolve
 While pre-commit hooks provide automatic generation, developers MAY manually run `make strictdoc-generate` at any time.
 
 Manual generation SHALL use the same make target as the pre-commit hook.
-
----
-description: Pre-commit hook requirement for automatic StrictDoc HTML generation
-globs: [".git/hooks/pre-commit", "requirements/**/*.sdoc", "**/*.sdoc"]
-alwaysApply: false
