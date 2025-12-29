@@ -1,3 +1,9 @@
+---
+description: Requirements document hierarchy structure
+globs: ["reqs/**/*.yml", "requirements/**/*.md", "reqs/**/*.yaml"]
+alwaysApply: false
+---
+
 # Requirements Document Hierarchy
 
 ## Requirement
@@ -34,8 +40,3 @@ Requirement IDs SHALL follow these formats:
 - System Requirements: `SYS001`, `SYS002`, etc.
 - Software Requirements: `SRS001`, `SRS002`, etc.
 - Test Cases: `TEST001`, `TEST002`, etc.
-
----
-description: Requirements document hierarchy structure
-globs: ["reqs/**/*.yml", "requirements/**/*.md", "reqs/**/*.yaml"]
-alwaysApply: false
