@@ -1,3 +1,9 @@
+---
+description: C++ naming convention requirements (PascalCase for types, snake_case for functions/variables)
+globs: ["*.cpp", "*.hpp", "*.h", "*.cc", "*.cxx", "*.hxx"]
+alwaysApply: false
+---
+
 # C++ Naming Conventions
 
 ## Requirement
@@ -8,8 +14,3 @@ C++ code SHALL follow consistent naming conventions:
 - Functions and variables SHALL use snake_case (e.g., `get_value()`, `user_name`)
 
 Naming conventions SHALL be applied consistently throughout the codebase.
-
----
-description: C++ naming convention requirements (PascalCase for types, snake_case for functions/variables)
-globs: ["*.cpp", "*.hpp", "*.h", "*.cc", "*.cxx", "*.hxx"]
-alwaysApply: false
