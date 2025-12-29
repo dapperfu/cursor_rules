@@ -1,3 +1,9 @@
+---
+description: HTML accessibility requirements
+globs: ["*.html", "**/*.html"]
+alwaysApply: false
+---
+
 # HTML Accessibility
 
 ## Requirement
