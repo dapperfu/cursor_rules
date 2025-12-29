@@ -1,3 +1,9 @@
+---
+description: Header file include guard requirements
+globs: ["*.h", "**/*.h"]
+alwaysApply: false
+---
+
 # Header File Guards
 
 ## Requirement
@@ -11,8 +17,3 @@ Header files SHALL also include traditional `#ifndef/#define/#endif` guards as a
 Include guard names SHALL follow a consistent naming convention, typically based on the file path (e.g., `PROJECT_MODULE_FILENAME_H`).
 
 Include guards SHALL be placed immediately after any file-level comments and before any includes or other preprocessor directives.
-
----
-description: Header file include guard requirements
-globs: ["*.h", "**/*.h"]
-alwaysApply: false
