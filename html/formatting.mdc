@@ -1,3 +1,9 @@
+---
+description: HTML formatting requirements using HTML Tidy
+globs: ["*.html", "**/*.html"]
+alwaysApply: false
+---
+
 # HTML Formatting
 
 ## Requirement
