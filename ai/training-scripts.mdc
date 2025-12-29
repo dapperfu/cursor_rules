@@ -1,3 +1,9 @@
+---
+description: Machine learning training scripts and shell wrappers requirement
+globs: ["*.py", "*.sh", "**/*.py", "**/*.sh"]
+alwaysApply: false
+---
+
 # Training Scripts
 
 ## Requirement
@@ -58,8 +64,3 @@ Shell wrapper scripts SHALL:
 train_model.py          # Main training script with --help
 train_model.sh          # Shell wrapper with defaults
 ```
-
----
-description: Machine learning training scripts and shell wrappers requirement
-globs: ["*.py", "*.sh", "**/*.py", "**/*.sh"]
-alwaysApply: false
