@@ -1,3 +1,9 @@
+---
+description: Makefile targets for HTML formatting, linting, and validation
+globs: ["*.html", "**/*.html", "Makefile", "makefile"]
+alwaysApply: false
+---
+
 # Makefile Targets for HTML
 
 ## Requirement
