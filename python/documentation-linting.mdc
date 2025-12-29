@@ -1,10 +1,11 @@
+---
+description: Documentation linting requirement for correctness
+globs: ["*.py", "**/*.py"]
+alwaysApply: false
+---
+
 # Python Documentation Linting
 
 ## Requirement
 
 Documentation SHALL be linted for correctness.
-
----
-description: Documentation linting requirement for correctness
-globs: ["*.py", "**/*.py"]
-alwaysApply: false
