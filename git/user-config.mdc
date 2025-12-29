@@ -1,3 +1,9 @@
+---
+description: Git user configuration for automated commits with model name specification
+globs: []
+alwaysApply: true
+---
+
 # Git User Configuration
 
 ## Requirement
@@ -101,8 +107,3 @@ git config user.email "%USERNAME%@%COMPUTERNAME%.local"
 ```powershell
 git config user.email "$env:USERNAME@$env:COMPUTERNAME.local"
 ```
-
----
-description: Git user configuration for automated commits with model name specification
-globs: []
-alwaysApply: true
