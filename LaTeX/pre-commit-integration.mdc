@@ -1,3 +1,9 @@
+---
+description: Recommendation to integrate LaTeX formatting checks into pre-commit hooks
+globs: [".pre-commit-config.yaml", ".git/hooks/pre-commit", "*.tex", "**/*.tex"]
+alwaysApply: false
+---
+
 # LaTeX Pre-commit Integration
 
 ## Requirement
@@ -45,8 +51,3 @@ Pre-commit formatting checks:
 - Maintain code quality standards automatically
 
 While recommended, this is not a strict requirement as some projects may prefer different workflows or manual formatting checks.
-
----
-description: Recommendation to integrate LaTeX formatting checks into pre-commit hooks
-globs: [".pre-commit-config.yaml", ".git/hooks/pre-commit", "*.tex", "**/*.tex"]
-alwaysApply: false
