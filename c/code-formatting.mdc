@@ -1,3 +1,9 @@
+---
+description: clang-format code formatting requirements for C code
+globs: ["*.c", "**/*.c", "*.h", "**/*.h", ".clang-format", "**/.clang-format"]
+alwaysApply: false
+---
+
 # clang-format Code Formatting
 
 ## Requirement
@@ -15,8 +21,3 @@ The Makefile `format` target SHALL use clang-format to check or apply formatting
 Formatting SHALL be checked in pre-commit hooks or CI/CD pipelines.
 
 Code formatting SHALL be consistent across all C files in the project.
-
----
-description: clang-format code formatting requirements for C code
-globs: ["*.c", "**/*.c", "*.h", "**/*.h", ".clang-format", "**/.clang-format"]
-alwaysApply: false
