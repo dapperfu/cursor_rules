@@ -1,3 +1,9 @@
+---
+description: HTML5 compliance and semantic element requirements
+globs: ["*.html", "**/*.html"]
+alwaysApply: false
+---
+
 # HTML5 Compliance
 
 ## Requirement
