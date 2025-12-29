@@ -1,3 +1,9 @@
+---
+description: Upstream synchronization workflow before commits
+globs: []
+alwaysApply: true
+---
+
 # Git Upstream Sync
 
 ## Requirement
@@ -14,8 +20,3 @@ The upstream sync workflow SHALL follow these steps:
 4. Resolve any merge conflicts automatically when possible
 5. Then proceed with commit
 6. After commit, push if remote exists
-
----
-description: Upstream synchronization workflow before commits
-globs: []
-alwaysApply: true
