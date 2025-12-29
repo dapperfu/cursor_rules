@@ -1,3 +1,9 @@
+---
+description: Return code error handling patterns for C code
+globs: ["*.c", "**/*.c", "*.h", "**/*.h"]
+alwaysApply: false
+---
+
 # Return Code Error Handling
 
 ## Requirement
@@ -17,8 +23,3 @@ Callers SHALL check return values from functions that can fail.
 Error conditions SHALL be propagated to callers unless they can be handled locally.
 
 When a function encounters an error, it SHALL clean up any resources it has allocated before returning.
-
----
-description: Return code error handling patterns for C code
-globs: ["*.c", "**/*.c", "*.h", "**/*.h"]
-alwaysApply: false
