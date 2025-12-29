@@ -1,3 +1,9 @@
+---
+description: C++ standard version requirement (latest available)
+globs: ["*.cpp", "*.hpp", "*.h", "*.cc", "*.cxx", "*.hxx", "CMakeLists.txt", "**/CMakeLists.txt"]
+alwaysApply: false
+---
+
 # C++ Standard Version
 
 ## Requirement
@@ -7,8 +13,3 @@ All C++ projects SHALL use the latest available C++ standard version supported b
 Compiler flags SHALL explicitly specify the C++ standard version (e.g., `-std=c++23`, `-std=c++20`).
 
 CMake projects SHALL set `CMAKE_CXX_STANDARD` to the latest available standard version.
-
----
-description: C++ standard version requirement (latest available)
-globs: ["*.cpp", "*.hpp", "*.h", "*.cc", "*.cxx", "*.hxx", "CMakeLists.txt", "**/CMakeLists.txt"]
-alwaysApply: false
