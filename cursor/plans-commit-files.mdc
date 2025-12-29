@@ -1,3 +1,9 @@
+---
+description: Requirement that all plan files must be committed to git with proper format
+globs: []
+alwaysApply: true
+---
+
 # Cursor Plans File Commit Requirement
 
 ## Requirement
@@ -12,11 +18,5 @@ Committing plan files ensures:
 - Audit trail exists for development approach
 - Historical context is available for future reference
 - Team members can review planning approaches
-
----
-description: Requirement that all plan files must be committed to git with proper format
-globs: []
-alwaysApply: true
-
 
 
