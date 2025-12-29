@@ -1,3 +1,9 @@
+---
+description: Prohibition of home directory deletion
+globs: []
+alwaysApply: true
+---
+
 # Home Directory Deletion Prohibition
 
 ## Requirement
@@ -5,8 +11,3 @@
 NEVER under any circumstances SHALL you run `rm -rf` on `~/`.
 
 This command SHALL NOT be used as it is extremely dangerous and can destroy the entire home directory.
-
----
-description: Prohibition of home directory deletion
-globs: []
-alwaysApply: true
