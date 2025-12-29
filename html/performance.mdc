@@ -1,3 +1,9 @@
+---
+description: HTML performance optimization requirements
+globs: ["*.html", "**/*.html"]
+alwaysApply: false
+---
+
 # HTML Performance
 
 ## Requirement
