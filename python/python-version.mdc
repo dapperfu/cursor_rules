@@ -1,3 +1,9 @@
+---
+description: Python 3.10+ target and idiomatic Python 2025 practices
+globs: ["*.py", "**/*.py", "pyproject.toml"]
+alwaysApply: false
+---
+
 # Python Version and Modern Practices
 
 ## Requirement
@@ -15,8 +21,3 @@ All Python code SHALL use the most idiomatic Python practices for 2025, includin
 - Modern exception handling patterns
 - Type guards and type narrowing
 - Generic types and type variables for reusable code
-
----
-description: Python 3.10+ target and idiomatic Python 2025 practices
-globs: ["*.py", "**/*.py", "pyproject.toml"]
-alwaysApply: false
