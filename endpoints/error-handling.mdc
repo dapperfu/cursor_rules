@@ -1,3 +1,9 @@
+---
+description: Error handling approach for endpoint interactions
+globs: ["**/*test*.py", "**/api/**/*.py", "**/tests/**/*.py"]
+alwaysApply: false
+---
+
 # Endpoint Error Handling
 
 ## Requirement
@@ -8,8 +14,3 @@ Error handling for endpoints SHALL follow these patterns:
 - Authentication failure → Short circuit tests with clear error message
 - Network failures → Retry with exponential backoff
 - API errors → Log detailed error information for debugging
-
----
-description: Error handling approach for endpoint interactions
-globs: ["**/*test*.py", "**/api/**/*.py", "**/tests/**/*.py"]
-alwaysApply: false
