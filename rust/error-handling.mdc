@@ -1,3 +1,9 @@
+---
+description: Rust error handling requirements using anyhow for applications and thiserror for libraries
+globs: ["*.rs", "**/*.rs", "Cargo.toml"]
+alwaysApply: false
+---
+
 # Rust Error Handling
 
 ## Requirement
@@ -116,8 +122,3 @@ This requirement does NOT apply to:
 - Projects with existing error handling that follows Rust best practices
 - Projects where error handling libraries are incompatible with project constraints
 - Simple scripts where error handling overhead is not justified
-
----
-description: Rust error handling requirements using anyhow for applications and thiserror for libraries
-globs: ["*.rs", "**/*.rs", "Cargo.toml"]
-alwaysApply: false
