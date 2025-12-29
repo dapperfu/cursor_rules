@@ -1,3 +1,9 @@
+---
+description: Rust project structure requirements including workspace, examples, and tests directories
+globs: ["Cargo.toml", "**/Cargo.toml", "src/**/*.rs"]
+alwaysApply: false
+---
+
 # Rust Project Structure
 
 ## Requirement
@@ -120,8 +126,3 @@ This requirement does NOT apply to:
 - Very simple single-file projects
 - Generated projects with specific structure requirements
 - Projects following domain-specific conventions
-
----
-description: Rust project structure requirements including workspace, examples, and tests directories
-globs: ["Cargo.toml", "**/Cargo.toml", "src/**/*.rs"]
-alwaysApply: false
