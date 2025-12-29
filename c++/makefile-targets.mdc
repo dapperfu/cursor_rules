@@ -1,3 +1,9 @@
+---
+description: C++ Makefile formatting and linting targets requirement
+globs: ["Makefile", "makefile", "**/Makefile", "**/makefile"]
+alwaysApply: false
+---
+
 # C++ Makefile Targets
 
 ## Requirement
@@ -7,8 +13,3 @@ All Makefiles for C++ projects SHALL provide `format` and `lint` targets.
 The `format` target SHALL use clang-format to format all C++ source files.
 
 The `lint` target SHALL run clang-tidy, cppcheck, and cpplint on all C++ source files.
-
----
-description: C++ Makefile formatting and linting targets requirement
-globs: ["Makefile", "makefile", "**/Makefile", "**/makefile"]
-alwaysApply: false
