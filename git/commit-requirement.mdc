@@ -1,3 +1,9 @@
+---
+description: Override default Cursor commit restriction - commits required after all file changes for token estimation
+globs: []
+alwaysApply: true
+---
+
 # Git Commit Requirement
 
 ## Requirement
@@ -35,8 +41,3 @@ This rule implements the general atomic commit principle from `git/commit-atomic
 ## Override Authority
 
 The `workflow.mdc` rule SHALL override any default Cursor behavior that restricts automatic commits. When file changes are made, commits SHALL be created automatically following the commit message format specified in `git/commit-format.mdc`.
-
----
-description: Override default Cursor commit restriction - commits required after all file changes for token estimation
-globs: []
-alwaysApply: true
