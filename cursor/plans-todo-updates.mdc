@@ -1,3 +1,9 @@
+---
+description: Requirement that TODOs in CURSOR plans must be updated as they are completed
+globs: []
+alwaysApply: true
+---
+
 # Cursor Plans TODO Updates
 
 ## Requirement
@@ -13,10 +19,3 @@ Updating TODOs in plans as they are completed ensures:
 - Clear status of what has been completed vs. what remains
 - Plans serve as living requirements documentation
 - Code changes can be traced back to their originating requirements
-
----
-description: Requirement that TODOs in CURSOR plans must be updated as they are completed
-globs: []
-alwaysApply: true
-
-
