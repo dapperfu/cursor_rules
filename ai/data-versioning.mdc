@@ -1,3 +1,9 @@
+---
+description: Data versioning and reproducibility requirements for ML projects
+globs: ["*.py", "*.sh", "**/*.py", "**/*.sh"]
+alwaysApply: false
+---
+
 # Data Versioning
 
 ## Requirement
@@ -56,8 +62,3 @@ Projects SHALL track:
 - Train/validation/test split methodology
 
 See `ai/experiment-tracking.mdc` for logging data version information with experiments.
-
----
-description: Data versioning and reproducibility requirements for ML projects
-globs: ["*.py", "*.sh", "**/*.py", "**/*.sh"]
-alwaysApply: false
