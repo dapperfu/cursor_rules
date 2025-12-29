@@ -1,3 +1,9 @@
+---
+description: Requirement to use Click library for all Python CLI projects
+globs: ["*.py", "**/*.py"]
+alwaysApply: false
+---
+
 # Click Library Requirement
 
 ## Requirement
@@ -46,8 +52,3 @@ def process(input_file, verbose):
 ```
 
 Projects SHALL follow the completion installation requirements defined in `python/click-completions.mdc`.
-
----
-description: Requirement to use Click library for all Python CLI projects
-globs: ["*.py", "**/*.py"]
-alwaysApply: false
