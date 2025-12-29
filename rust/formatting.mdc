@@ -1,3 +1,9 @@
+---
+description: Rust formatting requirements using rustfmt with 120 character line length
+globs: ["*.rs", "**/*.rs", "Cargo.toml", "rustfmt.toml", "Makefile", "makefile"]
+alwaysApply: false
+---
+
 # Rust Formatting
 
 ## Requirement
@@ -53,8 +59,3 @@ This requirement does NOT apply to:
 - Generated code files that are automatically created
 - Files explicitly excluded via `rustfmt.toml` configuration
 - Third-party dependencies in `target/` directory
-
----
-description: Rust formatting requirements using rustfmt with 120 character line length
-globs: ["*.rs", "**/*.rs", "Cargo.toml", "rustfmt.toml", "Makefile", "makefile"]
-alwaysApply: false
