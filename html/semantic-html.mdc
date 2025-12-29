@@ -1,3 +1,9 @@
+---
+description: Semantic HTML element usage requirements
+globs: ["*.html", "**/*.html"]
+alwaysApply: false
+---
+
 # Semantic HTML
 
 ## Requirement
