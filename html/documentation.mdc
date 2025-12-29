@@ -1,3 +1,9 @@
+---
+description: HTML documentation and commenting requirements
+globs: ["*.html", "**/*.html"]
+alwaysApply: false
+---
+
 # HTML Documentation
 
 ## Requirement
