@@ -1,3 +1,9 @@
+---
+description: StrictDoc workflow commands and make targets requirement
+globs: ["requirements/**/*.sdoc", "**/*.sdoc", "Makefile", "makefile", "**/Makefile", "**/makefile"]
+alwaysApply: false
+---
+
 # StrictDoc Workflow and Make Targets
 
 ## Requirement
@@ -48,8 +54,3 @@ When adding requirements, SHALL follow this process:
 - SHALL ensure all requirements have proper links
 - SHALL check for orphaned requirements
 - SHALL verify document structure follows MIL-STD-498 standards
-
----
-description: StrictDoc workflow commands and make targets requirement
-globs: ["requirements/**/*.sdoc", "**/*.sdoc", "Makefile", "makefile", "**/Makefile", "**/makefile"]
-alwaysApply: false
