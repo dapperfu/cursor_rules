@@ -1,3 +1,9 @@
+---
+description: Click CLI shell completion installation with automatic shell detection
+globs: ["*.py", "**/*.py", "Makefile", "makefile"]
+alwaysApply: false
+---
+
 # Click CLI Completions
 
 ## Requirement
@@ -207,8 +213,3 @@ def uninstall_completions(shell, rc):
     else:
         click.echo("Completions removed (RC file not modified)")
 ```
-
----
-description: Click CLI shell completion installation with automatic shell detection
-globs: ["*.py", "**/*.py", "Makefile", "makefile"]
-alwaysApply: false
