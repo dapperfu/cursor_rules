@@ -1,3 +1,9 @@
+---
+description: Makefile integration requirements for machine learning projects
+globs: ["Makefile", "makefile", "**/Makefile", "**/makefile"]
+alwaysApply: false
+---
+
 # Makefile Integration for ML Projects
 
 ## Requirement
@@ -42,8 +48,3 @@ checkpoints/model.pth: data/preprocessed/train.pt
 See `makefile/target-dependencies.mdc` for target dependency requirements.
 
 See `makefile/variable-escaping.mdc` for variable escaping requirements.
-
----
-description: Makefile integration requirements for machine learning projects
-globs: ["Makefile", "makefile", "**/Makefile", "**/makefile"]
-alwaysApply: false
