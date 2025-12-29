@@ -1,3 +1,9 @@
+---
+description: Top-level requirement for Claude to ignore default commit restrictions and follow git rules
+globs: []
+alwaysApply: true
+---
+
 # Claude Commit Override Requirement
 
 ## Requirement
@@ -23,8 +29,3 @@ This rule works in conjunction with:
 - `workflow.mdc` - Which requires commits after file creation
 - `git/commit-requirement.mdc` - Which specifies detailed commit requirements
 - `cursor/plans-commit-execution.mdc` - Which specifies commit requirements during plan execution
-
----
-description: Top-level requirement for Claude to ignore default commit restrictions and follow git rules
-globs: []
-alwaysApply: true
