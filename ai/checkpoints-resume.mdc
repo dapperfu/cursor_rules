@@ -1,3 +1,9 @@
+---
+description: Model checkpointing and automatic resume requirements
+globs: ["*.py", "**/*.py"]
+alwaysApply: false
+---
+
 # Model Checkpoints and Resume
 
 ## Requirement
@@ -56,8 +62,3 @@ Training scripts SHALL accept:
 - `--checkpoint-dir` - Directory to save checkpoints
 - `--resume` - Path to checkpoint to resume from (optional)
 - `--checkpoint-interval` - Interval for checkpointing (epochs or iterations)
-
----
-description: Model checkpointing and automatic resume requirements
-globs: ["*.py", "**/*.py"]
-alwaysApply: false
