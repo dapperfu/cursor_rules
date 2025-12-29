@@ -1,3 +1,9 @@
+---
+description: HTML output directory structure and location requirements
+globs: ["requirements/**/*.sdoc", "requirements_html/**/*.html", "**/*.sdoc"]
+alwaysApply: false
+---
+
 # StrictDoc HTML Output Location
 
 ## Requirement
@@ -49,8 +55,3 @@ HTML files SHALL be regenerated whenever source `.sdoc` files are modified.
 HTML files SHALL be committed to version control alongside source files.
 
 HTML files SHALL NOT be manually edited; all changes SHALL be made to source `.sdoc` files.
-
----
-description: HTML output directory structure and location requirements
-globs: ["requirements/**/*.sdoc", "requirements_html/**/*.html", "**/*.sdoc"]
-alwaysApply: false
