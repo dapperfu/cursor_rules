@@ -1,3 +1,9 @@
+---
+description: StrictDoc MCP integration requirement for requirements management operations
+globs: ["requirements/**/*.sdoc", "**/*.sdoc", "requirements/**/*", "**/strictdoc.toml", "**/strictdoc_config.py"]
+alwaysApply: false
+---
+
 # StrictDoc MCP Integration
 
 ## Requirement
@@ -52,8 +58,3 @@ When strictdoc-mcp is available, SHALL use MCP tools for the following operation
 - SHALL use HRIDs from MCP tools for all requirement references
 - SHALL traverse requirement hierarchies using MCP tools rather than file system navigation
 - SHALL perform link drift reviews using MCP tools before committing requirement changes
-
----
-description: StrictDoc MCP integration requirement for requirements management operations
-globs: ["requirements/**/*.sdoc", "**/*.sdoc", "requirements/**/*", "**/strictdoc.toml", "**/strictdoc_config.py"]
-alwaysApply: false
