@@ -1,3 +1,9 @@
+---
+description: Rust code style conventions including naming, imports, comments, and Tokio async patterns
+globs: ["*.rs", "**/*.rs"]
+alwaysApply: false
+---
+
 # Rust Code Style
 
 ## Requirement
@@ -149,8 +155,3 @@ This requirement does NOT apply to:
 - Generated code
 - Code that must follow external API conventions
 - Legacy code being gradually migrated
-
----
-description: Rust code style conventions including naming, imports, comments, and Tokio async patterns
-globs: ["*.rs", "**/*.rs"]
-alwaysApply: false
