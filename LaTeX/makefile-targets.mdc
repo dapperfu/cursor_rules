@@ -1,3 +1,9 @@
+---
+description: Requirement for LaTeX projects to have Makefile targets for formatting, building, and cleaning
+globs: ["Makefile", "makefile", "*.tex", "**/*.tex"]
+alwaysApply: false
+---
+
 # LaTeX Makefile Targets
 
 ## Requirement
@@ -52,8 +58,3 @@ The `build` target SHALL compile LaTeX documents to PDF, including bibliography 
 ## Rationale
 
 Standardized Makefile targets provide a consistent interface for formatting, building, and maintaining LaTeX projects. This enables developers to quickly understand and work with any LaTeX project using familiar commands.
-
----
-description: Requirement for LaTeX projects to have Makefile targets for formatting, building, and cleaning
-globs: ["Makefile", "makefile", "*.tex", "**/*.tex"]
-alwaysApply: false
