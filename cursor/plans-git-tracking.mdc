@@ -1,3 +1,9 @@
+---
+description: Requirement that plans/ folder must be tracked in git and not ignored
+globs: []
+alwaysApply: true
+---
+
 # Cursor Plans Git Tracking
 
 ## Requirement
@@ -13,11 +19,5 @@ Tracking plans in git ensures:
 - Ability to review past planning approaches
 - Recovery of planning context
 - Team members can review planning decisions
-
----
-description: Requirement that plans/ folder must be tracked in git and not ignored
-globs: []
-alwaysApply: true
-
 
 
