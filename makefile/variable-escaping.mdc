@@ -1,10 +1,11 @@
+---
+description: Makefile variable escaping requirement
+globs: ["Makefile", "makefile", "**/Makefile", "**/makefile"]
+alwaysApply: false
+---
+
 # Makefile Variable Escaping
 
 ## Requirement
 
 Makefiles SHALL use full escape for all variables: `${VAR}` not `$VAR` to avoid confusion.
-
----
-description: Makefile variable escaping requirement
-globs: ["Makefile", "makefile", "**/Makefile", "**/makefile"]
-alwaysApply: false
