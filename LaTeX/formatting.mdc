@@ -1,3 +1,9 @@
+---
+description: LaTeX formatting requirements using tex-fmt
+globs: ["*.tex", "**/*.tex", "*.sty", "**/*.sty", "*.cls", "**/*.cls", "*.dtx", "**/*.dtx", "*.ins", "**/*.ins"]
+alwaysApply: false
+---
+
 # LaTeX Formatting
 
 ## Requirement
@@ -44,8 +50,3 @@ This requirement does NOT apply to:
 - Bibliography files (.bib)
 - Generated files that are automatically created
 - Third-party package files in distribution directories
-
----
-description: LaTeX formatting requirements using tex-fmt
-globs: ["*.tex", "**/*.tex", "*.sty", "**/*.sty", "*.cls", "**/*.cls", "*.dtx", "**/*.dtx", "*.ins", "**/*.ins"]
-alwaysApply: false
