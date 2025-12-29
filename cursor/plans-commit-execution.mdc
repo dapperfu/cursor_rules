@@ -1,3 +1,9 @@
+---
+description: Requirement for atomic git commits during CURSOR plan execution
+globs: []
+alwaysApply: true
+---
+
 # Cursor Plans Commit Requirements During Execution
 
 ## Requirement
@@ -22,12 +28,3 @@ Atomic commits during plan execution enable:
 - Clear attribution of changes to specific prompts
 
 This rule implements the general atomic commit principle from `git/commit-atomicity.mdc` in the context of plan execution, with plan-specific requirements for token tracking.
-
----
-description: Requirement for atomic git commits during CURSOR plan execution
-globs: []
-alwaysApply: true
-
-
-
-
