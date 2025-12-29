@@ -1,3 +1,9 @@
+---
+description: StrictDoc directory structure requirement for reqs/ and reqs/html/ for GitHub Pages
+globs: ["reqs/**/*.sdoc", "reqs/html/**/*.html", "**/*.sdoc", "**/strictdoc.toml", "**/strictdoc_config.py"]
+alwaysApply: false
+---
+
 # StrictDoc Directory Structure for GitHub Pages
 
 ## Requirement
@@ -79,8 +85,3 @@ html_root = "reqs/html"
 - HTML files SHALL be regenerated whenever source `.sdoc` files are modified
 - HTML files SHALL be committed to version control alongside source files
 - HTML files SHALL NOT be manually edited; all changes SHALL be made to source `.sdoc` files
-
----
-description: StrictDoc directory structure requirement for reqs/ and reqs/html/ for GitHub Pages
-globs: ["reqs/**/*.sdoc", "reqs/html/**/*.html", "**/*.sdoc", "**/strictdoc.toml", "**/strictdoc_config.py"]
-alwaysApply: false
