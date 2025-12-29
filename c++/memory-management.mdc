@@ -1,3 +1,9 @@
+---
+description: C++ memory management requirements (smart pointers and RAII)
+globs: ["*.cpp", "*.hpp", "*.h", "*.cc", "*.cxx", "*.hxx"]
+alwaysApply: false
+---
+
 # C++ Memory Management
 
 ## Requirement
@@ -7,8 +13,3 @@ C++ code SHALL use smart pointers (std::unique_ptr, std::shared_ptr) instead of 
 C++ code SHALL follow RAII (Resource Acquisition Is Initialization) principles.
 
 Manual memory management (new/delete) SHALL be avoided except where absolutely necessary and SHALL be clearly documented.
-
----
-description: C++ memory management requirements (smart pointers and RAII)
-globs: ["*.cpp", "*.hpp", "*.h", "*.cc", "*.cxx", "*.hxx"]
-alwaysApply: false
