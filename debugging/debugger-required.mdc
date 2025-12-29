@@ -1,0 +1,31 @@
+---
+description: Requirement to use proper debuggers for debugging instead of print statements
+globs: []
+alwaysApply: true
+---
+
+# Debugger Usage Requirement
+
+## Requirement
+
+ALL debugging SHALL use a debugger above all else. Print statements are for amateurs and interns. Use a proper debugger where possible.
+
+### Exceptions
+
+The only acceptable exceptions to this requirement are:
+
+1. **Unavailable Debugger Support**: When debugging in environments where debuggers are not available or cannot be used (e.g., certain embedded systems, production environments without debugger access, or platforms without debugger support).
+
+2. **Logging vs. Debugging**: This requirement applies to debugging activities, not to logging for production monitoring, error tracking, or operational visibility. Structured logging for production purposes is distinct from debugging and remains acceptable.
+
+## Rationale
+
+Using proper debuggers provides:
+
+- **Superior Debugging Capabilities**: Breakpoints, variable inspection, call stack navigation, watch expressions, and step-through execution
+- **Cleaner Code**: No debug print statements cluttering the codebase
+- **Professional Development Practices**: Industry-standard debugging tools and techniques
+- **Better Understanding**: Clear visibility into program execution flow and state
+- **Efficiency**: Faster debugging with interactive tools rather than repeatedly adding/removing print statements
+
+Print statements for debugging are a sign of unprofessional development practices and should be avoided in favor of proper debugging tools.
