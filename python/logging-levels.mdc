@@ -1,3 +1,9 @@
+---
+description: Python custom logging levels between INFO and DEBUG with verbosity flag mapping
+globs: ["*.py", "**/*.py"]
+alwaysApply: false
+---
+
 # Python Logging Levels
 
 ## Requirement
@@ -147,8 +153,3 @@ def parse_verbosity(args) -> int:
 - Use **TRACE** for execution flow information, such as function entry/exit points.
 - Use **FINE** for very detailed debugging information, such as variable values or state dumps.
 - Use **DEBUG** for the most detailed debugging information, typically only useful during development.
-
----
-description: Python custom logging levels between INFO and DEBUG with verbosity flag mapping
-globs: ["*.py", "**/*.py"]
-alwaysApply: false
