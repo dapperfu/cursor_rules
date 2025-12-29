@@ -1,3 +1,9 @@
+---
+description: Rust linting requirements using Clippy with deny warnings policy
+globs: ["*.rs", "**/*.rs", "Cargo.toml", "clippy.toml", "Makefile", "makefile"]
+alwaysApply: false
+---
+
 # Rust Linting
 
 ## Requirement
@@ -78,8 +84,3 @@ This requirement does NOT apply to:
 - Specific lints that are explicitly allowed via `clippy.toml` or `#[allow(...)]` attributes with justification
 
 When using `#[allow(...)]` attributes, projects SHALL include a comment explaining why the lint is being suppressed.
-
----
-description: Rust linting requirements using Clippy with deny warnings policy
-globs: ["*.rs", "**/*.rs", "Cargo.toml", "clippy.toml", "Makefile", "makefile"]
-alwaysApply: false
