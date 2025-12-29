@@ -1,3 +1,9 @@
+---
+description: Prohibition of sudo usage
+globs: []
+alwaysApply: true
+---
+
 # Sudo Usage Prohibition
 
 ## Requirement
@@ -5,8 +11,3 @@
 Under no circumstances SHALL you run sudo.
 
 All commands SHALL be done in userspace.
-
----
-description: Prohibition of sudo usage
-globs: []
-alwaysApply: true
