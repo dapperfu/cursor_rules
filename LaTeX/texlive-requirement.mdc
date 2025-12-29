@@ -1,3 +1,9 @@
+---
+description: Requirement to use TeX Live distribution for LaTeX projects
+globs: ["*.tex", "**/*.tex", "README.md", "README.rst", "*.md"]
+alwaysApply: false
+---
+
 # TeX Live Distribution Requirement
 
 ## Requirement
@@ -24,8 +30,3 @@ Projects SHOULD document TeX Live requirements in:
 - Build system configuration
 
 Projects MAY specify minimum TeX Live version requirements when necessary for specific package dependencies.
-
----
-description: Requirement to use TeX Live distribution for LaTeX projects
-globs: ["*.tex", "**/*.tex", "README.md", "README.rst", "*.md"]
-alwaysApply: false
