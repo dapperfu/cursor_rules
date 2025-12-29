@@ -1,3 +1,9 @@
+---
+description: Strict memory management requirements for C code
+globs: ["*.c", "**/*.c"]
+alwaysApply: false
+---
+
 # Strict Memory Management
 
 ## Requirement
@@ -15,8 +21,3 @@ Static analysis tools (such as cppcheck, valgrind, or similar) SHALL be used to 
 Each `malloc()` or `calloc()` call SHALL have a corresponding `free()` call, or SHALL be documented if memory is intentionally not freed (e.g., for program lifetime allocations).
 
 Memory allocated in a function SHALL either be freed within that function or returned/assigned to a caller who is responsible for freeing it.
-
----
-description: Strict memory management requirements for C code
-globs: ["*.c", "**/*.c"]
-alwaysApply: false
