@@ -1,3 +1,9 @@
+---
+description: Strict compiler warning enforcement for C code
+globs: ["*.c", "**/*.c", "*.h", "**/*.h", "Makefile", "makefile", "**/Makefile", "**/makefile"]
+alwaysApply: false
+---
+
 # Compiler Warning Enforcement
 
 ## Requirement
@@ -13,8 +19,3 @@ No warnings SHALL be allowed in production builds.
 Warning suppressions SHALL only be used when absolutely necessary and SHALL be documented with justification.
 
 Warning suppressions SHALL be as specific as possible (suppress specific warnings, not all warnings).
-
----
-description: Strict compiler warning enforcement for C code
-globs: ["*.c", "**/*.c", "*.h", "**/*.h", "Makefile", "makefile", "**/Makefile", "**/makefile"]
-alwaysApply: false
