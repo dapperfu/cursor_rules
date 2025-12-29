@@ -1,3 +1,9 @@
+---
+description: StrictDoc document hierarchy following MIL-STD-498 standards
+globs: ["requirements/**/*.sdoc", "**/*.sdoc", "requirements/**/*.sdoc"]
+alwaysApply: false
+---
+
 # StrictDoc Document Hierarchy
 
 ## Requirement
@@ -53,8 +59,3 @@ Requirement IDs SHALL follow MIL-STD-498 conventions:
 - Interface Requirements: `IRS001`, `IRS002`, etc.
 - Test Plans: `TP001`, `TP002`, etc.
 - Test Descriptions: `TD001`, `TD002`, etc.
-
----
-description: StrictDoc document hierarchy following MIL-STD-498 standards
-globs: ["requirements/**/*.sdoc", "**/*.sdoc", "requirements/**/*.sdoc"]
-alwaysApply: false
