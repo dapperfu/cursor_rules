@@ -1,3 +1,9 @@
+---
+description: Basic LaTeX document structure requirements
+globs: ["*.tex", "**/*.tex"]
+alwaysApply: false
+---
+
 # LaTeX Document Structure
 
 ## Requirement
@@ -41,8 +47,3 @@ Consistent document structure:
 - Makes it easier for developers to navigate LaTeX documents
 - Follows LaTeX best practices and conventions
 - Reduces errors from misplaced commands
-
----
-description: Basic LaTeX document structure requirements
-globs: ["*.tex", "**/*.tex"]
-alwaysApply: false
