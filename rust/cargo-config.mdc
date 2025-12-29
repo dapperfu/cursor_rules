@@ -1,3 +1,9 @@
+---
+description: Cargo.toml configuration requirements including metadata, edition, and feature documentation
+globs: ["Cargo.toml", "**/Cargo.toml"]
+alwaysApply: false
+---
+
 # Cargo Configuration
 
 ## Requirement
@@ -91,8 +97,3 @@ This requirement does NOT apply to:
 - Workspace-only `Cargo.toml` files (which may have minimal metadata)
 - Example or test-only crates within a workspace
 - Generated `Cargo.toml` files
-
----
-description: Cargo.toml configuration requirements including metadata, edition, and feature documentation
-globs: ["Cargo.toml", "**/Cargo.toml"]
-alwaysApply: false
