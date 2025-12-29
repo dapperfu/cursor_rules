@@ -1,3 +1,9 @@
+---
+description: Rust dependency management requirements with minor version pinning and workspace patterns
+globs: ["Cargo.toml", "**/Cargo.toml"]
+alwaysApply: false
+---
+
 # Rust Dependencies
 
 ## Requirement
@@ -133,8 +139,3 @@ This requirement does NOT apply to:
 - Dependencies that require exact versions for compatibility reasons (with justification)
 - Dependencies that are part of the Rust toolchain
 - Workspace-only configuration files
-
----
-description: Rust dependency management requirements with minor version pinning and workspace patterns
-globs: ["Cargo.toml", "**/Cargo.toml"]
-alwaysApply: false
