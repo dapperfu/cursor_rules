@@ -1,3 +1,9 @@
+---
+description: General rule that all git commits must be atomic and on single files, with specific exceptions
+globs: []
+alwaysApply: true
+---
+
 # Git Commit Atomicity
 
 ## Requirement
@@ -53,10 +59,3 @@ This rule is referenced by:
 - `git/commit-requirement.mdc` - general commit requirements
 - `cursor/plans-commit-execution.mdc` - plan execution commit requirements
 - `cursor/plans-todo-commits.mdc` - TODO checkoff commit requirements
-
----
-description: General rule that all git commits must be atomic and on single files, with specific exceptions
-globs: []
-alwaysApply: true
-
-
