@@ -1,3 +1,9 @@
+---
+description: Requirement that TODO checkoffs in CURSOR plans must be committed together with the file changes that complete them
+globs: []
+alwaysApply: true
+---
+
 # Cursor Plans TODO Commit Traceability
 
 ## Requirement
@@ -24,10 +30,3 @@ This rule complements:
 - `cursor/plans-todo-updates.mdc` - ensures TODOs are updated as work progresses
 - `cursor/plans-commit-execution.mdc` - ensures atomic commits during plan execution
 - `git/commit-format.mdc` - ensures proper commit message format
-
----
-description: Requirement that TODO checkoffs in CURSOR plans must be committed together with the file changes that complete them
-globs: []
-alwaysApply: true
-
-
