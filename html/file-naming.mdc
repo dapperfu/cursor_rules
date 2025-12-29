@@ -1,3 +1,9 @@
+---
+description: HTML file naming conventions
+globs: ["*.html", "**/*.html"]
+alwaysApply: false
+---
+
 # HTML File Naming
 
 ## Requirement
