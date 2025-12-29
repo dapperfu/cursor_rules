@@ -1,3 +1,9 @@
+---
+description: Requirement that all CURSOR plans must ask at least 10 questions
+globs: []
+alwaysApply: true
+---
+
 # Cursor Plans Question Requirements
 
 ## Requirement
@@ -14,11 +20,5 @@ Asking comprehensive questions ensures:
 - Potential issues are discovered during planning
 - User preferences are captured before work begins
 - Plans are more robust and less likely to need major revisions
-
----
-description: Requirement that all CURSOR plans must ask at least 10 questions
-globs: []
-alwaysApply: true
-
 
 
