@@ -1,3 +1,9 @@
+---
+description: Preference for real endpoints over mocks
+globs: ["**/*test*.py", "**/api/**/*.py", "**/tests/**/*.py"]
+alwaysApply: false
+---
+
 # Real Endpoints Preferred Over Mocks
 
 ## Requirement
@@ -29,8 +35,3 @@ Mocks SHALL only be used when:
 SHALL NOT use mocks for happy path testing.
 
 SHALL NOT use mocks for authentication flows.
-
----
-description: Preference for real endpoints over mocks
-globs: ["**/*test*.py", "**/api/**/*.py", "**/tests/**/*.py"]
-alwaysApply: false
