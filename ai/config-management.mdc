@@ -1,3 +1,9 @@
+---
+description: Configuration file management requirements for ML projects
+globs: ["*.yaml", "*.yml", "*.json", "*.toml", "*.py", "**/*.yaml", "**/*.yml", "**/*.json", "**/*.toml", "**/*.py"]
+alwaysApply: false
+---
+
 # Configuration Management
 
 ## Requirement
@@ -65,8 +71,3 @@ evaluation:
 ```
 
 See `ai/model-naming.mdc` for config file naming conventions.
-
----
-description: Configuration file management requirements for ML projects
-globs: ["*.yaml", "*.yml", "*.json", "*.toml", "*.py", "**/*.yaml", "**/*.yml", "**/*.json", "**/*.toml", "**/*.py"]
-alwaysApply: false
