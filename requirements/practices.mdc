@@ -1,3 +1,9 @@
+---
+description: Requirements management best practices
+globs: ["reqs/**/*.yml", "requirements/**/*.md", "reqs/**/*.yaml"]
+alwaysApply: false
+---
+
 # Requirements Management Best Practices
 
 ## Requirement
@@ -34,8 +40,3 @@ SHALL follow these best practices for requirements management:
 - New requirements SHALL be added to doorstop
 - SHALL gradually migrate existing requirements over time
 - SHALL maintain backward compatibility with existing documentation
-
----
-description: Requirements management best practices
-globs: ["reqs/**/*.yml", "requirements/**/*.md", "reqs/**/*.yaml"]
-alwaysApply: false
