@@ -1,3 +1,9 @@
+---
+description: HTML linting and validation requirements
+globs: ["*.html", "**/*.html"]
+alwaysApply: false
+---
+
 # HTML Linting and Validation
 
 ## Requirement
