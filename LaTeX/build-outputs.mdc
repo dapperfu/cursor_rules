@@ -1,3 +1,9 @@
+---
+description: Requirement to exclude LaTeX build artifacts from version control
+globs: [".gitignore"]
+alwaysApply: true
+---
+
 # LaTeX Build Output Management
 
 ## Requirement
@@ -44,8 +50,3 @@ LaTeX build artifacts are generated during compilation and should not be tracked
 ## Implementation
 
 Projects SHALL ensure that .gitignore includes appropriate patterns for all LaTeX build outputs used in the project. Additional patterns MAY be added for project-specific build tools or workflows.
-
----
-description: Requirement to exclude LaTeX build artifacts from version control
-globs: [".gitignore"]
-alwaysApply: true
