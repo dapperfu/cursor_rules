@@ -1,3 +1,9 @@
+---
+description: Rust documentation requirements with rustdoc comments and executable examples for all public items
+globs: ["*.rs", "**/*.rs", "Cargo.toml"]
+alwaysApply: false
+---
+
 # Rust Documentation
 
 ## Requirement
@@ -135,8 +141,3 @@ This requirement does NOT apply to:
 - Generated code
 - Re-exports where documentation is provided in the original module
 - Items that are self-explanatory (with documented justification)
-
----
-description: Rust documentation requirements with rustdoc comments and executable examples for all public items
-globs: ["*.rs", "**/*.rs", "Cargo.toml"]
-alwaysApply: false
