@@ -1,3 +1,9 @@
+---
+description: Requirement that saving plan to plans/ folder must be first TODO item
+globs: []
+alwaysApply: true
+---
+
 # Cursor Plans First TODO Item
 
 ## Requirement
@@ -11,11 +17,5 @@ Making plan persistence the first TODO item ensures:
 - No planning work is lost if execution is interrupted
 - Plans are committed to git for traceability
 - Planning decisions are preserved for review
-
----
-description: Requirement that saving plan to plans/ folder must be first TODO item
-globs: []
-alwaysApply: true
-
 
 
