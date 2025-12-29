@@ -1,3 +1,9 @@
+---
+description: Git commit message format with technical attribution
+globs: []
+alwaysApply: true
+---
+
 # Git Commit Message Format
 
 ## Requirement
@@ -26,8 +32,3 @@ Technical details:
 - Dependencies: {{key_dependencies}}
 - Tokens: {{estimated_tokens_used_for_changes}}
 ```
-
----
-description: Git commit message format with technical attribution
-globs: []
-alwaysApply: true
