@@ -1,3 +1,9 @@
+---
+description: Rust testing requirements including unit, integration, and documentation tests with 90% coverage threshold
+globs: ["*.rs", "**/*.rs", "tests/**/*.rs", "Cargo.toml", "Makefile", "makefile"]
+alwaysApply: false
+---
+
 # Rust Testing
 
 ## Requirement
@@ -144,8 +150,3 @@ This requirement does NOT apply to:
 - Code that is difficult to test (with documented justification)
 
 The 90% coverage threshold MAY be adjusted for specific modules with documented justification.
-
----
-description: Rust testing requirements including unit, integration, and documentation tests with 90% coverage threshold
-globs: ["*.rs", "**/*.rs", "tests/**/*.rs", "Cargo.toml", "Makefile", "makefile"]
-alwaysApply: false
