@@ -1,3 +1,9 @@
+---
+description: Doxygen documentation requirements for C code
+globs: ["*.c", "**/*.c", "*.h", "**/*.h"]
+alwaysApply: false
+---
+
 # Doxygen Documentation Standards
 
 ## Requirement
@@ -18,8 +24,3 @@ All source files SHALL include file-level documentation with:
 Doxygen comments SHALL use the `/** */` style for block comments.
 
 Inline documentation SHALL be provided for complex algorithms or non-obvious code sections.
-
----
-description: Doxygen documentation requirements for C code
-globs: ["*.c", "**/*.c", "*.h", "**/*.h"]
-alwaysApply: false
