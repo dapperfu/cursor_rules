@@ -1,3 +1,9 @@
+---
+description: Python virtual environment path usage in Makefiles
+globs: ["Makefile", "makefile", "**/Makefile", "**/makefile"]
+alwaysApply: false
+---
+
 # Python Virtual Environment Paths in Makefiles
 
 ## Requirement
@@ -7,8 +13,3 @@ All Makefile references to pip and python installed tools like pytest SHALL use 
 Examples:
 - `venv_{project}/bin/pytest`
 - `venv_{project}/bin/pip`
-
----
-description: Python virtual environment path usage in Makefiles
-globs: ["Makefile", "makefile", "**/Makefile", "**/makefile"]
-alwaysApply: false
