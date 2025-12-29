@@ -1,3 +1,9 @@
+---
+description: Model evaluation script requirements
+globs: ["*.py", "**/*.py"]
+alwaysApply: false
+---
+
 # Model Evaluation
 
 ## Requirement
@@ -60,8 +66,3 @@ python evaluate.py \
   --split test \
   --output results/evaluation_test.json
 ```
-
----
-description: Model evaluation script requirements
-globs: ["*.py", "**/*.py"]
-alwaysApply: false
