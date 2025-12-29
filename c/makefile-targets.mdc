@@ -1,3 +1,9 @@
+---
+description: Makefile target requirements for C code formatting and linting
+globs: ["Makefile", "makefile", "**/Makefile", "**/makefile"]
+alwaysApply: false
+---
+
 # Makefile Targets for Formatting and Linting
 
 ## Requirement
@@ -13,8 +19,3 @@ The `format` target SHALL check formatting and fail if files are not properly fo
 The `lint` target SHALL run cppcheck with MISRA C compliance checking enabled.
 
 The `format` and `lint` targets SHALL be integrated with pre-commit hooks where applicable.
-
----
-description: Makefile target requirements for C code formatting and linting
-globs: ["Makefile", "makefile", "**/Makefile", "**/makefile"]
-alwaysApply: false
