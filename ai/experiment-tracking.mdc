@@ -1,3 +1,9 @@
+---
+description: Experiment tracking and logging requirements for ML training
+globs: ["*.py", "**/*.py"]
+alwaysApply: false
+---
+
 # Experiment Tracking
 
 ## Requirement
@@ -53,8 +59,3 @@ logs/
       config.json
       system_metrics.json
 ```
-
----
-description: Experiment tracking and logging requirements for ML training
-globs: ["*.py", "**/*.py"]
-alwaysApply: false
