@@ -1,3 +1,9 @@
+---
+description: Requirement for all projects to have a top-level Makefile with standard targets
+globs: []
+alwaysApply: true
+---
+
 # Top-Level Makefile Requirement
 
 ## Requirement
@@ -27,8 +33,3 @@ The Makefile SHALL include other make targets as appropriate for the project typ
 ## Rationale
 
 A standardized top-level Makefile provides a consistent interface for building, running, and maintaining projects across different languages and build systems. This enables developers to quickly understand and work with any project using familiar commands.
-
----
-description: Requirement for all projects to have a top-level Makefile with standard targets
-globs: []
-alwaysApply: true
