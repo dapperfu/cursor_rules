@@ -1,3 +1,9 @@
+---
+description: StrictDoc requirements management best practices
+globs: ["requirements/**/*.sdoc", "**/*.sdoc"]
+alwaysApply: false
+---
+
 # StrictDoc Best Practices
 
 ## Requirement
@@ -57,8 +63,3 @@ SHALL follow these best practices for StrictDoc requirements management:
 - SHALL configure HTML output directory to `requirements_html/`
 - SHALL maintain consistent StrictDoc version across the project
 - SHALL document StrictDoc configuration in project documentation
-
----
-description: StrictDoc requirements management best practices
-globs: ["requirements/**/*.sdoc", "**/*.sdoc"]
-alwaysApply: false
