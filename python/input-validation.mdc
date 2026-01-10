@@ -1,0 +1,221 @@
+# Python Input Validation
+
+## Requirement
+
+All Python applications SHALL validate input at system boundaries using appropriate validation libraries and patterns.
+
+### Validation at Boundaries
+
+- Input SHALL be validated at API boundaries, CLI argument boundaries, and database input boundaries
+- Validation SHALL occur as early as possible (fail fast principle)
+- Invalid input SHALL be rejected with clear, user-friendly error messages
+
+### Validation Libraries
+
+- Applications SHALL use `pydantic` for structured data validation
+- Simple validations MAY use built-in Python validation (type checking, range checks)
+- Custom validators SHALL be well-documented and tested
+
+### Type vs Runtime Validation
+
+- Type hints provide compile-time/static type checking (via mypy)
+- Runtime validation SHALL validate actual data values, not just types
+- Both type checking and runtime validation SHALL be used together
+
+### Validation Patterns
+
+- SHALL validate required fields are present
+- SHALL validate data types and formats
+- SHALL validate value ranges and constraints
+- SHALL validate business rules and relationships
+
+## Rationale
+
+Proper input validation provides:
+
+- **Security**: Prevents injection attacks, buffer overflows, and other security issues
+- **Data Integrity**: Ensures data meets expected format and constraints
+- **User Experience**: Clear error messages help users correct invalid input
+- **System Stability**: Prevents invalid data from causing errors downstream
+- **Debugging**: Early validation makes it easier to identify and fix issues
+- **Type Safety**: Runtime validation complements static type checking
+
+## Implementation
+
+### Using Pydantic for Validation
+
+```python
+from pydantic import BaseModel, Field, validator
+from typing import Optional
+from email_validator import validate_email, EmailNotValidError
+
+class UserCreate(BaseModel):
+    """User creation request with validation."""
+    username: str = Field(..., min_length=3, max_length=50, regex="^[a-zA-Z0-9_]+$")
+    email: str = Field(..., description="User email address")
+    age: int = Field(..., ge=0, le=150, description="User age")
+    password: str = Field(..., min_length=12, description="User password")
+    
+    @validator('email')
+    def validate_email_format(cls, v: str) -> str:
+        """Validate email format."""
+        try:
+            validate_email(v)
+            return v
+        except EmailNotValidError:
+            raise ValueError("Invalid email format")
+    
+    @validator('password')
+    def validate_password_strength(cls, v: str) -> str:
+        """Validate password strength."""
+        if len(v) < 12:
+            raise ValueError("Password must be at least 12 characters")
+        if not any(c.isupper() for c in v):
+            raise ValueError("Password must contain uppercase letter")
+        if not any(c.islower() for c in v):
+            raise ValueError("Password must contain lowercase letter")
+        if not any(c.isdigit() for c in v):
+            raise ValueError("Password must contain digit")
+        return v
+
+# Usage
+try:
+    user_data = UserCreate(
+        username="alice",
+        email="alice@example.com",
+        age=25,
+        password="SecurePass123"
+    )
+except ValidationError as e:
+    # Handle validation errors
+    print(e.json())
+```
+
+### API Boundary Validation
+
+```python
+from fastapi import FastAPI, HTTPException
+from pydantic import BaseModel
+
+app = FastAPI()
+
+class CreateItemRequest(BaseModel):
+    """Item creation request."""
+    name: str = Field(..., min_length=1, max_length=100)
+    price: float = Field(..., gt=0, description="Item price in dollars")
+    quantity: int = Field(..., ge=0, description="Item quantity")
+
+@app.post("/items")
+def create_item(item: CreateItemRequest) -> dict:
+    """Create item with validated input."""
+    # Input is already validated by FastAPI using Pydantic
+    return {"id": 1, "name": item.name, "price": item.price}
+```
+
+### CLI Argument Validation
+
+```python
+import click
+from pydantic import BaseModel, ValidationError
+
+class ConfigOptions(BaseModel):
+    """CLI configuration options."""
+    port: int = Field(..., ge=1, le=65535)
+    host: str = Field(..., min_length=1)
+    timeout: float = Field(default=30.0, gt=0)
+
+@click.command()
+@click.option("--port", type=int, required=True)
+@click.option("--host", type=str, required=True)
+@click.option("--timeout", type=float, default=30.0)
+def run_server(port: int, host: str, timeout: float) -> None:
+    """Run server with validated options."""
+    try:
+        config = ConfigOptions(port=port, host=host, timeout=timeout)
+    except ValidationError as e:
+        click.echo(f"Invalid configuration: {e}", err=True)
+        raise click.Abort()
+    
+    # Use validated config
+    start_server(config.host, config.port, config.timeout)
+```
+
+### Database Input Validation
+
+```python
+from pydantic import BaseModel
+from datetime import datetime
+
+class UserRecord(BaseModel):
+    """User record for database with validation."""
+    username: str = Field(..., min_length=3, max_length=50)
+    email: str
+    created_at: datetime = Field(default_factory=datetime.now)
+    
+    @validator('email')
+    def validate_email(cls, v: str) -> str:
+        """Validate email before database insert."""
+        if '@' not in v:
+            raise ValueError("Invalid email format")
+        return v.lower()  # Normalize email
+
+def create_user(data: dict) -> UserRecord:
+    """Create user with validated data."""
+    user = UserRecord(**data)  # Validates before database insert
+    # Now safe to insert into database
+    db.insert_user(user.dict())
+    return user
+```
+
+### Simple Validation (Without Pydantic)
+
+```python
+def validate_port(port: int) -> int:
+    """Validate port number."""
+    if not isinstance(port, int):
+        raise TypeError(f"Port must be integer, got {type(port)}")
+    if not (1 <= port <= 65535):
+        raise ValueError(f"Port must be between 1 and 65535, got {port}")
+    return port
+
+def validate_email_simple(email: str) -> str:
+    """Simple email validation."""
+    if not isinstance(email, str):
+        raise TypeError("Email must be string")
+    if '@' not in email:
+        raise ValueError("Invalid email format")
+    if '.' not in email.split('@')[1]:
+        raise ValueError("Invalid email format")
+    return email.lower()
+```
+
+### Custom Validators
+
+```python
+from pydantic import BaseModel, validator
+from typing import List
+
+class ShoppingCart(BaseModel):
+    """Shopping cart with custom validation."""
+    items: List[str] = Field(..., min_items=1, max_items=100)
+    total: float = Field(..., ge=0)
+    
+    @validator('total')
+    def validate_total_matches_items(cls, v: float, values: dict) -> float:
+        """Validate total matches sum of item prices."""
+        if 'items' in values:
+            # Calculate expected total from items
+            expected_total = calculate_total(values['items'])
+            if abs(v - expected_total) > 0.01:  # Allow small floating point differences
+                raise ValueError(f"Total {v} does not match sum of items")
+        return v
+```
+
+## Integration
+
+This rule works in conjunction with:
+
+- `python/typing.mdc` - Type hints for static type checking
+- `python/secrets-management.mdc` - Validating secrets and credentials
+- `python/exception-handling.mdc` - Handling validation errors
+- `python/error-messages.mdc` - User-friendly error messages
