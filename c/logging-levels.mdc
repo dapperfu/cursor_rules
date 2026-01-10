@@ -1,0 +1,206 @@
+---
+description: C custom logging levels between INFO and DEBUG with verbosity flag mapping
+globs: ["*.c", "**/*.c", "*.h", "**/*.h"]
+alwaysApply: false
+---
+
+# C Logging Levels
+
+## Requirement
+
+**MANDATORY**: ALL C projects MUST implement custom logging levels between INFO (20) and DEBUG (10) to provide granular verbosity control. This requirement is MANDATORY and SHALL NOT be considered optional. These levels SHALL correspond to command-line verbosity flags and use descriptive names for consistent use across C projects.
+
+Projects MAY use syslog, custom logging implementations, or third-party logging libraries, but MUST implement the required custom logging levels regardless of the underlying logging mechanism.
+
+## Custom Logging Level Definitions
+
+The following custom logging levels MUST be defined and used:
+
+- **VERBOSE (18)**: General verbose output, one level below INFO. Corresponds to `-v` flag.
+- **DETAIL (16)**: Detailed information about operations. Corresponds to `-vv` flag.
+- **TRACE (14)**: Execution flow tracing. Corresponds to `-vvv` flag.
+- **FINE (12)**: Fine-grained debugging information. Corresponds to `-vvvv` flag.
+
+Standard logging levels remain unchanged:
+- **INFO (20)**: Informational messages
+- **DEBUG (10)**: Debug-level messages
+
+## Implementation Requirements
+
+1. **Level Constants**: ALL C projects MUST define constants for these levels using enum or macros. This is MANDATORY.
+
+2. **Logging Macros**: ALL projects MUST provide logging macros for each custom level (e.g., `LOG_VERBOSE()`, `LOG_DETAIL()`, `LOG_TRACE()`, `LOG_FINE()`). This is MANDATORY.
+
+3. **Level Checking**: ALL logging macros MUST check the current log level before logging to avoid unnecessary string formatting. This is MANDATORY.
+
+4. **Verbosity Mapping**: Command-line verbosity flags MUST map to logging levels as follows:
+   - No flag: INFO level (20)
+   - `-v`: VERBOSE (18)
+   - `-vv`: DETAIL (16)
+   - `-vvv`: TRACE (14)
+   - `-vvvv`: FINE (12)
+   - `-vvvvv` or more: DEBUG (10)
+
+5. **Proper Usage**: ALL logging MUST use the defined logging macros or functions, not printf statements or custom logging implementations that bypass the level system. This is MANDATORY.
+
+## Implementation Example
+
+The following example demonstrates a complete implementation:
+
+```c
+#ifndef LOG_LEVELS_H
+#define LOG_LEVELS_H
+
+#include <stdio.h>
+#include <stdarg.h>
+#include <string.h>
+#include <time.h>
+
+/* Log level constants */
+#define LOG_LEVEL_ERROR   30
+#define LOG_LEVEL_WARN    25
+#define LOG_LEVEL_INFO    20
+#define LOG_LEVEL_VERBOSE  18
+#define LOG_LEVEL_DETAIL  16
+#define LOG_LEVEL_TRACE   14
+#define LOG_LEVEL_FINE    12
+#define LOG_LEVEL_DEBUG   10
+
+/* Global log level (default to INFO) */
+extern int g_log_level;
+
+/* Log level names */
+static const char* log_level_name(int level) {
+    switch (level) {
+        case LOG_LEVEL_ERROR:   return "ERROR";
+        case LOG_LEVEL_WARN:     return "WARN";
+        case LOG_LEVEL_INFO:     return "INFO";
+        case LOG_LEVEL_VERBOSE:  return "VERBOSE";
+        case LOG_LEVEL_DETAIL:   return "DETAIL";
+        case LOG_LEVEL_TRACE:    return "TRACE";
+        case LOG_LEVEL_FINE:     return "FINE";
+        case LOG_LEVEL_DEBUG:    return "DEBUG";
+        default:                 return "UNKNOWN";
+    }
+}
+
+/* Internal logging function */
+static void log_message(int level, const char *file, int line, const char *fmt, ...) {
+    if (level < g_log_level) {
+        return;
+    }
+    
+    time_t now;
+    time(&now);
+    struct tm *tm_info = localtime(&now);
+    char timestamp[64];
+    strftime(timestamp, sizeof(timestamp), "%Y-%m-%d %H:%M:%S", tm_info);
+    
+    const char *filename = strrchr(file, '/') ? strrchr(file, '/') + 1 : file;
+    
+    fprintf(stderr, "[%s] %s:%d [%s] ", 
+            timestamp, filename, line, log_level_name(level));
+    
+    va_list args;
+    va_start(args, fmt);
+    vfprintf(stderr, fmt, args);
+    va_end(args);
+    
+    fprintf(stderr, "\n");
+}
+
+/* Logging macros */
+#define LOG_ERROR(fmt, ...)   log_message(LOG_LEVEL_ERROR, __FILE__, __LINE__, fmt, ##__VA_ARGS__)
+#define LOG_WARN(fmt, ...)    log_message(LOG_LEVEL_WARN, __FILE__, __LINE__, fmt, ##__VA_ARGS__)
+#define LOG_INFO(fmt, ...)    log_message(LOG_LEVEL_INFO, __FILE__, __LINE__, fmt, ##__VA_ARGS__)
+#define LOG_VERBOSE(fmt, ...) log_message(LOG_LEVEL_VERBOSE, __FILE__, __LINE__, fmt, ##__VA_ARGS__)
+#define LOG_DETAIL(fmt, ...) log_message(LOG_LEVEL_DETAIL, __FILE__, __LINE__, fmt, ##__VA_ARGS__)
+#define LOG_TRACE(fmt, ...)   log_message(LOG_LEVEL_TRACE, __FILE__, __LINE__, fmt, ##__VA_ARGS__)
+#define LOG_FINE(fmt, ...)    log_message(LOG_LEVEL_FINE, __FILE__, __LINE__, fmt, ##__VA_ARGS__)
+#define LOG_DEBUG(fmt, ...)   log_message(LOG_LEVEL_DEBUG, __FILE__, __LINE__, fmt, ##__VA_ARGS__)
+
+/* Set log level from verbosity count */
+static void set_log_level_from_verbosity(int verbosity) {
+    switch (verbosity) {
+        case 0: g_log_level = LOG_LEVEL_INFO; break;
+        case 1: g_log_level = LOG_LEVEL_VERBOSE; break;
+        case 2: g_log_level = LOG_LEVEL_DETAIL; break;
+        case 3: g_log_level = LOG_LEVEL_TRACE; break;
+        case 4: g_log_level = LOG_LEVEL_FINE; break;
+        default: g_log_level = LOG_LEVEL_DEBUG; break;
+    }
+}
+
+#endif /* LOG_LEVELS_H */
+```
+
+### Usage Example
+
+```c
+#include "log_levels.h"
+
+int g_log_level = LOG_LEVEL_INFO; /* Initialize global log level */
+
+int main(int argc, char *argv[]) {
+    int verbosity = 0;
+    
+    /* Parse verbosity flags */
+    for (int i = 1; i < argc; i++) {
+        if (strncmp(argv[i], "-v", 2) == 0) {
+            verbosity = strlen(argv[i]) - 1; /* Count 'v' characters */
+        }
+    }
+    
+    set_log_level_from_verbosity(verbosity);
+    
+    LOG_INFO("Application starting");
+    LOG_VERBOSE("Verbose information");
+    LOG_DETAIL("Detailed operation information");
+    LOG_TRACE("Function entry point");
+    LOG_FINE("Fine-grained debug information");
+    LOG_DEBUG("Debug-level information");
+    
+    return 0;
+}
+```
+
+## Integration with syslog
+
+Projects using syslog MUST still implement the custom levels and map them appropriately:
+
+```c
+#include <syslog.h>
+
+static void log_to_syslog(int level, const char *fmt, ...) {
+    int priority;
+    
+    /* Map custom levels to syslog priorities */
+    if (level >= LOG_LEVEL_ERROR) {
+        priority = LOG_ERR;
+    } else if (level >= LOG_LEVEL_WARN) {
+        priority = LOG_WARNING;
+    } else if (level >= LOG_LEVEL_INFO) {
+        priority = LOG_INFO;
+    } else if (level >= LOG_LEVEL_VERBOSE) {
+        priority = LOG_INFO; /* VERBOSE maps to INFO in syslog */
+    } else if (level >= LOG_LEVEL_DETAIL) {
+        priority = LOG_DEBUG; /* DETAIL maps to DEBUG in syslog */
+    } else {
+        priority = LOG_DEBUG; /* TRACE, FINE, DEBUG all map to DEBUG */
+    }
+    
+    va_list args;
+    va_start(args, fmt);
+    vsyslog(priority, fmt, args);
+    va_end(args);
+}
+```
+
+## Usage Guidelines
+
+- Use **INFO** for normal operational messages that users should see by default.
+- Use **VERBOSE** for additional context that helps understand what the program is doing.
+- Use **DETAIL** for detailed information about operations, such as function parameters or intermediate results.
+- Use **TRACE** for execution flow information, such as function entry/exit points.
+- Use **FINE** for very detailed debugging information, such as variable values or state dumps.
+- Use **DEBUG** for the most detailed debugging information, typically only useful during development.
