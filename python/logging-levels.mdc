@@ -8,7 +8,7 @@ alwaysApply: false
 
 ## Requirement
 
-All Python projects SHALL implement custom logging levels between INFO (20) and DEBUG (10) to provide granular verbosity control. These levels SHALL correspond to command-line verbosity flags and use descriptive names for consistent use across Python projects.
+**MANDATORY**: ALL Python projects MUST implement custom logging levels between INFO (20) and DEBUG (10) to provide granular verbosity control. This requirement is MANDATORY and SHALL NOT be considered optional. These levels SHALL correspond to command-line verbosity flags and use descriptive names for consistent use across Python projects.
 
 ## Custom Logging Level Definitions
 
@@ -25,9 +25,9 @@ Standard Python logging levels remain unchanged:
 
 ## Implementation Requirements
 
-1. **Level Registration**: All Python projects SHALL register these custom logging levels using `logging.addLevelName()`.
+1. **Level Registration**: ALL Python projects MUST register these custom logging levels using `logging.addLevelName()`. This is MANDATORY.
 
-2. **Level Constants**: Projects SHALL define constants for these levels:
+2. **Level Constants**: ALL projects MUST define constants for these levels:
    ```python
    VERBOSE = 18
    DETAIL = 16
@@ -35,11 +35,11 @@ Standard Python logging levels remain unchanged:
    FINE = 12
    ```
 
-3. **Logger Methods**: Projects SHALL add convenience methods to logger instances for each custom level (e.g., `logger.verbose()`, `logger.detail()`, `logger.trace()`, `logger.fine()`).
+3. **Logger Methods**: ALL projects MUST add convenience methods to logger instances for each custom level (e.g., `logger.verbose()`, `logger.detail()`, `logger.trace()`, `logger.fine()`). This is MANDATORY.
 
-4. **Proper Usage**: All logging SHALL use Python's standard `logging` module, not print statements or custom logging implementations.
+4. **Proper Usage**: ALL logging MUST use Python's standard `logging` module, not print statements or custom logging implementations. This is MANDATORY.
 
-5. **Verbosity Mapping**: Command-line verbosity flags SHALL map to logging levels as follows:
+5. **Verbosity Mapping**: Command-line verbosity flags MUST map to logging levels as follows:
    - No flag: INFO level (20)
    - `-v`: VERBOSE (18)
    - `-vv`: DETAIL (16)
