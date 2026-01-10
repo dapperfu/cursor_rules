@@ -1,0 +1,104 @@
+# Rust Debugging Requirement
+
+## Requirement
+
+ALL debugging SHALL use a debugger. Print statements for debugging are prohibited.
+
+### Preferred Debugger
+
+**rust-lldb** - The Rust-enabled LLVM debugger (preferred and required)
+
+### Debugging Practices
+
+- Set breakpoints using debugger commands
+- Use step-through debugging (step, next, continue commands)
+- Inspect variables, memory, and call stack interactively
+- Use conditional breakpoints when needed
+- Leverage debugger features (watch expressions, memory inspection, register examination)
+- Inspect Rust-specific types (Option, Result, Vec, etc.) effectively
+
+### Build Configuration
+
+Code SHALL be built with debug symbols enabled:
+
+- Debug builds: `cargo build` (includes debug symbols by default)
+- Release builds for debugging: `cargo build --release --profile dev` or use debug profile
+
+The default `dev` profile in `Cargo.toml` includes debug symbols.
+
+## Rationale
+
+Using proper debuggers provides:
+
+- **Superior Debugging Capabilities**: Breakpoints, variable inspection, memory examination, call stack navigation, watch expressions, and step-through execution
+- **Cleaner Code**: No debug print statements cluttering the codebase
+- **Professional Development Practices**: Industry-standard debugging tools and techniques
+- **Better Understanding**: Clear visibility into program execution flow, memory state, and Rust type representations
+- **Efficiency**: Faster debugging with interactive tools rather than repeatedly adding/removing print statements
+- **Memory Safety**: Ability to inspect ownership, borrowing, and lifetime issues
+- **Type Inspection**: Better understanding of Rust types (Option, Result, enums, etc.) in debugger
+- **Production Safety**: No risk of accidentally leaving debug print statements in production code
+
+## Exceptions
+
+The only acceptable exceptions to this requirement are:
+
+1. **Unavailable Debugger Support**: When debugging in environments where debuggers are not available or cannot be used (e.g., certain embedded systems, production environments without debugger access, or platforms without debugger support).
+
+2. **Logging vs. Debugging**: This requirement applies to debugging activities, not to logging for production monitoring, error tracking, or operational visibility. Structured logging for production purposes is distinct from debugging and remains acceptable.
+
+## Implementation
+
+### Using rust-lldb
+
+```bash
+# Build with debug symbols (default for cargo build)
+cargo build
+
+# Start debugging
+rust-lldb target/debug/program_name
+
+# Common rust-lldb commands:
+# (lldb) breakpoint set --name main
+# (lldb) run
+# (lldb) step
+# (lldb) next
+# (lldb) print variable_name
+# (lldb) frame variable
+# (lldb) expr option_value.unwrap()
+# (lldb) continue
+```
+
+### Cargo Configuration
+
+Ensure `Cargo.toml` has appropriate debug profile:
+
+```toml
+[profile.dev]
+debug = true  # Include debug symbols (default)
+
+[profile.release]
+debug = false  # No debug symbols in release (default)
+```
+
+### VS Code/Cursor Integration
+
+Install the CodeLLDB extension for integrated debugging experience with Rust.
+
+### Debugging Rust-Specific Types
+
+rust-lldb provides enhanced support for Rust types:
+
+- `Option<T>`: Inspect `Some(value)` or `None` variants
+- `Result<T, E>`: Inspect `Ok(value)` or `Err(error)` variants
+- Enums: Inspect enum variants and their associated data
+- Slices and Vec: Inspect length, capacity, and elements
+- String types: Inspect `String`, `&str`, and their representations
+
+## Integration
+
+This rule works in conjunction with:
+
+- `debugging/debugger-required.mdc` - General debugging requirement
+- `rust/linting.mdc` - Clippy linting (catches issues before debugging)
+- `rust/testing.mdc` - Test-driven development practices

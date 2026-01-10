@@ -1,0 +1,108 @@
+# Python Debugging Requirement
+
+## Requirement
+
+ALL debugging SHALL use a Python debugger. Print statements for debugging are prohibited.
+
+### Preferred Debuggers
+
+1. **debugpy** - For VS Code/Cursor integration and remote debugging
+2. **ipdb** - Enhanced interactive debugger with IPython features
+3. **pdb** - Standard library debugger (fallback)
+
+### Debugging Practices
+
+- Set breakpoints using `breakpoint()` built-in function (Python 3.7+)
+- Use step-through debugging (step, next, continue commands)
+- Inspect variables and call stack interactively
+- Use conditional breakpoints when needed
+- Leverage debugger features (watch expressions, post-mortem debugging)
+
+### Integration with IDEs
+
+- VS Code/Cursor: Use debugpy for integrated debugging experience
+- PyCharm: Use built-in debugger
+- Command line: Use pdb or ipdb for interactive debugging
+
+## Rationale
+
+Using proper debuggers provides:
+
+- **Superior Debugging Capabilities**: Breakpoints, variable inspection, call stack navigation, watch expressions, and step-through execution
+- **Cleaner Code**: No debug print statements cluttering the codebase
+- **Professional Development Practices**: Industry-standard debugging tools and techniques
+- **Better Understanding**: Clear visibility into program execution flow and state
+- **Efficiency**: Faster debugging with interactive tools rather than repeatedly adding/removing print statements
+- **Production Safety**: No risk of accidentally leaving debug print statements in production code
+
+## Exceptions
+
+The only acceptable exceptions to this requirement are:
+
+1. **Unavailable Debugger Support**: When debugging in environments where debuggers are not available or cannot be used (e.g., certain embedded systems, production environments without debugger access, or platforms without debugger support).
+
+2. **Logging vs. Debugging**: This requirement applies to debugging activities, not to logging for production monitoring, error tracking, or operational visibility. Structured logging for production purposes is distinct from debugging and remains acceptable.
+
+3. **Quick Verification**: Single print statements for quick verification of values during development are acceptable, but SHALL be removed before committing code.
+
+## Implementation
+
+### Using breakpoint()
+
+```python
+def process_data(data: list[int]) -> int:
+    result = 0
+    for item in data:
+        breakpoint()  # Debugger will stop here
+        result += item * 2
+    return result
+```
+
+### Using pdb programmatically
+
+```python
+import pdb
+
+def complex_function(x: int, y: int) -> int:
+    if x > 10:
+        pdb.set_trace()  # Alternative to breakpoint()
+    return x + y
+```
+
+### Using ipdb for enhanced debugging
+
+```python
+import ipdb
+
+def analyze_data(data: dict[str, any]) -> None:
+    ipdb.set_trace()  # Enhanced debugger with IPython features
+    # Interactive debugging with tab completion, syntax highlighting
+```
+
+### VS Code/Cursor Debug Configuration
+
+Create `.vscode/launch.json`:
+
+```json
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Python: Current File",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${file}",
+            "console": "integratedTerminal",
+            "justMyCode": true
+        }
+    ]
+}
+```
+
+## Integration
+
+This rule works in conjunction with:
+
+- `debugging/debugger-required.mdc` - General debugging requirement
+- `python/logging-levels.mdc` - Structured logging for production (not debugging)
+- `python/error-handling.mdc` - Error handling patterns

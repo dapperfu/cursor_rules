@@ -1,0 +1,114 @@
+# C++ Debugging Requirement
+
+## Requirement
+
+ALL debugging SHALL use a debugger. Print statements for debugging are prohibited.
+
+### Preferred Debuggers
+
+1. **lldb** - Preferred debugger for C++ code (LLVM debugger)
+2. **gdb** - GNU Debugger (fallback when lldb is unavailable)
+
+### Debugging Practices
+
+- Set breakpoints using debugger commands
+- Use step-through debugging (step, next, continue commands)
+- Inspect variables, memory, objects, and call stack interactively
+- Use conditional breakpoints when needed
+- Leverage debugger features (watch expressions, memory inspection, register examination, object inspection)
+
+### Compiler Flags
+
+Code SHALL be compiled with debug symbols enabled:
+
+- Clang++: `-g` flag (e.g., `clang++ -g -o program program.cpp`)
+- G++: `-g` flag (e.g., `g++ -g -o program program.cpp`)
+
+Optimization flags that strip debug information (e.g., `-O3`) SHALL NOT be used during debugging.
+
+## Rationale
+
+Using proper debuggers provides:
+
+- **Superior Debugging Capabilities**: Breakpoints, variable inspection, memory examination, object inspection, call stack navigation, watch expressions, and step-through execution
+- **Cleaner Code**: No debug print statements cluttering the codebase
+- **Professional Development Practices**: Industry-standard debugging tools and techniques
+- **Better Understanding**: Clear visibility into program execution flow, memory state, object state, and register values
+- **Efficiency**: Faster debugging with interactive tools rather than repeatedly adding/removing print statements
+- **Memory Safety**: Ability to inspect memory corruption, buffer overflows, pointer issues, and object lifecycle
+- **Template Debugging**: Better support for debugging template instantiations and complex C++ features
+- **Production Safety**: No risk of accidentally leaving debug print statements in production code
+
+## Exceptions
+
+The only acceptable exceptions to this requirement are:
+
+1. **Unavailable Debugger Support**: When debugging in environments where debuggers are not available or cannot be used (e.g., certain embedded systems, production environments without debugger access, or platforms without debugger support).
+
+2. **Logging vs. Debugging**: This requirement applies to debugging activities, not to logging for production monitoring, error tracking, or operational visibility. Structured logging for production purposes is distinct from debugging and remains acceptable.
+
+## Implementation
+
+### Using lldb
+
+```bash
+# Compile with debug symbols
+clang++ -g -o program program.cpp
+
+# Start debugging
+lldb ./program
+
+# Common lldb commands:
+# (lldb) breakpoint set --name main
+# (lldb) run
+# (lldb) step
+# (lldb) next
+# (lldb) print variable_name
+# (lldb) frame variable
+# (lldb) expr object.member
+# (lldb) continue
+```
+
+### Using gdb (fallback)
+
+```bash
+# Compile with debug symbols
+g++ -g -o program program.cpp
+
+# Start debugging
+gdb ./program
+
+# Common gdb commands:
+# (gdb) break main
+# (gdb) run
+# (gdb) step
+# (gdb) next
+# (gdb) print variable_name
+# (gdb) info locals
+# (gdb) print object.member
+# (gdb) continue
+```
+
+### Makefile Integration
+
+Ensure Makefiles include debug flags:
+
+```makefile
+CXXFLAGS += -g -Wall -Wextra
+```
+
+### CMake Integration
+
+Ensure CMake builds include debug symbols:
+
+```cmake
+set(CMAKE_CXX_FLAGS_DEBUG "-g -Wall -Wextra")
+```
+
+## Integration
+
+This rule works in conjunction with:
+
+- `debugging/debugger-required.mdc` - General debugging requirement
+- `c++/static-analysis.mdc` - Static analysis tools
+- `c++/memory-management.mdc` - Memory debugging practices
