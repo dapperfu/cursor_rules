@@ -1,0 +1,168 @@
+# Python Comprehensions
+
+## Requirement
+
+Code SHALL use comprehensions (list, dict, set, generator) when appropriate, but SHALL avoid overly complex nested comprehensions.
+
+### When to Use Comprehensions
+
+- Creating lists, dictionaries, or sets from iterables
+- Simple transformations and filtering operations
+- When the comprehension improves readability over a loop
+
+### When NOT to Use Comprehensions
+
+- Complex logic that reduces readability
+- Operations with side effects (use loops instead)
+- When multiple statements are needed in the transformation
+- Deeply nested comprehensions (more than 2 levels)
+
+### Complexity Limits
+
+- List/dict/set comprehensions SHALL NOT exceed 2 levels of nesting
+- Generator expressions are preferred for large datasets to save memory
+- Complex filtering or transformation logic SHALL be extracted to helper functions
+
+## Rationale
+
+Using comprehensions appropriately provides:
+
+- **Readability**: Concise syntax for common transformation patterns
+- **Performance**: Comprehensions are often faster than equivalent loops
+- **Pythonic Code**: Follows Python idioms and best practices
+- **Memory Efficiency**: Generator expressions avoid creating intermediate lists
+- **Clarity**: Simple comprehensions are more readable than equivalent loops
+
+However, overly complex comprehensions reduce readability and should be avoided.
+
+## Implementation
+
+### List Comprehensions
+
+```python
+# Good: Simple transformation
+numbers = [1, 2, 3, 4, 5]
+squared = [x ** 2 for x in numbers]
+
+# Good: With filtering
+even_squared = [x ** 2 for x in numbers if x % 2 == 0]
+
+# Good: Multiple conditions
+filtered = [x for x in numbers if x > 2 and x < 10]
+
+# Bad: Too complex, extract to function
+# result = [process(x) for x in data if validate(x) and transform(x) > threshold]
+def should_include(x: int) -> bool:
+    return validate(x) and transform(x) > threshold
+
+result = [process(x) for x in data if should_include(x)]
+```
+
+### Dictionary Comprehensions
+
+```python
+# Good: Simple mapping
+names = ["Alice", "Bob", "Charlie"]
+name_lengths = {name: len(name) for name in names}
+
+# Good: With filtering
+long_names = {name: len(name) for name in names if len(name) > 4}
+
+# Good: Key-value transformation
+data = {"a": 1, "b": 2, "c": 3}
+doubled = {k: v * 2 for k, v in data.items()}
+
+# Bad: Too complex
+# result = {k: complex_transform(v) for k, v in data.items() if validate(k, v) and process(k) > threshold}
+def should_include_item(k: str, v: int) -> bool:
+    return validate(k, v) and process(k) > threshold
+
+result = {
+    k: complex_transform(v)
+    for k, v in data.items()
+    if should_include_item(k, v)
+}
+```
+
+### Set Comprehensions
+
+```python
+# Good: Simple set creation
+numbers = [1, 2, 2, 3, 3, 4]
+unique = {x for x in numbers}
+
+# Good: With transformation
+squared_unique = {x ** 2 for x in numbers}
+```
+
+### Generator Expressions
+
+```python
+# Good: Memory-efficient for large datasets
+large_range = range(1000000)
+squared_gen = (x ** 2 for x in large_range)
+
+# Process one at a time without creating full list
+for squared in squared_gen:
+    process(squared)
+
+# Good: Chaining generator expressions
+numbers = range(1000)
+filtered = (x for x in numbers if x % 2 == 0)
+squared = (x ** 2 for x in filtered)
+result = sum(squared)  # Efficient: no intermediate lists created
+```
+
+### Nested Comprehensions
+
+```python
+# Good: Simple nested comprehension (2 levels)
+matrix = [[1, 2, 3], [4, 5, 6], [7, 8, 9]]
+flattened = [item for row in matrix for item in row]
+
+# Acceptable: 2 levels with simple logic
+squared_matrix = [[x ** 2 for x in row] for row in matrix]
+
+# Bad: Too deeply nested or too complex
+# result = [[[process(x) for x in inner] for inner in middle] for middle in outer]
+# Extract to helper function or use loops
+```
+
+### Avoiding Side Effects
+
+```python
+# Bad: Side effects in comprehension
+results = [print(x) for x in range(10)]  # Don't do this
+
+# Good: Use loop for side effects
+for x in range(10):
+    print(x)
+
+# Or: Separate comprehension and side effects
+results = [process(x) for x in range(10)]
+for result in results:
+    print(result)
+```
+
+### Performance Considerations
+
+```python
+# Good: Generator expression for large datasets
+def process_large_dataset(data: list[int]) -> int:
+    # Generator expression avoids creating intermediate list
+    return sum(x ** 2 for x in data if x > 0)
+
+# Good: List comprehension for small datasets that need indexing
+def process_small_dataset(data: list[int]) -> list[int]:
+    # List comprehension allows random access
+    squared = [x ** 2 for x in data if x > 0]
+    return squared[0:10]  # Can slice
+```
+
+## Integration
+
+This rule works in conjunction with:
+
+- `python/performance-profiling.mdc` - Performance considerations for comprehensions
+- `python/string-formatting.mdc` - String formatting in comprehensions
+- `python/typing.mdc` - Type hints for comprehension results

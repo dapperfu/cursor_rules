@@ -1,0 +1,223 @@
+# Python Decorators
+
+## Requirement
+
+When creating or using decorators, code SHALL follow these patterns and best practices.
+
+### Decorator Patterns
+
+- Custom decorators SHALL use `@functools.wraps` to preserve function metadata
+- Decorators SHALL be clearly documented with their purpose and behavior
+- Decorator composition SHALL be done in a readable order
+- Decorators that modify function behavior SHALL be idempotent when possible
+
+### When to Use Decorators
+
+- Cross-cutting concerns (logging, timing, caching, authentication)
+- Function/method modification without changing the original code
+- Reusable behavior that applies to multiple functions
+- Property getters/setters (using `@property`)
+
+### When NOT to Use Decorators
+
+- Simple function composition (use regular function calls)
+- When decorator complexity obscures the code's intent
+- When the same effect can be achieved more simply
+
+## Rationale
+
+Using decorators properly provides:
+
+- **Code Reusability**: Common behavior can be applied to multiple functions
+- **Separation of Concerns**: Cross-cutting concerns separated from business logic
+- **Readability**: Decorators make intent clear at function definition
+- **Maintainability**: Changes to cross-cutting behavior centralized in decorator
+- **Metadata Preservation**: `@functools.wraps` ensures function metadata is preserved for introspection and debugging
+
+## Implementation
+
+### Basic Decorator with functools.wraps
+
+```python
+import functools
+from typing import Callable, TypeVar, ParamSpec
+
+P = ParamSpec("P")
+R = TypeVar("R")
+
+def timing_decorator(func: Callable[P, R]) -> Callable[P, R]:
+    """Decorator to measure function execution time."""
+    @functools.wraps(func)
+    def wrapper(*args: P.args, **kwargs: P.kwargs) -> R:
+        import time
+        start = time.time()
+        result = func(*args, **kwargs)
+        elapsed = time.time() - start
+        print(f"{func.__name__} took {elapsed:.2f} seconds")
+        return result
+    return wrapper
+
+@timing_decorator
+def slow_function(n: int) -> int:
+    """Slow computation."""
+    total = sum(range(n))
+    return total
+
+# Function metadata is preserved
+assert slow_function.__name__ == "slow_function"
+assert slow_function.__doc__ == "Slow computation."
+```
+
+### Decorator with Arguments
+
+```python
+import functools
+from typing import Callable, TypeVar, ParamSpec
+
+P = ParamSpec("P")
+R = TypeVar("R")
+
+def retry(max_attempts: int = 3):
+    """Decorator factory for retrying functions."""
+    def decorator(func: Callable[P, R]) -> Callable[P, R]:
+        @functools.wraps(func)
+        def wrapper(*args: P.args, **kwargs: P.kwargs) -> R:
+            last_exception = None
+            for attempt in range(max_attempts):
+                try:
+                    return func(*args, **kwargs)
+                except Exception as e:
+                    last_exception = e
+                    if attempt < max_attempts - 1:
+                        continue
+                    raise last_exception
+            raise last_exception  # type: ignore
+        return wrapper
+    return decorator
+
+@retry(max_attempts=5)
+def unreliable_operation() -> str:
+    """Operation that may fail."""
+    # Implementation
+    return "success"
+```
+
+### Class-Based Decorator
+
+```python
+import functools
+from typing import Callable, TypeVar, ParamSpec
+
+P = ParamSpec("P")
+R = TypeVar("R")
+
+class CountCalls:
+    """Decorator that counts function calls."""
+    
+    def __init__(self, func: Callable[P, R]) -> None:
+        self.func = func
+        self.count = 0
+        functools.update_wrapper(self, func)
+    
+    def __call__(self, *args: P.args, **kwargs: P.kwargs) -> R:
+        self.count += 1
+        return self.func(*args, **kwargs)
+
+@CountCalls
+def example_function() -> None:
+    """Example function."""
+    pass
+
+example_function()
+example_function()
+assert example_function.count == 2
+```
+
+### Decorator Composition
+
+```python
+# Good: Clear order, readable
+@cache
+@timing_decorator
+@validate_input
+def expensive_computation(x: int) -> int:
+    """Expensive computation with caching, timing, and validation."""
+    return x ** 2
+
+# Decorators are applied bottom-to-top:
+# 1. validate_input runs first
+# 2. timing_decorator measures execution
+# 3. cache stores result
+```
+
+### Using functools.lru_cache
+
+```python
+import functools
+
+@functools.lru_cache(maxsize=128)
+def fibonacci(n: int) -> int:
+    """Compute Fibonacci number with caching."""
+    if n < 2:
+        return n
+    return fibonacci(n - 1) + fibonacci(n - 2)
+```
+
+### Property Decorators
+
+```python
+class Temperature:
+    """Temperature class with property decorators."""
+    
+    def __init__(self, celsius: float) -> None:
+        self._celsius = celsius
+    
+    @property
+    def celsius(self) -> float:
+        """Temperature in Celsius."""
+        return self._celsius
+    
+    @celsius.setter
+    def celsius(self, value: float) -> None:
+        """Set temperature in Celsius."""
+        if value < -273.15:
+            raise ValueError("Temperature cannot be below absolute zero")
+        self._celsius = value
+    
+    @property
+    def fahrenheit(self) -> float:
+        """Temperature in Fahrenheit."""
+        return self._celsius * 9 / 5 + 32
+    
+    @fahrenheit.setter
+    def fahrenheit(self, value: float) -> None:
+        """Set temperature in Fahrenheit."""
+        self.celsius = (value - 32) * 5 / 9
+```
+
+### Classmethod and Staticmethod
+
+```python
+class MathUtils:
+    """Math utilities with classmethod and staticmethod."""
+    
+    pi = 3.14159
+    
+    @classmethod
+    def circle_area(cls, radius: float) -> float:
+        """Calculate circle area using class attribute."""
+        return cls.pi * radius ** 2
+    
+    @staticmethod
+    def add(a: float, b: float) -> float:
+        """Add two numbers (no class/instance access needed)."""
+        return a + b
+```
+
+## Integration
+
+This rule works in conjunction with:
+
+- `python/caching.mdc` - Caching decorators like `@functools.lru_cache`
+- `python/typing.mdc` - Type hints for decorators
+- `python/documentation.mdc` - Documenting decorator behavior

@@ -1,0 +1,236 @@
+# Python Exception Handling
+
+## Requirement
+
+Code SHALL handle exceptions appropriately using specific exception types, proper exception chaining, and clear error messages.
+
+### Exception Type Specificity
+
+- SHALL catch specific exception types, not bare `except:` clauses
+- SHALL catch the most specific exception type possible
+- SHALL handle multiple exception types explicitly when needed
+- SHALL NOT use bare `except:` except in top-level error handlers
+
+### Exception Chaining
+
+- SHALL use `raise ... from` to chain exceptions when appropriate
+- SHALL preserve exception context when re-raising exceptions
+- SHALL provide meaningful error messages that include context
+
+### Custom Exceptions
+
+- SHALL create custom exception hierarchies for domain-specific errors
+- Custom exceptions SHALL inherit from appropriate base exception types
+- Custom exceptions SHALL provide meaningful error messages
+
+### Exception Handling Patterns
+
+- SHALL handle exceptions at appropriate levels (not too low, not too high)
+- SHALL log exceptions with appropriate context
+- SHALL clean up resources even when exceptions occur (use context managers)
+
+## Rationale
+
+Proper exception handling provides:
+
+- **Debugging**: Specific exceptions make it easier to identify and fix issues
+- **Error Recovery**: Specific handling allows appropriate recovery strategies
+- **Context Preservation**: Exception chaining preserves the full error context
+- **Clarity**: Custom exceptions make error conditions explicit and domain-specific
+- **Maintainability**: Clear exception handling makes code easier to understand and maintain
+- **User Experience**: Meaningful error messages help users understand and resolve issues
+
+## Implementation
+
+### Specific Exception Types
+
+```python
+# Good: Specific exception handling
+try:
+    result = divide(a, b)
+except ZeroDivisionError:
+    logger.error("Division by zero attempted")
+    return None
+except TypeError as e:
+    logger.error(f"Invalid type: {e}")
+    raise
+
+# Bad: Bare except
+try:
+    result = divide(a, b)
+except:  # Too broad, catches everything including KeyboardInterrupt
+    logger.error("Something went wrong")
+    return None
+
+# Good: Multiple specific exceptions
+try:
+    file_content = read_config_file(path)
+except FileNotFoundError:
+    logger.warning(f"Config file not found: {path}, using defaults")
+    return default_config
+except PermissionError:
+    logger.error(f"Permission denied: {path}")
+    raise
+except (ValueError, KeyError) as e:
+    logger.error(f"Invalid config format: {e}")
+    raise
+```
+
+### Exception Chaining
+
+```python
+# Good: Exception chaining with 'from'
+def process_file(filepath: str) -> dict:
+    """Process file with proper exception chaining."""
+    try:
+        with open(filepath, 'r') as f:
+            return parse_json(f.read())
+    except FileNotFoundError as e:
+        raise ConfigError(f"Configuration file not found: {filepath}") from e
+    except json.JSONDecodeError as e:
+        raise ConfigError(f"Invalid JSON in {filepath}") from e
+
+# The original exception is preserved in __cause__
+```
+
+### Custom Exception Hierarchies
+
+```python
+# Good: Custom exception hierarchy
+class AppError(Exception):
+    """Base exception for application errors."""
+    pass
+
+class ConfigError(AppError):
+    """Configuration-related errors."""
+    pass
+
+class DatabaseError(AppError):
+    """Database-related errors."""
+    pass
+
+class ConnectionError(DatabaseError):
+    """Database connection errors."""
+    pass
+
+class QueryError(DatabaseError):
+    """Database query errors."""
+    pass
+
+# Usage
+def load_config(path: str) -> dict:
+    """Load configuration with custom exceptions."""
+    if not pathlib.Path(path).exists():
+        raise ConfigError(f"Config file not found: {path}")
+    # ...
+```
+
+### Exception Handling at Appropriate Levels
+
+```python
+# Good: Handle at appropriate level
+def process_user_request(user_id: int, data: dict) -> dict:
+    """Process user request with error handling."""
+    try:
+        user = get_user(user_id)
+        validate_data(data)
+        result = perform_operation(user, data)
+        return result
+    except UserNotFoundError:
+        # Handle at this level - return appropriate response
+        logger.warning(f"User {user_id} not found")
+        return {"error": "User not found"}
+    except ValidationError as e:
+        # Handle validation errors
+        logger.warning(f"Validation failed: {e}")
+        return {"error": str(e)}
+    except Exception as e:
+        # Log unexpected errors, re-raise for higher level handling
+        logger.exception(f"Unexpected error processing request: {e}")
+        raise
+
+# Bad: Catching too broadly at low level
+def helper_function() -> int:
+    try:
+        return complex_operation()
+    except Exception:  # Too broad, hides errors
+        return 0
+```
+
+### Logging Exceptions
+
+```python
+import logging
+
+logger = logging.getLogger(__name__)
+
+# Good: Log with context
+try:
+    result = risky_operation()
+except SpecificError as e:
+    logger.error(
+        f"Operation failed for user {user_id} with data {data}",
+        exc_info=True  # Include traceback
+    )
+    raise
+
+# Good: Use logger.exception for automatic exc_info
+try:
+    result = risky_operation()
+except SpecificError:
+    logger.exception("Operation failed")  # Automatically includes traceback
+    raise
+```
+
+### Resource Cleanup with Context Managers
+
+```python
+# Good: Context managers ensure cleanup even with exceptions
+def process_with_cleanup() -> None:
+    """Process with automatic resource cleanup."""
+    with acquire_resource() as resource:
+        # Even if exception occurs, resource is cleaned up
+        risky_operation(resource)
+        another_operation(resource)
+
+# Bad: Manual cleanup (easy to forget in exception path)
+def process_manual_cleanup() -> None:
+    """Process with manual cleanup - error prone."""
+    resource = acquire_resource()
+    try:
+        risky_operation(resource)
+    finally:
+        resource.cleanup()  # Better, but context manager is preferred
+```
+
+### Re-raising Exceptions
+
+```python
+# Good: Re-raise after logging
+def process_data(data: list[int]) -> int:
+    """Process data with error handling."""
+    try:
+        return sum(transform(x) for x in data)
+    except ValueError as e:
+        logger.error(f"Invalid data: {e}")
+        raise  # Re-raise to let caller handle
+
+# Good: Transform exception type
+def api_call() -> dict:
+    """API call with exception transformation."""
+    try:
+        response = requests.get(url)
+        response.raise_for_status()
+        return response.json()
+    except requests.HTTPError as e:
+        raise APIError(f"API request failed: {e}") from e
+```
+
+## Integration
+
+This rule works in conjunction with:
+
+- `python/context-managers.mdc` - Resource cleanup in exception handlers
+- `python/logging-levels.mdc` - Logging exceptions appropriately
+- `python/error-messages.mdc` - User-friendly error messages
+- `python/structured-logging.mdc` - Structured logging for exceptions

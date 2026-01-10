@@ -1,0 +1,171 @@
+# Python Context Managers
+
+## Requirement
+
+Code SHALL use context managers (`with` statements) for resource management instead of manual resource cleanup.
+
+### When to Use Context Managers
+
+- File operations (opening/closing files)
+- Database connections and transactions
+- Network connections
+- Lock acquisition/release
+- Temporary resource allocation
+- Any operation requiring cleanup or teardown
+
+### Context Manager Patterns
+
+- Prefer built-in context managers when available (e.g., `open()`, `threading.Lock()`)
+- Use `contextlib` utilities for creating context managers from generators
+- Create custom context managers using `__enter__` and `__exit__` methods when needed
+- Use `contextlib.contextmanager` decorator for simple context managers
+
+### Multiple Resources
+
+- Use multiple context managers in a single `with` statement when resources are independent
+- Nest `with` statements when resource acquisition order matters
+
+## Rationale
+
+Using context managers provides:
+
+- **Automatic Cleanup**: Resources are guaranteed to be released even if exceptions occur
+- **Exception Safety**: Proper cleanup in the face of exceptions prevents resource leaks
+- **Readability**: Clear indication of resource lifetime and scope
+- **Consistency**: Standard pattern for resource management across Python codebase
+- **Error Prevention**: Reduces risk of forgetting to close files, release locks, etc.
+- **Pythonic Code**: Follows Python best practices and idioms
+
+## Implementation
+
+### Built-in Context Managers
+
+```python
+# File operations
+with open("data.txt", "r") as f:
+    content = f.read()
+# File automatically closed, even if exception occurs
+
+# Locks
+import threading
+lock = threading.Lock()
+with lock:
+    # Critical section
+    shared_resource += 1
+# Lock automatically released
+```
+
+### Multiple Context Managers
+
+```python
+# Good: Multiple independent resources
+with open("input.txt", "r") as infile, open("output.txt", "w") as outfile:
+    data = infile.read()
+    outfile.write(processed_data)
+
+# Good: Nested when order matters
+with acquire_database_connection() as conn:
+    with conn.transaction():
+        # Database operations
+        conn.execute(query)
+```
+
+### Using contextlib.contextmanager
+
+```python
+from contextlib import contextmanager
+from typing import Generator
+
+@contextmanager
+def temporary_config(config_path: str) -> Generator[None, None, None]:
+    """Temporary configuration context manager."""
+    backup_path = f"{config_path}.backup"
+    # Setup
+    shutil.copy(config_path, backup_path)
+    try:
+        yield  # Code using the context runs here
+    finally:
+        # Cleanup
+        shutil.move(backup_path, config_path)
+
+# Usage
+with temporary_config("config.toml"):
+    # Modify config
+    update_configuration()
+# Config automatically restored
+```
+
+### Custom Context Manager Class
+
+```python
+from typing import Any
+
+class DatabaseConnection:
+    """Custom context manager for database connections."""
+    
+    def __init__(self, connection_string: str) -> None:
+        self.connection_string = connection_string
+        self.conn = None
+    
+    def __enter__(self) -> "DatabaseConnection":
+        self.conn = connect_to_database(self.connection_string)
+        return self
+    
+    def __exit__(
+        self,
+        exc_type: type[BaseException] | None,
+        exc_val: BaseException | None,
+        exc_tb: Any
+    ) -> bool:
+        if self.conn:
+            self.conn.close()
+        return False  # Don't suppress exceptions
+
+# Usage
+with DatabaseConnection("postgresql://...") as db:
+    db.conn.execute("SELECT * FROM users")
+# Connection automatically closed
+```
+
+### contextlib Utilities
+
+```python
+from contextlib import suppress, redirect_stdout, nullcontext
+import os
+
+# Suppress specific exceptions
+with suppress(FileNotFoundError):
+    os.remove("temp_file.txt")
+
+# Redirect stdout
+with redirect_stdout(open("output.log", "w")):
+    print("This goes to output.log")
+
+# Null context (useful for optional resources)
+context = nullcontext() if resource is None else resource_manager()
+with context:
+    # Code that may or may not use a resource
+    pass
+```
+
+### Async Context Managers
+
+```python
+import aiofiles
+from typing import AsyncContextManager
+
+async def process_file_async(filepath: str) -> None:
+    """Async file processing with async context manager."""
+    async with aiofiles.open(filepath, "r") as f:
+        content = await f.read()
+        # Process content
+    # File automatically closed
+```
+
+## Integration
+
+This rule works in conjunction with:
+
+- `python/async-await-patterns.mdc` - Async context managers (`async with`)
+- `python/exception-handling.mdc` - Exception handling in context managers
+- `python/memory-management.mdc` - Resource management patterns

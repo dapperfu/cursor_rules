@@ -1,0 +1,216 @@
+# Python Import Organization
+
+## Requirement
+
+Code SHALL organize imports according to PEP 8 standards and follow these additional guidelines.
+
+### Import Ordering
+
+Imports SHALL be organized in the following order, with blank lines between groups:
+
+1. Standard library imports
+2. Related third-party imports
+3. Local application/library specific imports
+
+Within each group, imports SHALL be sorted alphabetically.
+
+### Import Styles
+
+- SHALL use absolute imports by default
+- Relative imports SHALL only be used within packages (same package structure)
+- SHALL NOT use `import *` except for specific documented cases (e.g., `__init__.py` with `__all__`)
+
+### Public API Definition
+
+- Packages SHALL define `__all__` to explicitly declare public API
+- `__all__` SHALL list all public names exported by the module
+- `__all__` SHALL be used when `import *` is acceptable (e.g., in `__init__.py`)
+
+### Circular Import Prevention
+
+- Code SHALL be structured to avoid circular imports
+- When circular imports are unavoidable, SHALL use local imports or string type annotations
+- SHALL refactor code structure to eliminate circular dependencies when possible
+
+## Rationale
+
+Proper import organization provides:
+
+- **Readability**: Clear structure makes it easy to see dependencies
+- **Maintainability**: Consistent import style across codebase
+- **Performance**: Proper import organization can help with import performance
+- **Clarity**: `__all__` makes public API explicit
+- **Debugging**: Avoiding circular imports prevents hard-to-debug import errors
+- **Standards Compliance**: Follows PEP 8 and Python community standards
+
+## Implementation
+
+### Import Ordering
+
+```python
+# Standard library imports
+import os
+import sys
+from pathlib import Path
+from typing import Dict, List, Optional
+
+# Third-party imports
+import click
+import requests
+from pydantic import BaseModel
+
+# Local application imports
+from app.models import User
+from app.utils import helper_function
+```
+
+### Absolute vs Relative Imports
+
+```python
+# Good: Absolute imports (preferred)
+from app.models.user import User
+from app.services.auth import authenticate
+
+# Good: Relative imports within package
+# In app/models/__init__.py
+from .user import User
+from .post import Post
+
+# Bad: Relative imports from outside package
+# from ..other_package import something  # Avoid when possible
+```
+
+### Using __all__
+
+```python
+# In app/utils/__init__.py
+from .helpers import helper1, helper2, helper3
+from .validators import validate_email, validate_phone
+
+__all__ = [
+    "helper1",
+    "helper2",
+    "helper3",
+    "validate_email",
+    "validate_phone",
+]
+
+# Now import * is safe and explicit
+# from app.utils import *  # Only imports items in __all__
+```
+
+### Avoiding import *
+
+```python
+# Bad: Import * (unclear what is imported)
+from app.utils import *
+
+# Good: Explicit imports
+from app.utils import helper1, helper2, validate_email
+
+# Acceptable: Import * with __all__ defined
+# Only in specific cases like __init__.py with explicit __all__
+```
+
+### Circular Import Prevention
+
+```python
+# Bad: Circular import
+# file1.py
+from file2 import ClassB
+
+class ClassA:
+    def use_b(self) -> None:
+        b = ClassB()
+
+# file2.py
+from file1 import ClassA  # Circular!
+
+class ClassB:
+    def use_a(self) -> None:
+        a = ClassA()
+
+# Good: Use local import or refactor
+# file1.py
+class ClassA:
+    def use_b(self) -> None:
+        from file2 import ClassB  # Local import
+        b = ClassB()
+
+# file2.py
+class ClassB:
+    def use_a(self) -> None:
+        from file1 import ClassA  # Local import
+        a = ClassA()
+
+# Better: Refactor to eliminate circular dependency
+# Extract common functionality to separate module
+```
+
+### String Type Annotations for Forward References
+
+```python
+from __future__ import annotations
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from app.models import User  # Only imported for type checking
+
+class Post:
+    def __init__(self, author: "User") -> None:  # String annotation
+        self.author = author
+```
+
+### TYPE_CHECKING Pattern
+
+```python
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    # Imports only used for type checking
+    from app.models import User, Post
+    from app.services import AuthService
+
+def process_user(user: "User") -> None:  # String annotation
+    """Process user (User type only needed for type checking)."""
+    # Implementation
+```
+
+### Import Organization Tools
+
+Use tools like `isort` or `ruff` to automatically organize imports:
+
+```bash
+# Using ruff (recommended per ruff-check-format.mdc)
+ruff check --select I --fix .
+
+# Using isort
+isort .
+```
+
+### Conditional Imports
+
+```python
+# Good: Handle optional dependencies
+try:
+    import optional_library
+    HAS_OPTIONAL = True
+except ImportError:
+    HAS_OPTIONAL = False
+    optional_library = None  # type: ignore
+
+def use_optional() -> None:
+    """Use optional library if available."""
+    if not HAS_OPTIONAL:
+        raise ImportError("optional_library is required")
+    optional_library.do_something()
+```
+
+## Integration
+
+This rule works in conjunction with:
+
+- `python/ruff-check-format.mdc` - Ruff can automatically organize imports
+- `python/typing.mdc` - Type annotations and forward references
+- `python/module-organization.mdc` - Package structure affects imports
+- `python/no-src-directory.mdc` - Import paths depend on project structure

@@ -1,0 +1,152 @@
+# Python Async/Await Patterns
+
+## Requirement
+
+When using asynchronous programming in Python, code SHALL follow these patterns and best practices.
+
+### Async Function Definition
+
+- Use `async def` for asynchronous functions, not `@asyncio.coroutine` decorator
+- Async functions SHALL be clearly named or documented to indicate they are async
+- Async functions SHALL be awaited when called (unless intentionally fire-and-forget)
+
+### Concurrent Operations
+
+- Use `asyncio.gather()` for concurrent execution of independent async operations
+- Use `asyncio.create_task()` for fire-and-forget operations that need to run concurrently
+- Avoid sequential `await` calls when operations can run concurrently
+
+### Exception Handling
+
+- Async functions SHALL handle exceptions appropriately
+- Use `try/except` blocks within async functions for error handling
+- Consider using `asyncio.wait_for()` with timeout for operations that may hang
+- Use `asyncio.shield()` to prevent cancellation of critical operations
+
+### Blocking Operations
+
+- SHALL NOT perform blocking I/O operations in async functions
+- Use async-compatible libraries (e.g., `aiohttp` instead of `requests`, `asyncpg` instead of `psycopg2`)
+- If blocking operations are unavoidable, use `asyncio.to_thread()` or `run_in_executor()` to run them in a thread pool
+
+### Context Managers
+
+- Use async context managers (`async with`) for resource management in async code
+- Prefer `async with` over manual `__aenter__`/`__aexit__` calls
+
+## Rationale
+
+Following async/await best practices provides:
+
+- **Performance**: Concurrent execution of I/O-bound operations improves application throughput
+- **Clarity**: `async def` is clearer and more modern than decorator-based coroutines
+- **Correctness**: Proper exception handling prevents silent failures in async code
+- **Efficiency**: Using `asyncio.gather()` maximizes concurrency compared to sequential awaits
+- **Maintainability**: Clear patterns make async code easier to understand and debug
+- **Resource Management**: Async context managers ensure proper cleanup of async resources
+
+## Implementation
+
+### Using asyncio.gather()
+
+```python
+import asyncio
+from typing import List
+
+async def fetch_user_data(user_id: int) -> dict:
+    """Fetch user data from API."""
+    # Simulated async operation
+    await asyncio.sleep(0.1)
+    return {"id": user_id, "name": f"User {user_id}"}
+
+async def fetch_multiple_users(user_ids: List[int]) -> List[dict]:
+    """Fetch multiple users concurrently."""
+    # Good: Use gather for concurrent operations
+    tasks = [fetch_user_data(uid) for uid in user_ids]
+    return await asyncio.gather(*tasks)
+
+# Bad: Sequential awaits
+async def fetch_multiple_users_sequential(user_ids: List[int]) -> List[dict]:
+    results = []
+    for uid in user_ids:
+        result = await fetch_user_data(uid)  # Sequential, inefficient
+        results.append(result)
+    return results
+```
+
+### Exception Handling in Async Code
+
+```python
+import asyncio
+from typing import Any
+
+async def safe_operation(data: Any) -> Any:
+    """Async operation with proper exception handling."""
+    try:
+        result = await some_async_operation(data)
+        return result
+    except SpecificError as e:
+        # Handle specific error
+        logger.error(f"Operation failed: {e}")
+        raise
+    except Exception as e:
+        # Handle unexpected errors
+        logger.exception("Unexpected error in async operation")
+        raise
+```
+
+### Timeout Handling
+
+```python
+import asyncio
+
+async def operation_with_timeout() -> str:
+    """Async operation with timeout."""
+    try:
+        result = await asyncio.wait_for(
+            slow_async_operation(),
+            timeout=5.0
+        )
+        return result
+    except asyncio.TimeoutError:
+        logger.warning("Operation timed out")
+        return "timeout"
+```
+
+### Blocking Operations in Async Code
+
+```python
+import asyncio
+from concurrent.futures import ThreadPoolExecutor
+
+async def process_blocking_operation(data: bytes) -> str:
+    """Run blocking operation in thread pool."""
+    loop = asyncio.get_event_loop()
+    with ThreadPoolExecutor() as executor:
+        result = await loop.run_in_executor(
+            executor,
+            blocking_cpu_bound_function,
+            data
+        )
+    return result
+```
+
+### Async Context Managers
+
+```python
+import aiofiles
+
+async def read_file_async(filepath: str) -> str:
+    """Read file using async context manager."""
+    async with aiofiles.open(filepath, 'r') as f:
+        content = await f.read()
+    return content
+```
+
+## Integration
+
+This rule works in conjunction with:
+
+- `python/threading-vs-async.mdc` - Guidance on when to use async vs threading
+- `python/exception-handling.mdc` - General exception handling patterns
+- `python/context-managers.mdc` - Context manager patterns (sync and async)
