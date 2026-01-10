@@ -1,0 +1,209 @@
+# Python Testing Framework
+
+## Requirement
+
+All Python projects SHALL use pytest as the standard testing framework.
+
+### Test File Naming
+
+- Test files SHALL be named `test_*.py` or `*_test.py`
+- Test files SHALL be located in a `tests/` directory at the project root
+- Test files SHALL mirror the package structure when testing package code
+
+### Test Function Naming
+
+- Test functions SHALL be named `test_*`
+- Test functions SHALL be standalone functions (not methods unless testing classes)
+- Test functions SHALL use descriptive names that indicate what is being tested
+
+### Test Organization
+
+- Tests SHALL be organized by module/package being tested
+- Related tests SHALL be grouped in the same test file
+- Test fixtures SHALL be defined using `@pytest.fixture` decorator
+- Test classes SHALL only be used when grouping related tests with shared setup
+
+### Pytest Features
+
+- SHALL use pytest fixtures for test setup and teardown
+- SHALL use pytest parametrize for testing multiple inputs
+- SHALL use pytest markers for test categorization
+- SHALL use pytest assertions (assert statements, not unittest assertions)
+
+## Rationale
+
+Using pytest provides:
+
+- **Simplicity**: Simple test functions with assert statements
+- **Powerful Features**: Fixtures, parametrization, markers, and plugins
+- **Better Output**: Clear, informative test failure messages
+- **Flexibility**: Can test any Python code, not just unittest-style classes
+- **Community Standard**: Most widely used Python testing framework
+- **Extensibility**: Rich plugin ecosystem for specialized testing needs
+- **Performance**: Efficient test discovery and execution
+
+## Implementation
+
+### Basic Test Structure
+
+```python
+# tests/test_math.py
+def test_add() -> None:
+    """Test addition function."""
+    from app.math import add
+    assert add(2, 3) == 5
+    assert add(-1, 1) == 0
+
+def test_multiply() -> None:
+    """Test multiplication function."""
+    from app.math import multiply
+    assert multiply(3, 4) == 12
+    assert multiply(0, 5) == 0
+```
+
+### Using Fixtures
+
+```python
+import pytest
+from app.database import Database
+
+@pytest.fixture
+def db() -> Database:
+    """Create test database."""
+    db = Database(":memory:")  # In-memory database for tests
+    db.setup()
+    yield db
+    db.teardown()
+
+def test_user_creation(db: Database) -> None:
+    """Test user creation."""
+    user = db.create_user("alice", "alice@example.com")
+    assert user.name == "alice"
+    assert user.email == "alice@example.com"
+```
+
+### Parametrized Tests
+
+```python
+import pytest
+
+@pytest.mark.parametrize("input,expected", [
+    (2, 4),
+    (3, 9),
+    (4, 16),
+    (0, 0),
+])
+def test_square(input: int, expected: int) -> None:
+    """Test square function with multiple inputs."""
+    from app.math import square
+    assert square(input) == expected
+```
+
+### Test Markers
+
+```python
+import pytest
+
+@pytest.mark.slow
+def test_expensive_operation() -> None:
+    """Slow test marked with @pytest.mark.slow."""
+    # Long-running test
+    result = expensive_computation()
+    assert result is not None
+
+@pytest.mark.integration
+def test_api_integration() -> None:
+    """Integration test."""
+    # Test that requires external services
+    response = call_external_api()
+    assert response.status_code == 200
+
+# Run only fast tests: pytest -m "not slow"
+# Run only integration tests: pytest -m integration
+```
+
+### Test Classes (When Appropriate)
+
+```python
+class TestUser:
+    """Test class for User functionality."""
+    
+    def test_user_creation(self) -> None:
+        """Test user creation."""
+        user = User("alice", "alice@example.com")
+        assert user.name == "alice"
+    
+    def test_user_validation(self) -> None:
+        """Test user validation."""
+        with pytest.raises(ValueError):
+            User("", "invalid")  # Empty name should raise ValueError
+```
+
+### Exception Testing
+
+```python
+import pytest
+
+def test_division_by_zero() -> None:
+    """Test that division by zero raises exception."""
+    from app.math import divide
+    with pytest.raises(ZeroDivisionError):
+        divide(10, 0)
+
+def test_validation_error() -> None:
+    """Test validation with specific error message."""
+    from app.validators import validate_email
+    with pytest.raises(ValueError, match="Invalid email format"):
+        validate_email("not-an-email")
+```
+
+### Fixture Scope
+
+```python
+import pytest
+
+@pytest.fixture(scope="module")
+def shared_resource() -> str:
+    """Fixture shared across all tests in module."""
+    resource = setup_expensive_resource()
+    yield resource
+    teardown_expensive_resource(resource)
+
+@pytest.fixture(scope="session")
+def database_connection() -> Database:
+    """Fixture shared across all tests in session."""
+    db = connect_to_test_database()
+    yield db
+    db.close()
+```
+
+### Conftest.py for Shared Fixtures
+
+```python
+# tests/conftest.py
+import pytest
+from app.database import Database
+
+@pytest.fixture
+def test_db() -> Database:
+    """Shared database fixture for all tests."""
+    db = Database(":memory:")
+    db.setup()
+    yield db
+    db.teardown()
+```
+
+### Test Discovery
+
+pytest automatically discovers tests:
+- Files matching `test_*.py` or `*_test.py`
+- Functions starting with `test_`
+- Classes starting with `Test` (methods starting with `test_`)
+
+## Integration
+
+This rule works in conjunction with:
+
+- `python/test-coverage.mdc` - Coverage requirements for tests
+- `python/typing.mdc` - Type hints in test functions
+- `python/documentation.mdc` - Test function documentation

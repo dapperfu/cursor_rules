@@ -1,0 +1,187 @@
+# Python Test Coverage
+
+## Requirement
+
+All Python projects SHALL maintain minimum test coverage thresholds and use coverage.py for coverage measurement.
+
+### Coverage Thresholds
+
+- Projects SHALL maintain a minimum of 80% code coverage
+- Critical code paths (authentication, payment processing, data validation) SHALL maintain 95%+ coverage
+- Coverage SHALL be measured using `coverage.py` tool
+- Coverage reports SHALL be generated in HTML format for review
+
+### Coverage Configuration
+
+- Projects SHALL include a `.coveragerc` or `pyproject.toml` coverage configuration
+- Coverage configuration SHALL exclude appropriate patterns:
+  - `__main__` blocks
+  - Test files themselves
+  - Migration files
+  - Generated code
+  - Type stubs (`.pyi` files)
+
+### Coverage in CI/CD
+
+- CI/CD pipelines SHALL run coverage checks
+- Coverage reports SHALL be generated and stored as artifacts
+- Coverage failures SHALL fail the build if threshold is not met
+
+## Rationale
+
+Maintaining test coverage provides:
+
+- **Quality Assurance**: Ensures code is tested and reduces risk of bugs
+- **Confidence**: High coverage gives confidence in code correctness
+- **Documentation**: Tests serve as executable documentation
+- **Refactoring Safety**: High coverage makes refactoring safer
+- **Metrics**: Coverage metrics help identify untested code
+- **Standards**: Industry-standard practice for quality software
+
+## Implementation
+
+### Coverage Configuration
+
+```toml
+# pyproject.toml
+[tool.coverage.run]
+source = ["app"]
+omit = [
+    "*/tests/*",
+    "*/test_*.py",
+    "*/__main__.py",
+    "*/migrations/*",
+    "*/__pycache__/*",
+    "*/venv/*",
+    "*/build/*",
+]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "raise AssertionError",
+    "raise NotImplementedError",
+    "if __name__ == .__main__.:",
+    "if TYPE_CHECKING:",
+    "@abstractmethod",
+]
+fail_under = 80
+show_missing = true
+skip_covered = false
+```
+
+### Running Coverage
+
+```bash
+# Run tests with coverage
+coverage run -m pytest
+
+# Generate HTML report
+coverage html
+
+# Generate terminal report
+coverage report
+
+# Check if coverage meets threshold
+coverage report --fail-under=80
+```
+
+### Makefile Integration
+
+```makefile
+.PHONY: test-coverage
+test-coverage:
+	coverage run -m pytest
+	coverage report --fail-under=80
+	coverage html
+	@echo "Coverage report generated in htmlcov/"
+
+.PHONY: test
+test: test-coverage
+```
+
+### Excluding Code from Coverage
+
+```python
+# Exclude specific lines
+def debug_function() -> None:  # pragma: no cover
+    """Debug function excluded from coverage."""
+    print("Debug info")
+
+# Exclude blocks
+if __name__ == "__main__":  # pragma: no cover
+    main()
+
+# Exclude entire functions/classes
+class AbstractBase:  # pragma: no cover
+    """Abstract base class."""
+    @abstractmethod
+    def method(self) -> None:
+        pass
+```
+
+### Coverage in CI/CD
+
+```yaml
+# .github/workflows/test.yml
+name: Tests
+
+on: [push, pull_request]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+      - name: Install dependencies
+        run: |
+          pip install -e ".[dev]"
+      - name: Run tests with coverage
+        run: |
+          coverage run -m pytest
+          coverage report --fail-under=80
+      - name: Upload coverage reports
+        uses: codecov/codecov-action@v3
+        with:
+          files: ./coverage.xml
+```
+
+### Coverage Badges
+
+Projects MAY include coverage badges in README:
+
+```markdown
+[![Coverage](https://codecov.io/gh/user/repo/branch/main/graph/badge.svg)](https://codecov.io/gh/user/repo)
+```
+
+### Critical Path Coverage
+
+```python
+# Critical authentication code - must have 95%+ coverage
+def authenticate_user(username: str, password: str) -> User:
+    """Authenticate user - CRITICAL PATH."""
+    # All branches must be tested
+    if not username or not password:
+        raise ValueError("Username and password required")
+    
+    user = get_user_by_username(username)
+    if not user:
+        raise AuthenticationError("Invalid credentials")
+    
+    if not verify_password(password, user.password_hash):
+        raise AuthenticationError("Invalid credentials")
+    
+    return user
+```
+
+## Integration
+
+This rule works in conjunction with:
+
+- `python/testing-framework.mdc` - pytest for running tests
+- `python/ci-cd.mdc` - CI/CD pipeline integration
+- `python/pre-commit-hooks.mdc` - Pre-commit coverage checks
