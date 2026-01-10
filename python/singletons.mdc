@@ -1,0 +1,172 @@
+# Python Singleton Patterns
+
+## Requirement
+
+Python code SHALL use singleton patterns appropriately and only when necessary.
+
+### When to Use Singletons
+
+- Singletons SHALL only be used when truly necessary (shared state, resource management)
+- Singletons SHALL be used for:
+  - Database connections (connection pools)
+  - Configuration managers
+  - Logging systems
+  - Cache managers
+- Singletons SHALL NOT be used as a default pattern
+
+### Singleton Implementation
+
+- SHALL use module-level variables for simple singletons
+- SHALL use class-based singletons with `__new__` when needed
+- SHALL use `functools.lru_cache` for function-based singletons when appropriate
+- SHALL document why singleton pattern is necessary
+
+### Alternatives to Singletons
+
+- SHALL consider dependency injection instead of singletons
+- SHALL consider factory patterns for object creation
+- SHALL consider context managers for resource management
+- SHALL prefer explicit dependencies over global state
+
+## Rationale
+
+Using singletons appropriately provides:
+
+- **Resource Management**: Single instance for expensive resources
+- **State Sharing**: Shared state across application
+- **Control**: Single point of control for certain resources
+
+However, singletons can make code harder to test and create hidden dependencies, so they should be used sparingly.
+
+## Implementation
+
+### Module-Level Singleton
+
+```python
+# app/database.py
+"""Database connection singleton (module-level)."""
+from typing import Optional
+import sqlite3
+
+_connection: Optional[sqlite3.Connection] = None
+
+def get_connection() -> sqlite3.Connection:
+    """Get database connection (singleton)."""
+    global _connection
+    if _connection is None:
+        _connection = sqlite3.connect(":memory:")
+    return _connection
+```
+
+### Class-Based Singleton
+
+```python
+class DatabaseConnection:
+    """Database connection singleton (class-based)."""
+    _instance: Optional["DatabaseConnection"] = None
+    
+    def __new__(cls) -> "DatabaseConnection":
+        """Ensure only one instance exists."""
+        if cls._instance is None:
+            cls._instance = super().__new__(cls)
+            cls._instance._initialized = False
+        return cls._instance
+    
+    def __init__(self) -> None:
+        """Initialize connection (only once)."""
+        if self._initialized:
+            return
+        self.connection = sqlite3.connect(":memory:")
+        self._initialized = True
+```
+
+### Function-Based Singleton with Cache
+
+```python
+import functools
+from typing import Final
+
+@functools.lru_cache(maxsize=1)
+def get_config() -> dict:
+    """Get configuration (singleton via cache)."""
+    # This function will only be called once
+    # Subsequent calls return cached result
+    return load_configuration()
+```
+
+### Dependency Injection Alternative
+
+```python
+# Better: Dependency injection instead of singleton
+class DatabaseService:
+    """Database service (not a singleton)."""
+    def __init__(self, connection: sqlite3.Connection) -> None:
+        self.connection = connection
+
+# Usage: Inject dependency
+def create_service(connection: sqlite3.Connection) -> DatabaseService:
+    return DatabaseService(connection)
+
+# Testable: Can inject mock connection
+def test_service():
+    mock_conn = create_mock_connection()
+    service = DatabaseService(mock_conn)
+    # Test service
+```
+
+### Context Manager Alternative
+
+```python
+# Better: Context manager for resource management
+class DatabaseConnection:
+    """Database connection (not singleton, use context manager)."""
+    def __init__(self, connection_string: str) -> None:
+        self.connection_string = connection_string
+        self.conn = None
+    
+    def __enter__(self) -> "DatabaseConnection":
+        self.conn = sqlite3.connect(self.connection_string)
+        return self
+    
+    def __exit__(self, *args: any) -> None:
+        if self.conn:
+            self.conn.close()
+
+# Usage
+with DatabaseConnection(":memory:") as db:
+    # Use database
+    pass
+# Automatically closed
+```
+
+### When Singleton is Appropriate
+
+```python
+# Appropriate: Logging system (standard library uses singleton pattern)
+import logging
+
+logger = logging.getLogger(__name__)  # Singleton pattern
+
+# Appropriate: Configuration manager (if truly global)
+class ConfigManager:
+    """Global configuration manager (singleton)."""
+    _instance: Optional["ConfigManager"] = None
+    
+    def __new__(cls) -> "ConfigManager":
+        if cls._instance is None:
+            cls._instance = super().__new__(cls)
+        return cls._instance
+    
+    def __init__(self) -> None:
+        if not hasattr(self, '_initialized'):
+            self.config = load_config()
+            self._initialized = True
+```
+
+## Integration
+
+This rule works in conjunction with:
+
+- `python/context-managers.mdc` - Alternative to singletons for resources
+- `python/caching.mdc` - Function-based singletons with caching
+- `python/testing-framework.mdc` - Testing singletons (can be difficult)

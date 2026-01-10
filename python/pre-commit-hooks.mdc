@@ -1,0 +1,172 @@
+# Python Pre-commit Hooks
+
+## Requirement
+
+All Python projects SHALL use pre-commit hooks to enforce code quality before commits.
+
+### Required Hooks
+
+- SHALL include ruff for linting and formatting
+- SHALL include mypy for type checking
+- SHALL include pytest for running tests
+- SHALL include secret scanning (detect-secrets)
+- SHALL include other project-specific hooks as needed
+
+### Pre-commit Configuration
+
+- Projects SHALL include `.pre-commit-config.yaml` file
+- Pre-commit hooks SHALL be installed via `pre-commit install`
+- Pre-commit hooks SHALL run automatically on `git commit`
+- Pre-commit hooks SHALL be runnable manually via `pre-commit run --all-files`
+
+### CI/CD Integration
+
+- Pre-commit hooks SHALL also run in CI/CD pipelines
+- CI/CD SHALL use the same hooks as local development
+- Failed hooks SHALL fail the CI/CD pipeline
+
+## Rationale
+
+Using pre-commit hooks provides:
+
+- **Quality**: Catches issues before they enter the repository
+- **Consistency**: Ensures all commits meet quality standards
+- **Efficiency**: Fixes issues early, before code review
+- **Standards**: Enforces coding standards automatically
+- **Security**: Scans for accidentally committed secrets
+- **Team Alignment**: All team members use the same checks
+
+## Implementation
+
+### .pre-commit-config.yaml
+
+```yaml
+repos:
+  # Ruff for linting and formatting
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.1.0
+    hooks:
+      - id: ruff
+        args: [--fix, --exit-non-zero-on-fix]
+      - id: ruff-format
+
+  # MyPy for type checking
+  - repo: https://github.com/pre-commit/mirrors-mypy
+    rev: v1.7.0
+    hooks:
+      - id: mypy
+        additional_dependencies: [types-all]
+
+  # Pytest for tests
+  - repo: local
+    hooks:
+      - id: pytest
+        name: pytest
+        entry: pytest
+        language: system
+        types: [python]
+        pass_filenames: false
+        always_run: true
+
+  # Secret scanning
+  - repo: https://github.com/Yelp/detect-secrets
+    rev: v1.4.0
+    hooks:
+      - id: detect-secrets
+        args: ['--baseline', '.secrets.baseline']
+
+  # General file checks
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.5.0
+    hooks:
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: check-yaml
+      - id: check-added-large-files
+      - id: check-json
+      - id: check-toml
+```
+
+### Installing Pre-commit
+
+```bash
+# Install pre-commit
+pip install pre-commit
+
+# Install git hooks
+pre-commit install
+
+# Run on all files (first time)
+pre-commit run --all-files
+```
+
+### Makefile Integration
+
+```makefile
+.PHONY: pre-commit-install
+pre-commit-install:
+	pre-commit install
+
+.PHONY: pre-commit
+pre-commit:
+	pre-commit run --all-files
+
+.PHONY: pre-commit-update
+pre-commit-update:
+	pre-commit autoupdate
+```
+
+### CI/CD Integration
+
+```yaml
+# .github/workflows/pre-commit.yml
+name: Pre-commit
+
+on: [push, pull_request]
+
+jobs:
+  pre-commit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+      - name: Install pre-commit
+        run: pip install pre-commit
+      - name: Run pre-commit
+        run: pre-commit run --all-files
+```
+
+### Custom Local Hooks
+
+```yaml
+# .pre-commit-config.yaml
+repos:
+  - repo: local
+    hooks:
+      - id: custom-check
+        name: Custom Check
+        entry: bash -c 'python scripts/custom_check.py'
+        language: system
+        types: [python]
+```
+
+### Bypassing Pre-commit (When Necessary)
+
+```bash
+# Skip pre-commit hooks (use sparingly)
+git commit --no-verify -m "Emergency fix"
+
+# Run specific hook
+pre-commit run ruff --all-files
+```
+
+## Integration
+
+This rule works in conjunction with:
+
+- `python/ruff-check-format.mdc` - Ruff linting and formatting
+- `python/typing.mdc` - MyPy type checking
+- `python/testing-framework.mdc` - Pytest for tests
+- `python/secrets-management.mdc` - Secret scanning

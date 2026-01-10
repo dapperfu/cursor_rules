@@ -1,0 +1,201 @@
+# Python Error Messages
+
+## Requirement
+
+Python applications SHALL provide clear, user-friendly error messages while maintaining technical details in logs.
+
+### Error Message Principles
+
+- Error messages SHALL be clear and actionable for users
+- Error messages SHALL NOT expose sensitive information (secrets, internal details)
+- Technical details SHALL be logged, not shown to users
+- Error messages SHALL suggest solutions when possible
+
+### Error Message Structure
+
+- User-facing errors SHALL be user-friendly and non-technical
+- Logged errors SHALL include full technical context
+- Error codes SHALL be used for programmatic error handling
+- Error messages SHALL be consistent across the application
+
+### Error Handling
+
+- SHALL catch exceptions and provide user-friendly messages
+- SHALL log full exception details for debugging
+- SHALL use appropriate exception types with meaningful messages
+
+## Rationale
+
+Good error messages provide:
+
+- **User Experience**: Users understand what went wrong and how to fix it
+- **Security**: Sensitive information is not exposed to users
+- **Debugging**: Technical details in logs help developers debug issues
+- **Support**: Clear error messages reduce support burden
+- **Consistency**: Consistent error messages improve user experience
+- **Actionability**: Error messages help users take corrective action
+
+## Implementation
+
+### User-Friendly Error Messages
+
+```python
+from typing import Optional
+
+class UserFriendlyError(Exception):
+    """Base exception with user-friendly message."""
+    def __init__(
+        self,
+        user_message: str,
+        technical_details: Optional[str] = None
+    ) -> None:
+        self.user_message = user_message
+        self.technical_details = technical_details
+        super().__init__(self.user_message)
+
+def process_file(filepath: str) -> str:
+    """Process file with user-friendly errors."""
+    try:
+        with open(filepath) as f:
+            return f.read()
+    except FileNotFoundError:
+        raise UserFriendlyError(
+            user_message=f"File not found: {filepath}. Please check the file path.",
+            technical_details=f"FileNotFoundError: {filepath}"
+        )
+    except PermissionError:
+        raise UserFriendlyError(
+            user_message=f"Permission denied: Cannot read {filepath}. Please check file permissions.",
+            technical_details=f"PermissionError: {filepath}"
+        )
+```
+
+### Logging Technical Details
+
+```python
+import logging
+
+logger = logging.getLogger(__name__)
+
+def process_request(data: dict) -> dict:
+    """Process request with error logging."""
+    try:
+        result = perform_operation(data)
+        return result
+    except ValueError as e:
+        # Log technical details
+        logger.error(
+            "Validation error in process_request",
+            extra={
+                "error_type": type(e).__name__,
+                "error_message": str(e),
+                "input_data": data,  # Log input for debugging
+            },
+            exc_info=True
+        )
+        # Return user-friendly message
+        raise UserFriendlyError(
+            user_message="Invalid input data. Please check your request.",
+            technical_details=str(e)
+        )
+```
+
+### Error Codes
+
+```python
+from enum import Enum
+
+class ErrorCode(Enum):
+    """Error codes for programmatic error handling."""
+    FILE_NOT_FOUND = "FILE_NOT_FOUND"
+    PERMISSION_DENIED = "PERMISSION_DENIED"
+    VALIDATION_ERROR = "VALIDATION_ERROR"
+    NETWORK_ERROR = "NETWORK_ERROR"
+
+class APIError(Exception):
+    """API error with code and message."""
+    def __init__(
+        self,
+        code: ErrorCode,
+        user_message: str,
+        technical_details: Optional[str] = None
+    ) -> None:
+        self.code = code
+        self.user_message = user_message
+        self.technical_details = technical_details
+        super().__init__(self.user_message)
+
+# Usage
+def fetch_data(url: str) -> dict:
+    """Fetch data with error codes."""
+    try:
+        response = requests.get(url)
+        response.raise_for_status()
+        return response.json()
+    except requests.RequestException as e:
+        raise APIError(
+            code=ErrorCode.NETWORK_ERROR,
+            user_message="Unable to fetch data. Please check your internet connection.",
+            technical_details=f"RequestException: {e}"
+        )
+```
+
+### Suggesting Solutions
+
+```python
+def validate_email(email: str) -> None:
+    """Validate email with helpful error message."""
+    if "@" not in email:
+        raise ValueError(
+            f"Invalid email format: '{email}'. "
+            "Email addresses must contain an '@' symbol. "
+            "Example: user@example.com"
+        )
+    
+    if "." not in email.split("@")[1]:
+        raise ValueError(
+            f"Invalid email format: '{email}'. "
+            "Email addresses must have a domain with a top-level domain. "
+            "Example: user@example.com"
+        )
+```
+
+### Consistent Error Messages
+
+```python
+# Define error message templates
+ERROR_MESSAGES = {
+    "file_not_found": "File not found: {filepath}. Please check the file path.",
+    "permission_denied": "Permission denied: Cannot access {resource}. Please check permissions.",
+    "validation_error": "Invalid input: {field}. {message}",
+}
+
+def raise_file_not_found(filepath: str) -> None:
+    """Raise file not found error with consistent message."""
+    raise FileNotFoundError(
+        ERROR_MESSAGES["file_not_found"].format(filepath=filepath)
+    )
+```
+
+### Not Exposing Sensitive Information
+
+```python
+# Bad: Exposes sensitive information
+def authenticate(username: str, password: str) -> None:
+    if password != correct_password:
+        raise ValueError(f"Invalid password: {password}")  # DON'T DO THIS
+
+# Good: Generic error message
+def authenticate(username: str, password: str) -> None:
+    if password != correct_password:
+        logger.warning(f"Authentication failed for user: {username}")
+        raise ValueError("Invalid credentials")  # Generic message
+```
+
+## Integration
+
+This rule works in conjunction with:
+
+- `python/exception-handling.mdc` - Exception handling patterns
+- `python/structured-logging.mdc` - Logging error details
+- `python/secrets-management.mdc` - Not exposing secrets in errors

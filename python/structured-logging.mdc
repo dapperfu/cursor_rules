@@ -1,0 +1,219 @@
+# Python Structured Logging
+
+## Requirement
+
+Python applications SHALL use structured logging for production environments.
+
+### Logging Format
+
+- Production environments SHALL use JSON logging format
+- Development environments MAY use human-readable format
+- Logs SHALL include contextual information (request IDs, user IDs, etc.)
+- Logs SHALL use appropriate log levels
+
+### Log Levels
+
+- SHALL use standard log levels: DEBUG, INFO, WARNING, ERROR, CRITICAL
+- SHALL follow logging level guidelines from `logging-levels.mdc`
+- SHALL log at appropriate levels (not everything as INFO)
+
+### Contextual Logging
+
+- SHALL include request IDs for request tracing
+- SHALL include user IDs when applicable
+- SHALL include operation context (function names, module names)
+- SHALL include timing information for performance monitoring
+
+## Rationale
+
+Structured logging provides:
+
+- **Machine Readability**: JSON logs are easily parsed by log aggregation tools
+- **Searchability**: Structured fields enable efficient log searching
+- **Traceability**: Request IDs enable tracing requests across services
+- **Monitoring**: Structured logs enable automated monitoring and alerting
+- **Debugging**: Contextual information makes debugging easier
+- **Compliance**: Structured logs support audit and compliance requirements
+
+## Implementation
+
+### JSON Logging Setup
+
+```python
+import logging
+import json
+from datetime import datetime
+from typing import Any, Dict
+
+class JSONFormatter(logging.Formatter):
+    """JSON formatter for structured logging."""
+    
+    def format(self, record: logging.LogRecord) -> str:
+        """Format log record as JSON."""
+        log_data: Dict[str, Any] = {
+            "timestamp": datetime.utcnow().isoformat(),
+            "level": record.levelname,
+            "message": record.getMessage(),
+            "module": record.module,
+            "function": record.funcName,
+            "line": record.lineno,
+        }
+        
+        # Add extra context
+        if hasattr(record, "request_id"):
+            log_data["request_id"] = record.request_id
+        if hasattr(record, "user_id"):
+            log_data["user_id"] = record.user_id
+        
+        # Add exception info if present
+        if record.exc_info:
+            log_data["exception"] = self.formatException(record.exc_info)
+        
+        return json.dumps(log_data)
+
+# Configure logging
+def setup_logging(level: str = "INFO") -> None:
+    """Setup structured JSON logging."""
+    handler = logging.StreamHandler()
+    handler.setFormatter(JSONFormatter())
+    
+    logger = logging.getLogger()
+    logger.setLevel(getattr(logging, level))
+    logger.addHandler(handler)
+```
+
+### Using Structured Logging
+
+```python
+import logging
+
+logger = logging.getLogger(__name__)
+
+def process_request(request_id: str, user_id: str, data: dict) -> dict:
+    """Process request with structured logging."""
+    # Add context to logger
+    extra = {
+        "request_id": request_id,
+        "user_id": user_id,
+    }
+    
+    logger.info("Processing request", extra=extra)
+    
+    try:
+        result = perform_operation(data)
+        logger.info("Request processed successfully", extra=extra)
+        return result
+    except Exception as e:
+        logger.error(
+            "Request processing failed",
+            extra=extra,
+            exc_info=True
+        )
+        raise
+```
+
+### Request ID Context
+
+```python
+import logging
+from contextvars import ContextVar
+from typing import Optional
+
+# Context variable for request ID
+request_id_var: ContextVar[Optional[str]] = ContextVar("request_id", default=None)
+
+class RequestIDFilter(logging.Filter):
+    """Filter to add request ID to log records."""
+    
+    def filter(self, record: logging.LogRecord) -> bool:
+        """Add request ID to log record."""
+        record.request_id = request_id_var.get()
+        return True
+
+# Setup with filter
+handler = logging.StreamHandler()
+handler.addFilter(RequestIDFilter())
+handler.setFormatter(JSONFormatter())
+logger.addHandler(handler)
+
+# Usage
+def handle_request(request_id: str) -> None:
+    """Handle request with request ID in context."""
+    request_id_var.set(request_id)
+    logger.info("Handling request")  # Automatically includes request_id
+```
+
+### Log Levels
+
+```python
+import logging
+
+logger = logging.getLogger(__name__)
+
+# DEBUG: Detailed diagnostic information
+logger.debug("Processing item %d", item_id)
+
+# INFO: General informational messages
+logger.info("User %s logged in", user_id)
+
+# WARNING: Warning messages
+logger.warning("Rate limit approaching: %d requests", count)
+
+# ERROR: Error messages
+logger.error("Failed to process payment: %s", error_message)
+
+# CRITICAL: Critical error messages
+logger.critical("Database connection lost")
+```
+
+### Performance Logging
+
+```python
+import logging
+import time
+from functools import wraps
+from typing import Callable, TypeVar, ParamSpec
+
+P = ParamSpec("P")
+R = TypeVar("R")
+
+logger = logging.getLogger(__name__)
+
+def log_performance(func: Callable[P, R]) -> Callable[P, R]:
+    """Decorator to log function performance."""
+    @wraps(func)
+    def wrapper(*args: P.args, **kwargs: P.kwargs) -> R:
+        start = time.time()
+        try:
+            result = func(*args, **kwargs)
+            elapsed = time.time() - start
+            logger.info(
+                f"{func.__name__} completed",
+                extra={
+                    "function": func.__name__,
+                    "duration_seconds": elapsed,
+                }
+            )
+            return result
+        except Exception as e:
+            elapsed = time.time() - start
+            logger.error(
+                f"{func.__name__} failed",
+                extra={
+                    "function": func.__name__,
+                    "duration_seconds": elapsed,
+                    "error": str(e),
+                },
+                exc_info=True
+            )
+            raise
+    return wrapper
+```
+
+## Integration
+
+This rule works in conjunction with:
+
+- `python/logging-levels.mdc` - Log level guidelines
+- `python/error-handling.mdc` - Logging exceptions
+- `python/error-messages.mdc` - User-friendly error messages

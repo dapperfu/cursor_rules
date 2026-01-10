@@ -1,0 +1,191 @@
+# Python Constants
+
+## Requirement
+
+Python code SHALL define constants appropriately and eliminate magic numbers and strings.
+
+### Constant Definition
+
+- Constants SHALL be defined at module level or class level
+- Constants SHALL use UPPER_SNAKE_CASE naming convention
+- Constants SHALL be defined using `Final` type hint (PEP 591) when possible
+- Constants SHALL be documented with their purpose and usage
+
+### Magic Number Elimination
+
+- Magic numbers SHALL be replaced with named constants
+- Magic strings SHALL be replaced with named constants
+- Constants SHALL be grouped logically (related constants together)
+
+### Constant Organization
+
+- Module-level constants SHALL be defined at the top of the file
+- Class-level constants SHALL be defined as class attributes
+- Constants SHALL be organized by category when there are many
+
+## Rationale
+
+Using constants properly provides:
+
+- **Readability**: Named constants are more readable than magic numbers
+- **Maintainability**: Changes to constants are centralized
+- **Documentation**: Constants serve as self-documenting code
+- **Type Safety**: `Final` type hints prevent accidental modification
+- **Debugging**: Easier to identify and change constant values
+- **Standards**: Follows Python naming conventions
+
+## Implementation
+
+### Module-Level Constants
+
+```python
+from typing import Final
+
+# Configuration constants
+DEFAULT_TIMEOUT: Final[int] = 30
+MAX_RETRIES: Final[int] = 3
+API_BASE_URL: Final[str] = "https://api.example.com"
+
+# Status codes
+HTTP_OK: Final[int] = 200
+HTTP_NOT_FOUND: Final[int] = 404
+HTTP_SERVER_ERROR: Final[int] = 500
+
+# File paths
+CONFIG_FILE: Final[str] = "config.toml"
+LOG_DIR: Final[str] = "logs"
+```
+
+### Class-Level Constants
+
+```python
+from typing import Final
+
+class HTTPStatus:
+    """HTTP status code constants."""
+    OK: Final[int] = 200
+    CREATED: Final[int] = 201
+    NOT_FOUND: Final[int] = 404
+    SERVER_ERROR: Final[int] = 500
+
+class DatabaseConfig:
+    """Database configuration constants."""
+    DEFAULT_PORT: Final[int] = 5432
+    CONNECTION_TIMEOUT: Final[int] = 10
+    MAX_CONNECTIONS: Final[int] = 100
+```
+
+### Eliminating Magic Numbers
+
+```python
+# Bad: Magic numbers
+def calculate_discount(price: float) -> float:
+    return price * 0.1  # What is 0.1?
+
+def check_timeout(elapsed: float) -> bool:
+    return elapsed > 30.0  # What is 30.0?
+
+# Good: Named constants
+DISCOUNT_RATE: Final[float] = 0.1
+REQUEST_TIMEOUT_SECONDS: Final[float] = 30.0
+
+def calculate_discount(price: float) -> float:
+    return price * DISCOUNT_RATE
+
+def check_timeout(elapsed: float) -> bool:
+    return elapsed > REQUEST_TIMEOUT_SECONDS
+```
+
+### Eliminating Magic Strings
+
+```python
+# Bad: Magic strings
+def process_status(status: str) -> None:
+    if status == "active":
+        # Process active
+        pass
+    elif status == "pending":
+        # Process pending
+        pass
+
+# Good: Named constants
+class UserStatus:
+    """User status constants."""
+    ACTIVE: Final[str] = "active"
+    PENDING: Final[str] = "pending"
+    INACTIVE: Final[str] = "inactive"
+
+def process_status(status: str) -> None:
+    if status == UserStatus.ACTIVE:
+        # Process active
+        pass
+    elif status == UserStatus.PENDING:
+        # Process pending
+        pass
+```
+
+### Enum for Related Constants
+
+```python
+from enum import Enum
+
+class UserStatus(Enum):
+    """User status enumeration."""
+    ACTIVE = "active"
+    PENDING = "pending"
+    INACTIVE = "inactive"
+
+def process_status(status: UserStatus) -> None:
+    """Process user status using enum."""
+    if status == UserStatus.ACTIVE:
+        # Process active
+        pass
+```
+
+### Constant Groups
+
+```python
+from typing import Final
+
+# API Configuration
+class APIConfig:
+    BASE_URL: Final[str] = "https://api.example.com"
+    TIMEOUT: Final[int] = 30
+    MAX_RETRIES: Final[int] = 3
+
+# Database Configuration
+class DBConfig:
+    HOST: Final[str] = "localhost"
+    PORT: Final[int] = 5432
+    DATABASE: Final[str] = "myapp"
+
+# Application Constants
+class AppConstants:
+    VERSION: Final[str] = "1.0.0"
+    NAME: Final[str] = "MyApp"
+```
+
+### Using Final Type Hint
+
+```python
+from typing import Final
+
+# Final prevents reassignment (enforced by type checkers)
+API_KEY: Final[str] = "secret_key"
+# API_KEY = "new_key"  # Type checker error
+
+# Final with type inference
+TIMEOUT = 30  # Type: int (inferred)
+TIMEOUT: Final = 30  # Type: int (inferred, but Final)
+
+# Explicit type with Final
+MAX_SIZE: Final[int] = 1024
+```
+
+## Integration
+
+This rule works in conjunction with:
+
+- `python/typing.mdc` - Type hints for constants (Final)
+- `python/documentation.mdc` - Documenting constants
+- `python/toml-config.mdc` - Configuration constants
