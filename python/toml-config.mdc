@@ -339,6 +339,8 @@ This requirement does NOT apply to:
 ## Integration
 
 This rule complements:
-- `click-required.mdc` - Ensures Click is used for CLI applications
+- `click-required.mdc` - Ensures Click is used for CLI applications (config subcommands use Click groups)
+- `click-completions.mdc` - Shell completion support for config commands
 - `python-version.mdc` - Specifies Python 3.10+ requirement (note: tomllib requires 3.11+, so tomli backport needed for 3.10)
 - `pyproject-toml.mdc` - Already uses TOML for project configuration
+- `python/documentation.mdc` - Configuration documentation follows documentation standards
