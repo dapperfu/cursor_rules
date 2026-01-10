@@ -1,0 +1,180 @@
+# Python Type Narrowing
+
+## Requirement
+
+Python code SHALL use type narrowing appropriately to improve type safety and avoid unnecessary type casts.
+
+### Type Narrowing Patterns
+
+- SHALL use `isinstance()` for type narrowing
+- SHALL use `typing.TypeGuard` for custom type guards
+- SHALL avoid `cast()` when type narrowing is possible
+- SHALL avoid `Any` type when type narrowing can provide proper types
+
+### Type Guard Functions
+
+- SHALL create type guard functions for complex type checks
+- Type guard functions SHALL use `TypeGuard` return type annotation
+- Type guard functions SHALL be documented with their narrowing behavior
+
+## Rationale
+
+Using type narrowing provides:
+
+- **Type Safety**: Narrower types enable more precise type checking
+- **Correctness**: Type narrowing prevents type-related bugs
+- **Readability**: Narrower types make code intent clearer
+- **IDE Support**: Better autocomplete and error detection
+- **Maintainability**: Type narrowing makes code easier to maintain
+
+## Implementation
+
+### Using isinstance() for Type Narrowing
+
+```python
+from typing import Union
+
+def process_value(value: Union[int, str]) -> int:
+    """Process value with type narrowing."""
+    if isinstance(value, int):
+        # Type checker knows value is int here
+        return value * 2
+    elif isinstance(value, str):
+        # Type checker knows value is str here
+        return len(value)
+    else:
+        # Type checker knows this is unreachable
+        raise ValueError(f"Unexpected type: {type(value)}")
+```
+
+### Type Guards with TypeGuard
+
+```python
+from typing import TypeGuard, Any
+
+def is_valid_user(obj: Any) -> TypeGuard[dict[str, Any]]:
+    """Type guard to check if object is valid user dict."""
+    return (
+        isinstance(obj, dict) and
+        "id" in obj and
+        "name" in obj and
+        isinstance(obj["id"], int) and
+        isinstance(obj["name"], str)
+    )
+
+def process_user(data: Any) -> str:
+    """Process user with type guard."""
+    if is_valid_user(data):
+        # Type checker knows data is dict[str, Any] here
+        return f"User: {data['name']} (ID: {data['id']})"
+    else:
+        raise ValueError("Invalid user data")
+```
+
+### Avoiding cast()
+
+```python
+from typing import cast, Optional
+
+# Bad: Using cast when type narrowing is possible
+def get_value(data: dict[str, Any]) -> int:
+    value = data.get("count")
+    return cast(int, value)  # DON'T DO THIS
+
+# Good: Using type narrowing
+def get_value(data: dict[str, Any]) -> int:
+    value = data.get("count")
+    if isinstance(value, int):
+        return value  # Type narrowed
+    else:
+        raise ValueError("count must be an integer")
+```
+
+### Optional Type Narrowing
+
+```python
+from typing import Optional
+
+def process_optional(value: Optional[int]) -> int:
+    """Process optional value with type narrowing."""
+    if value is None:
+        raise ValueError("Value cannot be None")
+    
+    # Type checker knows value is int here (not None)
+    return value * 2
+
+# Or with early return
+def process_optional_early(value: Optional[int]) -> int:
+    """Process optional value with early return."""
+    if value is None:
+        return 0  # Default value
+    
+    # Type checker knows value is int here
+    return value * 2
+```
+
+### Union Type Narrowing
+
+```python
+from typing import Union
+
+def handle_result(result: Union[str, int, None]) -> str:
+    """Handle result with union type narrowing."""
+    if result is None:
+        return "No result"
+    elif isinstance(result, int):
+        return f"Result: {result}"
+    elif isinstance(result, str):
+        return f"Result: {result}"
+    else:
+        # Exhaustive check
+        raise ValueError(f"Unexpected type: {type(result)}")
+```
+
+### Custom Type Guards for Complex Types
+
+```python
+from typing import TypeGuard, Any
+
+def is_list_of_strings(obj: Any) -> TypeGuard[list[str]]:
+    """Type guard for list of strings."""
+    return (
+        isinstance(obj, list) and
+        all(isinstance(item, str) for item in obj)
+    )
+
+def process_strings(data: Any) -> list[str]:
+    """Process strings with type guard."""
+    if is_list_of_strings(data):
+        # Type checker knows data is list[str]
+        return [s.upper() for s in data]
+    else:
+        raise ValueError("Data must be a list of strings")
+```
+
+### Avoiding Any
+
+```python
+from typing import Any
+
+# Bad: Using Any
+def process_data(data: Any) -> Any:  # DON'T DO THIS
+    return data["value"]
+
+# Good: Using type narrowing
+def process_data(data: dict[str, Any]) -> str:
+    """Process data with type narrowing."""
+    value = data.get("value")
+    if isinstance(value, str):
+        return value
+    else:
+        raise ValueError("value must be a string")
+```
+
+## Integration
+
+This rule works in conjunction with:
+
+- `python/typing.mdc` - Type hints and type checking
+- `python/protocols.mdc` - Protocol-based type checking
+- `python/input-validation.mdc` - Validating and narrowing input types

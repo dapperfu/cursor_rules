@@ -1,0 +1,171 @@
+# Python Database Query Optimization
+
+## Requirement
+
+Python applications SHALL optimize database queries to avoid performance issues.
+
+### N+1 Query Problem
+
+- SHALL avoid N+1 query patterns
+- SHALL use eager loading or batch loading when fetching related data
+- SHALL use select_related or prefetch_related (SQLAlchemy) or equivalent in other ORMs
+- SHALL profile queries to identify N+1 problems
+
+### Query Profiling
+
+- SHALL profile database queries during development
+- SHALL identify slow queries and optimize them
+- SHALL use query logging in development to see all queries
+- SHALL monitor query performance in production
+
+### Index Usage
+
+- SHALL create indexes on frequently queried columns
+- SHALL create indexes on foreign keys
+- SHALL create composite indexes for multi-column queries
+- SHALL avoid over-indexing (too many indexes slow writes)
+
+## Rationale
+
+Query optimization provides:
+
+- **Performance**: Faster queries improve application response time
+- **Scalability**: Optimized queries scale better under load
+- **Resource Efficiency**: Fewer queries reduce database load
+- **User Experience**: Faster responses improve user experience
+- **Cost Reduction**: Fewer queries reduce database costs
+
+## Implementation
+
+### Avoiding N+1 Queries
+
+```python
+# Bad: N+1 query problem
+def get_users_with_posts():
+    """Get users with posts (N+1 queries)."""
+    users = User.select()
+    for user in users:
+        posts = Post.select(lambda p: p.user == user)  # N queries!
+        user.posts = posts
+    return users
+
+# Good: Eager loading (Pony ORM)
+def get_users_with_posts():
+    """Get users with posts (1 query with join)."""
+    users = User.select()
+    posts = Post.select()
+    posts_dict = {}
+    for post in posts:
+        if post.user.id not in posts_dict:
+            posts_dict[post.user.id] = []
+        posts_dict[post.user.id].append(post)
+    
+    for user in users:
+        user.posts = posts_dict.get(user.id, [])
+    return users
+
+# Better: Use ORM eager loading features
+def get_users_with_posts():
+    """Get users with posts using eager loading."""
+    # Pony ORM: Use prefetch
+    users = select(u for u in User)[:]
+    posts = select(p for p in Post)[:]
+    # Group posts by user
+    # ...
+```
+
+### Query Profiling
+
+```python
+import time
+import logging
+
+logger = logging.getLogger(__name__)
+
+def profile_query(func):
+    """Decorator to profile database queries."""
+    def wrapper(*args, **kwargs):
+        start = time.time()
+        result = func(*args, **kwargs)
+        elapsed = time.time() - start
+        
+        if elapsed > 0.1:  # Log slow queries
+            logger.warning(
+                f"Slow query in {func.__name__}: {elapsed:.2f}s",
+                extra={"function": func.__name__, "duration": elapsed}
+            )
+        
+        return result
+    return wrapper
+
+@profile_query
+def get_user_data(user_id: int):
+    """Get user data with query profiling."""
+    return User[user_id]
+```
+
+### Index Creation
+
+```python
+# Pony ORM: Indexes defined in entity
+from pony.orm import Database, PrimaryKey, Required, Optional, Index
+
+db = Database()
+
+class User(db.Entity):
+    id = PrimaryKey(int, auto=True)
+    username = Required(str, unique=True)
+    email = Required(str, unique=True)
+    created_at = Required(datetime)
+    
+    # Create index on frequently queried column
+    Index("idx_created_at", created_at)
+    
+    # Composite index for multi-column queries
+    Index("idx_username_email", username, email)
+```
+
+### Query Logging
+
+```python
+import logging
+
+# Enable query logging in development
+logging.getLogger("pony.orm").setLevel(logging.DEBUG)
+
+# Or for SQLAlchemy
+logging.getLogger("sqlalchemy.engine").setLevel(logging.INFO)
+```
+
+### Batch Loading
+
+```python
+def get_users_batch(user_ids: list[int]) -> list[User]:
+    """Get multiple users in single query."""
+    # Single query instead of N queries
+    return list(select(u for u in User if u.id in user_ids))
+```
+
+### Using Select Related (SQLAlchemy Example)
+
+```python
+# SQLAlchemy: Use joinedload or selectinload
+from sqlalchemy.orm import joinedload
+
+# Bad: N+1 queries
+users = session.query(User).all()
+for user in users:
+    posts = session.query(Post).filter(Post.user_id == user.id).all()
+
+# Good: Eager loading
+users = session.query(User).options(joinedload(User.posts)).all()
+# All posts loaded in single query
+```
+
+## Integration
+
+This rule works in conjunction with:
+
+- `python/performance-profiling.mdc` - Profiling to identify slow queries
+- `python/ponyorm5.mdc` - Pony ORM query patterns
+- `python/database-migrations.mdc` - Creating indexes via migrations

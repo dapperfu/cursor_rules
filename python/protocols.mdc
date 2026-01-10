@@ -1,0 +1,219 @@
+# Python Protocols
+
+## Requirement
+
+Python code SHALL use `Protocol` for structural subtyping (duck typing) with type safety.
+
+### When to Use Protocols
+
+- SHALL use `Protocol` instead of ABC when structural typing is sufficient
+- SHALL use `Protocol` for duck typing with type safety
+- SHALL use `Protocol` when you care about interface, not inheritance
+- SHALL use ABC when you need runtime type checking or method implementation
+
+### Protocol Definition
+
+- Protocols SHALL define required methods and attributes
+- Protocols SHALL use type hints for all members
+- Protocols SHALL be documented with their purpose
+- Protocols SHALL follow naming conventions (end with `Protocol` or descriptive name)
+
+## Rationale
+
+Using Protocols provides:
+
+- **Type Safety**: Structural typing with type checking
+- **Flexibility**: Works with any type that matches the structure
+- **Duck Typing**: "If it walks like a duck and quacks like a duck, it's a duck"
+- **No Inheritance**: No need for classes to inherit from protocol
+- **Compatibility**: Works with existing code without modification
+- **Modern Python**: Uses modern typing features (PEP 544)
+
+## Implementation
+
+### Basic Protocol
+
+```python
+from typing import Protocol
+
+class Readable(Protocol):
+    """Protocol for objects that can be read."""
+    
+    def read(self) -> str:
+        """Read content."""
+        ...
+
+class FileReader:
+    """File reader that implements Readable protocol."""
+    def __init__(self, filepath: str) -> None:
+        self.filepath = filepath
+    
+    def read(self) -> str:
+        with open(self.filepath) as f:
+            return f.read()
+
+class StringReader:
+    """String reader that implements Readable protocol."""
+    def __init__(self, content: str) -> None:
+        self.content = content
+    
+    def read(self) -> str:
+        return self.content
+
+def process_readable(source: Readable) -> str:
+    """Process any Readable object."""
+    return source.read().upper()
+
+# Both work without inheritance
+file_reader = FileReader("data.txt")
+string_reader = StringReader("hello")
+
+process_readable(file_reader)  # Works
+process_readable(string_reader)  # Works
+```
+
+### Protocol with Attributes
+
+```python
+from typing import Protocol
+
+class HasName(Protocol):
+    """Protocol for objects with a name attribute."""
+    name: str
+
+class User:
+    """User class with name attribute."""
+    def __init__(self, name: str) -> None:
+        self.name = name
+
+class Product:
+    """Product class with name attribute."""
+    def __init__(self, name: str, price: float) -> None:
+        self.name = name
+        self.price = price
+
+def get_name(obj: HasName) -> str:
+    """Get name from any object with name attribute."""
+    return obj.name
+
+user = User("Alice")
+product = Product("Widget", 10.0)
+
+get_name(user)  # Works
+get_name(product)  # Works
+```
+
+### Protocol vs ABC
+
+```python
+from typing import Protocol
+from abc import ABC, abstractmethod
+
+# Protocol: Structural typing (compile-time)
+class Drawable(Protocol):
+    """Protocol for drawable objects."""
+    def draw(self) -> None:
+        """Draw the object."""
+        ...
+
+# ABC: Nominal typing (runtime)
+class DrawableABC(ABC):
+    """ABC for drawable objects."""
+    @abstractmethod
+    def draw(self) -> None:
+        """Draw the object."""
+        pass
+
+# Protocol: Any class with draw() method works
+class Circle:
+    def draw(self) -> None:
+        print("Drawing circle")
+
+# ABC: Must inherit from DrawableABC
+class Square(DrawableABC):
+    def draw(self) -> None:
+        print("Drawing square")
+
+def render_protocol(obj: Drawable) -> None:
+    """Works with any object that has draw() method."""
+    obj.draw()
+
+def render_abc(obj: DrawableABC) -> None:
+    """Only works with DrawableABC subclasses."""
+    obj.draw()
+
+# Protocol works with Circle (no inheritance needed)
+render_protocol(Circle())  # Works
+
+# ABC requires inheritance
+render_abc(Square())  # Works
+# render_abc(Circle())  # Type error
+```
+
+### Complex Protocol
+
+```python
+from typing import Protocol, Iterator
+
+class IterableContainer(Protocol):
+    """Protocol for iterable containers."""
+    
+    def __iter__(self) -> Iterator[str]:
+        """Return iterator over items."""
+        ...
+    
+    def __len__(self) -> int:
+        """Return number of items."""
+        ...
+    
+    def __contains__(self, item: str) -> bool:
+        """Check if item is in container."""
+        ...
+
+def process_container(container: IterableContainer) -> int:
+    """Process any iterable container."""
+    count = 0
+    for item in container:
+        if item in container:  # Uses __contains__
+            count += 1
+    return count
+
+# Works with list, set, dict keys, etc.
+process_container(["a", "b", "c"])  # Works
+process_container({"x", "y", "z"})  # Works
+```
+
+### Protocol for Callable Objects
+
+```python
+from typing import Protocol, Callable
+
+class Processor(Protocol):
+    """Protocol for processor objects."""
+    
+    def process(self, data: str) -> str:
+        """Process data."""
+        ...
+
+def use_processor(processor: Processor, data: str) -> str:
+    """Use any processor object."""
+    return processor.process(data)
+
+# Also works with callable functions
+def process_function(data: str) -> str:
+    """Process function."""
+    return data.upper()
+
+# Can use Callable protocol
+def use_callable(processor: Callable[[str], str], data: str) -> str:
+    """Use callable processor."""
+    return processor(data)
+```
+
+## Integration
+
+This rule works in conjunction with:
+
+- `python/typing.mdc` - Type hints and type checking
+- `python/type-narrowing.mdc` - Type narrowing with protocols
+- `python/input-validation.mdc` - Validating protocol compliance

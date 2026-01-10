@@ -1,0 +1,147 @@
+# Python Database Migrations
+
+## Requirement
+
+**NOTE: This rule applies to long-term projects with persistent databases. For fast and loose development with transactional databases that do not persist long enough to warrant migrations, migrations are NOT required. This rule will be removed or modified for such projects.**
+
+For projects requiring database migrations, code SHALL use appropriate migration tools and follow migration best practices.
+
+### Migration Tools
+
+- Projects SHALL use Alembic for SQLAlchemy-based applications
+- Projects SHALL use appropriate migration tools for other ORMs
+- Migration files SHALL be version controlled
+- Migration files SHALL be applied in order
+
+### Migration Practices
+
+- Migrations SHALL be reversible (provide both up and down migrations)
+- Migrations SHALL be tested before applying to production
+- Migrations SHALL include rollback strategies
+- Migration files SHALL be named descriptively
+
+### Fast and Loose Development Exception
+
+- **For fast and loose development**: Migrations are NOT required when:
+  - Databases are transactional and do not persist long enough
+  - Database schema changes frequently during development
+  - Database is recreated frequently (e.g., in-memory, test databases)
+  - Project lifecycle is short-term or experimental
+
+In such cases, schema changes can be managed through:
+- `generate_mapping(create_tables=True)` for local development
+- Direct schema updates without migration files
+- Schema recreation rather than migration
+
+**This exception will be removed for longer-term projects with persistent production databases.**
+
+## Rationale
+
+Database migrations provide:
+
+- **Version Control**: Track database schema changes over time
+- **Reproducibility**: Apply schema changes consistently across environments
+- **Rollback**: Ability to revert schema changes if needed
+- **Team Coordination**: Shared migration files coordinate team changes
+- **Production Safety**: Controlled schema changes in production
+
+However, for fast and loose development with short-lived databases, migrations add unnecessary overhead.
+
+## Implementation
+
+### Alembic Setup (For Long-Term Projects)
+
+```python
+# alembic.ini configuration
+[alembic]
+script_location = alembic
+sqlalchemy.url = postgresql://user:pass@localhost/dbname
+
+# alembic/env.py
+from app.models import Base
+target_metadata = Base.metadata
+
+# Create migration
+# alembic revision --autogenerate -m "Add user table"
+
+# Apply migration
+# alembic upgrade head
+
+# Rollback migration
+# alembic downgrade -1
+```
+
+### Migration File Structure
+
+```python
+# alembic/versions/001_add_user_table.py
+"""Add user table
+
+Revision ID: 001
+Revises: 
+Create Date: 2024-01-15 10:00:00
+"""
+from alembic import op
+import sqlalchemy as sa
+
+def upgrade() -> None:
+    """Apply migration."""
+    op.create_table(
+        'users',
+        sa.Column('id', sa.Integer(), nullable=False),
+        sa.Column('username', sa.String(50), nullable=False),
+        sa.Column('email', sa.String(100), nullable=False),
+        sa.PrimaryKeyConstraint('id')
+    )
+
+def downgrade() -> None:
+    """Rollback migration."""
+    op.drop_table('users')
+```
+
+### Fast and Loose Development (No Migrations)
+
+```python
+# For fast and loose development - no migrations needed
+from pony.orm import Database, generate_mapping
+
+db = Database()
+
+class User(db.Entity):
+    id = PrimaryKey(int, auto=True)
+    username = Required(str)
+    email = Required(str)
+
+# Generate and create tables directly (no migrations)
+generate_mapping(create_tables=True)
+
+# Schema changes: Just update model and regenerate
+# No migration files needed for short-lived databases
+```
+
+### Testing Migrations
+
+```python
+# Test migration up and down
+def test_migration():
+    """Test migration can be applied and rolled back."""
+    # Apply migration
+    alembic.upgrade("head")
+    
+    # Verify schema
+    assert table_exists("users")
+    
+    # Rollback migration
+    alembic.downgrade("-1")
+    
+    # Verify rollback
+    assert not table_exists("users")
+```
+
+## Integration
+
+This rule works in conjunction with:
+
+- `python/ponyorm2.mdc` - Pony ORM entity definitions
+- `python/ponyorm3.mdc` - Database setup (may use generate_mapping for fast dev)
+- `python/testing-framework.mdc` - Testing migrations
