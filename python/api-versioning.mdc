@@ -1,0 +1,189 @@
+# Python API Versioning
+
+## Requirement
+
+Python APIs SHALL implement versioning strategies to manage backward compatibility and evolution.
+
+### Versioning Strategies
+
+- APIs SHALL use URL-based versioning (`/api/v1/`, `/api/v2/`) or header-based versioning
+- Versioning strategy SHALL be consistent across the API
+- APIs SHALL support multiple versions simultaneously during transitions
+- APIs SHALL document versioning strategy clearly
+
+### Backward Compatibility
+
+- New API versions SHALL maintain backward compatibility when possible
+- Breaking changes SHALL be introduced in new major versions
+- Deprecated endpoints SHALL be marked and scheduled for removal
+- Deprecation warnings SHALL be included in API responses
+
+### Deprecation Patterns
+
+- Deprecated endpoints SHALL return deprecation headers
+- Deprecated endpoints SHALL be documented with removal timeline
+- Clients SHALL be notified of deprecations well in advance
+
+## Rationale
+
+API versioning provides:
+
+- **Evolution**: APIs can evolve without breaking existing clients
+- **Stability**: Clients can rely on stable API versions
+- **Migration**: Gradual migration path for clients
+- **Communication**: Clear deprecation and removal timelines
+- **Flexibility**: Support multiple versions during transitions
+
+## Implementation
+
+### URL-Based Versioning
+
+```python
+from fastapi import FastAPI, APIRouter
+
+app = FastAPI()
+
+# Version 1 API
+v1_router = APIRouter(prefix="/api/v1")
+
+@v1_router.get("/users")
+def get_users_v1():
+    """Get users (v1 API)."""
+    return {"version": "v1", "users": [...]}
+
+# Version 2 API
+v2_router = APIRouter(prefix="/api/v2")
+
+@v2_router.get("/users")
+def get_users_v2():
+    """Get users (v2 API with improvements)."""
+    return {"version": "v2", "users": [...], "metadata": {...}}
+
+app.include_router(v1_router)
+app.include_router(v2_router)
+```
+
+### Header-Based Versioning
+
+```python
+from fastapi import FastAPI, Header
+from typing import Optional
+
+app = FastAPI()
+
+@app.get("/api/users")
+def get_users(api_version: Optional[str] = Header(None, alias="API-Version")):
+    """Get users with header-based versioning."""
+    version = api_version or "v1"  # Default to v1
+    
+    if version == "v1":
+        return get_users_v1()
+    elif version == "v2":
+        return get_users_v2()
+    else:
+        raise ValueError(f"Unsupported API version: {version}")
+```
+
+### Deprecation Headers
+
+```python
+from fastapi import FastAPI, Response
+from datetime import datetime, timedelta
+
+app = FastAPI()
+
+@app.get("/api/v1/users")
+def get_users_v1_deprecated(response: Response):
+    """Get users (deprecated v1 endpoint)."""
+    # Add deprecation headers
+    deprecation_date = datetime.now() + timedelta(days=90)
+    response.headers["Deprecation"] = "true"
+    response.headers["Sunset"] = deprecation_date.isoformat()
+    response.headers["Link"] = '</api/v2/users>; rel="successor-version"'
+    
+    return {"version": "v1", "users": [...]}
+```
+
+### Version Detection Middleware
+
+```python
+from fastapi import FastAPI, Request
+from starlette.middleware.base import BaseHTTPMiddleware
+
+class VersionMiddleware(BaseHTTPMiddleware):
+    """Middleware to detect and set API version."""
+    async def dispatch(self, request: Request, call_next):
+        # Check header for version
+        version = request.headers.get("API-Version", "v1")
+        request.state.api_version = version
+        
+        response = await call_next(request)
+        return response
+
+app = FastAPI()
+app.add_middleware(VersionMiddleware)
+```
+
+### Backward Compatibility
+
+```python
+# v1 API
+def get_user_v1(user_id: int) -> dict:
+    """Get user (v1 format)."""
+    user = User.get(id=user_id)
+    return {
+        "id": user.id,
+        "name": user.name,
+        "email": user.email,
+    }
+
+# v2 API (backward compatible, adds fields)
+def get_user_v2(user_id: int) -> dict:
+    """Get user (v2 format with additional fields)."""
+    user = User.get(id=user_id)
+    return {
+        "id": user.id,
+        "name": user.name,
+        "email": user.email,
+        "created_at": user.created_at.isoformat(),  # New field
+        "profile": user.profile.dict(),  # New field
+    }
+```
+
+### Deprecation Documentation
+
+```python
+from fastapi import FastAPI, APIRouter, Depends
+from typing import Annotated
+
+app = FastAPI()
+
+def check_deprecation(version: str):
+    """Dependency to check if version is deprecated."""
+    if version == "v1":
+        # Log deprecation warning
+        logger.warning("API v1 is deprecated, migrate to v2")
+    return version
+
+v1_router = APIRouter(
+    prefix="/api/v1",
+    dependencies=[Depends(check_deprecation)]
+)
+
+@v1_router.get("/users", deprecated=True)
+def get_users_v1():
+    """Get users (deprecated - use /api/v2/users).
+    
+    This endpoint will be removed on 2024-12-31.
+    Please migrate to v2 API.
+    """
+    return {"version": "v1", "users": [...]}
+```
+
+## Integration
+
+This rule works in conjunction with:
+
+- `python/request-validation.mdc` - Validating requests per version
+- `python/api-documentation.mdc` - Documenting API versions
+- `python/error-messages.mdc` - Version-specific error messages

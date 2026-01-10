@@ -1,0 +1,174 @@
+# Python String Formatting
+
+## Requirement
+
+Python code SHALL use f-strings for string formatting, with exceptions for specific use cases.
+
+### Preferred Formatting Method
+
+- SHALL use f-strings (formatted string literals) for string formatting
+- SHALL NOT use `.format()` method when f-strings are available
+- SHALL NOT use `%` formatting operator
+- SHALL use f-strings for all Python 3.6+ code
+
+### Exceptions
+
+- Template strings SHALL be used when strings come from external sources (user input, configuration)
+- Template strings SHALL be used for internationalization (i18n)
+- `.format()` MAY be used when format string is defined separately from values
+
+### Internationalization Considerations
+
+- User-facing strings SHALL use i18n libraries (gettext, babel) when needed
+- Format strings for i18n SHALL use `.format()` or template strings, not f-strings
+- Translated strings SHALL be stored in resource files, not hardcoded
+
+## Rationale
+
+Using f-strings provides:
+
+- **Readability**: F-strings are more readable than `.format()` or `%` formatting
+- **Performance**: F-strings are faster than other formatting methods
+- **Simplicity**: Concise syntax for string interpolation
+- **Type Safety**: Better integration with type checkers
+- **Modern Python**: Recommended approach in Python 3.6+
+
+However, template strings are safer for user-provided format strings.
+
+## Implementation
+
+### Using F-strings
+
+```python
+# Good: F-strings
+name = "Alice"
+age = 30
+message = f"Hello, {name}. You are {age} years old."
+
+# Good: F-strings with expressions
+price = 19.99
+quantity = 3
+total = f"Total: ${price * quantity:.2f}"
+
+# Good: F-strings with function calls
+def get_greeting() -> str:
+    return "Hello"
+
+message = f"{get_greeting()}, {name}!"
+```
+
+### Avoiding .format() and %
+
+```python
+# Bad: .format() method
+name = "Alice"
+message = "Hello, {}. You are {} years old.".format(name, age)
+
+# Bad: % formatting
+message = "Hello, %s. You are %d years old." % (name, age)
+
+# Good: F-strings
+message = f"Hello, {name}. You are {age} years old."
+```
+
+### Template Strings for User Input
+
+```python
+from string import Template
+
+# Good: Template strings for user-provided format strings
+user_template = Template("Hello, $name. You are $age years old.")
+# Safe even if template comes from user input
+message = user_template.substitute(name="Alice", age=30)
+
+# Bad: F-strings with user-provided format (security risk)
+user_format = input("Enter format string: ")  # User could inject code
+# DON'T use f-strings with user input directly
+```
+
+### Internationalization
+
+```python
+# Using gettext for i18n
+import gettext
+
+# Setup translation
+translation = gettext.translation('messages', 'locale', languages=['es'])
+translation.install()
+
+# Use _() for translatable strings
+name = "Alice"
+# F-strings don't work well with gettext
+message = _("Hello, {name}").format(name=name)  # Use .format() for i18n
+
+# Or use template strings
+from string import Template
+template = Template(_("Hello, $name"))
+message = template.substitute(name=name)
+```
+
+### Complex Formatting
+
+```python
+# F-strings with formatting specifiers
+price = 19.99
+formatted = f"Price: ${price:.2f}"  # $19.99
+
+# F-strings with alignment
+text = "Hello"
+aligned = f"{text:>10}"  # Right-aligned: "     Hello"
+centered = f"{text:^10}"  # Centered: "  Hello   "
+
+# F-strings with nested quotes
+message = f'He said "Hello, {name}"'
+
+# F-strings with braces
+message = f"{{name}} = {name}"  # {name} = Alice
+```
+
+### Performance Considerations
+
+```python
+# F-strings are faster
+import timeit
+
+# F-string (fastest)
+timeit.timeit('f"Hello, {name}"', setup='name="Alice"', number=1000000)
+# ~0.1 seconds
+
+# .format() (slower)
+timeit.timeit('"Hello, {}".format(name)', setup='name="Alice"', number=1000000)
+# ~0.3 seconds
+
+# % formatting (slowest)
+timeit.timeit('"Hello, %s" % name', setup='name="Alice"', number=1000000)
+# ~0.4 seconds
+```
+
+### Multi-line F-strings
+
+```python
+# Good: Multi-line f-strings
+name = "Alice"
+age = 30
+message = (
+    f"User Information:\n"
+    f"  Name: {name}\n"
+    f"  Age: {age}\n"
+)
+
+# Or using triple quotes
+message = f"""
+User Information:
+  Name: {name}
+  Age: {age}
+"""
+```
+
+## Integration
+
+This rule works in conjunction with:
+
+- `python/documentation.mdc` - String formatting in docstrings
+- `python/error-messages.mdc` - Formatting error messages
+- `python/constants.mdc` - Format strings in constants

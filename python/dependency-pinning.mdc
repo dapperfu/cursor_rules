@@ -1,0 +1,151 @@
+# Python Dependency Pinning
+
+## Requirement
+
+Python projects SHALL manage dependency versions appropriately using version pinning strategies.
+
+### Version Pinning Strategy
+
+- Production dependencies SHALL be pinned to exact versions in `requirements.txt` or `pyproject.toml`
+- Development dependencies MAY use version ranges for flexibility
+- Dependencies SHALL be updated regularly for security patches
+- Major version updates SHALL be tested thoroughly before deployment
+
+### Security Updates
+
+- Projects SHALL regularly check for security vulnerabilities
+- Security updates SHALL be applied promptly
+- Projects SHALL use tools like `safety` or `pip-audit` for vulnerability scanning
+- Security updates SHALL be tested before deployment
+
+### Dependency Vulnerability Scanning
+
+- CI/CD pipelines SHALL include dependency vulnerability scanning
+- Vulnerability scans SHALL fail the build if critical vulnerabilities are found
+- Projects SHALL maintain a process for addressing vulnerabilities
+
+## Rationale
+
+Proper dependency pinning provides:
+
+- **Reproducibility**: Exact versions ensure consistent builds across environments
+- **Stability**: Pinned versions prevent unexpected breaking changes
+- **Security**: Regular updates address security vulnerabilities
+- **Debugging**: Known versions make debugging easier
+- **Compliance**: Security scanning meets compliance requirements
+
+## Implementation
+
+### Version Pinning in pyproject.toml
+
+```toml
+# pyproject.toml
+[project]
+dependencies = [
+    "requests==2.31.0",  # Exact version for production
+    "click>=8.0.0,<9.0.0",  # Version range acceptable for some deps
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0.0",  # Range acceptable for dev dependencies
+    "mypy>=1.0.0",
+]
+```
+
+### Requirements Files
+
+```txt
+# requirements.txt - Production (exact versions)
+requests==2.31.0
+click==8.1.7
+pydantic==2.5.0
+
+# requirements-dev.txt - Development (can use ranges)
+pytest>=7.0.0
+mypy>=1.0.0
+ruff>=0.1.0
+```
+
+### Security Scanning
+
+```bash
+# Install safety
+pip install safety
+
+# Check for vulnerabilities
+safety check
+
+# Check with requirements file
+safety check --file requirements.txt
+
+# Update dependencies
+pip install --upgrade package-name
+```
+
+### CI/CD Vulnerability Scanning
+
+```yaml
+# .github/workflows/security.yml
+name: Security Scan
+
+on: [push, pull_request]
+
+jobs:
+  security:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+      
+      - name: Install safety
+        run: pip install safety
+      
+      - name: Check for vulnerabilities
+        run: safety check --json
+```
+
+### Dependency Update Process
+
+```bash
+# Check for outdated packages
+pip list --outdated
+
+# Update specific package
+pip install --upgrade package-name
+
+# Update all packages (use with caution)
+pip list --outdated | cut -d ' ' -f1 | xargs -n1 pip install --upgrade
+
+# Test after updates
+pytest
+```
+
+### Version Ranges
+
+```toml
+# Acceptable version ranges
+[project]
+dependencies = [
+    # Exact version (preferred for production)
+    "requests==2.31.0",
+    
+    # Compatible release (allows patch updates)
+    "click~=8.1.0",  # >=8.1.0, <8.2.0
+    
+    # Version range (use sparingly)
+    "pydantic>=2.0.0,<3.0.0",
+]
+```
+
+## Integration
+
+This rule works in conjunction with:
+
+- `python/pyproject-toml.mdc` - Dependency management in pyproject.toml
+- `python/ci-cd.mdc` - Security scanning in CI/CD
+- `python/pre-commit-hooks.mdc` - Dependency checks in pre-commit

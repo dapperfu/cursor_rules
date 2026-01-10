@@ -1,0 +1,200 @@
+# Python Utility Functions
+
+## Requirement
+
+Python code SHALL organize utility functions appropriately and separate utility logic from domain logic.
+
+### Utility Function Organization
+
+- Utility functions SHALL be placed in `utils/` or `helpers/` modules
+- Utility functions SHALL be pure functions when possible (no side effects)
+- Utility functions SHALL be well-documented with their purpose
+- Utility functions SHALL be reusable across the application
+
+### Utility vs Domain Logic
+
+- Utility functions SHALL contain generic, reusable logic
+- Domain-specific logic SHALL remain in domain modules
+- Utility functions SHALL NOT depend on domain-specific code
+- Domain code MAY depend on utility functions
+
+### Reusability Guidelines
+
+- Utility functions SHALL be designed for reuse
+- Utility functions SHALL have clear, single responsibilities
+- Utility functions SHALL be tested independently
+- Utility functions SHALL follow naming conventions
+
+## Rationale
+
+Proper utility function organization provides:
+
+- **Reusability**: Utility functions can be used across the application
+- **Testability**: Pure utility functions are easy to test
+- **Maintainability**: Clear separation makes code easier to maintain
+- **Clarity**: Distinguishes generic utilities from domain logic
+- **Organization**: Well-organized utilities are easy to find and use
+
+## Implementation
+
+### Utility Module Structure
+
+```
+app/
+├── utils/
+│   ├── __init__.py
+│   ├── string_utils.py
+│   ├── date_utils.py
+│   ├── file_utils.py
+│   └── validation_utils.py
+└── domain/
+    ├── user_service.py
+    └── order_service.py
+```
+
+### Pure Utility Functions
+
+```python
+# app/utils/string_utils.py
+"""String utility functions."""
+from typing import str
+
+def slugify(text: str) -> str:
+    """Convert text to URL-friendly slug.
+    
+    Pure function: no side effects, same input always produces same output.
+    """
+    return text.lower().replace(" ", "-").replace("_", "-")
+
+def truncate(text: str, max_length: int = 100) -> str:
+    """Truncate text to maximum length."""
+    if len(text) <= max_length:
+        return text
+    return text[:max_length - 3] + "..."
+
+# app/utils/date_utils.py
+"""Date utility functions."""
+from datetime import datetime, timedelta
+
+def days_ago(days: int) -> datetime:
+    """Get datetime N days ago."""
+    return datetime.now() - timedelta(days=days)
+
+def is_weekend(date: datetime) -> bool:
+    """Check if date is weekend."""
+    return date.weekday() >= 5
+```
+
+### Utility vs Domain Logic
+
+```python
+# Good: Utility function (generic, reusable)
+# app/utils/validation_utils.py
+def validate_email(email: str) -> bool:
+    """Validate email format (generic utility)."""
+    return '@' in email and '.' in email.split('@')[1]
+
+# Good: Domain logic (domain-specific)
+# app/domain/user_service.py
+def create_user(username: str, email: str) -> User:
+    """Create user (domain-specific)."""
+    # Uses utility function
+    if not validate_email(email):
+        raise ValueError("Invalid email")
+    # Domain-specific logic
+    user = User(username=username, email=email)
+    user.save()
+    return user
+
+# Bad: Mixing utility and domain logic
+def create_user_with_validation(username: str, email: str) -> User:
+    """Bad: Utility and domain logic mixed."""
+    # Email validation (utility)
+    if '@' not in email:
+        raise ValueError("Invalid email")
+    # Domain logic
+    user = User(username=username, email=email)
+    user.save()
+    return user
+```
+
+### Reusable Utility Functions
+
+```python
+# app/utils/file_utils.py
+"""File utility functions."""
+from pathlib import Path
+from typing import Optional
+
+def ensure_directory(path: Path) -> Path:
+    """Ensure directory exists, create if not."""
+    path.mkdir(parents=True, exist_ok=True)
+    return path
+
+def get_file_size(filepath: Path) -> int:
+    """Get file size in bytes."""
+    return filepath.stat().st_size
+
+def safe_delete(filepath: Path) -> bool:
+    """Safely delete file if it exists."""
+    try:
+        if filepath.exists():
+            filepath.unlink()
+            return True
+        return False
+    except Exception:
+        return False
+```
+
+### Utility Function Documentation
+
+```python
+# app/utils/math_utils.py
+"""Mathematical utility functions."""
+from typing import List
+
+def calculate_average(numbers: List[float]) -> float:
+    """Calculate average of numbers.
+    
+    Args:
+        numbers: List of numbers to average.
+    
+    Returns:
+        Average of numbers.
+    
+    Raises:
+        ValueError: If numbers list is empty.
+    
+    Examples:
+        >>> calculate_average([1, 2, 3, 4, 5])
+        3.0
+    """
+    if not numbers:
+        raise ValueError("Numbers list cannot be empty")
+    return sum(numbers) / len(numbers)
+```
+
+### Testing Utility Functions
+
+```python
+# tests/utils/test_string_utils.py
+from app.utils.string_utils import slugify, truncate
+
+def test_slugify():
+    """Test slugify utility function."""
+    assert slugify("Hello World") == "hello-world"
+    assert slugify("Test_String") == "test-string"
+
+def test_truncate():
+    """Test truncate utility function."""
+    assert truncate("short") == "short"
+    assert truncate("a" * 200) == "a" * 97 + "..."
+```
+
+## Integration
+
+This rule works in conjunction with:
+
+- `python/module-organization.mdc` - Module structure for utilities
+- `python/documentation.mdc` - Documenting utility functions
+- `python/testing-framework.mdc` - Testing utility functions

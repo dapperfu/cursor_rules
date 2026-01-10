@@ -1,0 +1,148 @@
+# Python Entry Points
+
+## Requirement
+
+Python applications and libraries SHALL define entry points appropriately in `pyproject.toml`.
+
+### Console Script Entry Points
+
+- CLI applications SHALL define console script entry points
+- Entry points SHALL point to Click command groups or main functions
+- Entry point names SHALL match the application name or be descriptive
+
+### Plugin Entry Points
+
+- Libraries that support plugins SHALL define plugin entry points
+- Plugin entry points SHALL be documented clearly
+- Plugin discovery SHALL use standard entry point mechanisms
+
+### Entry Point Configuration
+
+- Entry points SHALL be defined in `pyproject.toml` under `[project.scripts]` or `[project.entry-points]`
+- Entry points SHALL use the format `module:function` or `module:object.attribute`
+
+## Rationale
+
+Using entry points provides:
+
+- **Installation**: Entry points are installed automatically with the package
+- **Discoverability**: Standard mechanism for discovering and loading plugins
+- **Integration**: Works with standard Python packaging tools
+- **User Experience**: Users can run commands directly after installation
+- **Extensibility**: Plugin systems enable extensibility
+
+## Implementation
+
+### Console Script Entry Points
+
+```toml
+# pyproject.toml
+[project]
+name = "myapp"
+
+[project.scripts]
+myapp = "myapp.cli:main"
+myapp-config = "myapp.cli:config_group"
+
+# Or using entry-points
+[project.entry-points.console_scripts]
+myapp = "myapp.cli:main"
+```
+
+### CLI Implementation
+
+```python
+# myapp/cli.py
+"""CLI entry point."""
+import click
+
+@click.group()
+def main() -> None:
+    """Main CLI application."""
+    pass
+
+@main.group("config")
+def config_group() -> None:
+    """Configuration management."""
+    pass
+
+@config_group.command("generate")
+def config_generate() -> None:
+    """Generate configuration file."""
+    click.echo("Generating config...")
+
+if __name__ == "__main__":
+    main()
+```
+
+### Plugin Entry Points
+
+```toml
+# pyproject.toml
+[project.entry-points.myapp.plugins]
+database = "myapp.plugins.database:DatabasePlugin"
+cache = "myapp.plugins.cache:CachePlugin"
+```
+
+### Plugin Discovery
+
+```python
+# myapp/plugin_loader.py
+"""Plugin loader using entry points."""
+from importlib.metadata import entry_points
+from typing import List, Type
+
+def load_plugins(group: str = "myapp.plugins") -> List[Type]:
+    """Load plugins from entry points."""
+    plugins = []
+    for entry_point in entry_points(group=group):
+        plugin_class = entry_point.load()
+        plugins.append(plugin_class)
+    return plugins
+
+# Usage
+plugins = load_plugins()
+for plugin_class in plugins:
+    plugin = plugin_class()
+    plugin.initialize()
+```
+
+### Multiple Entry Points
+
+```toml
+# pyproject.toml
+[project.scripts]
+myapp = "myapp.cli:main"
+myapp-server = "myapp.server:main"
+myapp-worker = "myapp.worker:main"
+
+[project.entry-points.myapp.plugins]
+database = "myapp.plugins.database:DatabasePlugin"
+```
+
+### Entry Point Testing
+
+```python
+# tests/test_entry_points.py
+from importlib.metadata import entry_points
+
+def test_console_script_entry_point():
+    """Test console script entry point exists."""
+    scripts = entry_points(group="console_scripts")
+    myapp_entry = next((ep for ep in scripts if ep.name == "myapp"), None)
+    assert myapp_entry is not None
+    assert myapp_entry.value == "myapp.cli:main"
+
+def test_plugin_entry_points():
+    """Test plugin entry points exist."""
+    plugins = entry_points(group="myapp.plugins")
+    assert len(list(plugins)) > 0
+```
+
+## Integration
+
+This rule works in conjunction with:
+
+- `python/click-required.mdc` - Click for CLI applications
+- `python/pyproject-toml.mdc` - pyproject.toml configuration
+- `python/main-module.mdc` - Entry point implementation

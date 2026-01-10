@@ -1,0 +1,188 @@
+# Python Optional Dependencies
+
+## Requirement
+
+Python projects SHALL use optional dependencies appropriately for features that may not be needed by all users.
+
+### Optional Dependency Patterns
+
+- Optional dependencies SHALL be defined using `extras_require` in `pyproject.toml`
+- Optional dependencies SHALL be documented clearly
+- Code SHALL gracefully degrade when optional dependencies are not available
+- Optional dependencies SHALL be tested both with and without the optional dependency
+
+### Graceful Degradation
+
+- Code SHALL check for optional dependencies before use
+- Code SHALL provide clear error messages when optional dependencies are missing
+- Code SHALL allow core functionality without optional dependencies
+
+## Rationale
+
+Using optional dependencies provides:
+
+- **Flexibility**: Users only install what they need
+- **Reduced Bloat**: Smaller installations for users who don't need optional features
+- **Modularity**: Clear separation between core and optional features
+- **Compatibility**: Works in environments where optional dependencies aren't available
+
+## Implementation
+
+### Defining Optional Dependencies
+
+```toml
+# pyproject.toml
+[project]
+name = "myapp"
+dependencies = [
+    "click>=8.0.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0.0",
+    "mypy>=1.0.0",
+]
+redis = [
+    "redis>=4.0.0",
+]
+postgres = [
+    "psycopg2-binary>=2.9.0",
+]
+all = [
+    "myapp[redis,postgres]",
+]
+```
+
+### Installing Optional Dependencies
+
+```bash
+# Install with optional dependencies
+pip install myapp[redis]
+pip install myapp[postgres]
+pip install myapp[redis,postgres]
+pip install myapp[all]
+
+# Install with development dependencies
+pip install myapp[dev]
+pip install -e ".[dev]"  # For editable installs
+```
+
+### Graceful Degradation
+
+```python
+# app/cache.py
+"""Cache implementation with optional Redis support."""
+from typing import Optional
+
+try:
+    import redis
+    HAS_REDIS = True
+except ImportError:
+    HAS_REDIS = False
+    redis = None  # type: ignore
+
+class Cache:
+    """Cache with optional Redis backend."""
+    
+    def __init__(self, use_redis: bool = False) -> None:
+        """Initialize cache.
+        
+        Args:
+            use_redis: Use Redis if available.
+        
+        Raises:
+            ImportError: If use_redis=True but redis is not installed.
+        """
+        if use_redis:
+            if not HAS_REDIS:
+                raise ImportError(
+                    "Redis is required. Install with: pip install myapp[redis]"
+                )
+            self.backend = redis.Redis()
+        else:
+            self.backend = {}  # In-memory fallback
+    
+    def get(self, key: str) -> Optional[str]:
+        """Get value from cache."""
+        if isinstance(self.backend, dict):
+            return self.backend.get(key)
+        else:
+            return self.backend.get(key)
+```
+
+### Checking for Optional Dependencies
+
+```python
+# app/features.py
+"""Features with optional dependencies."""
+from typing import Optional
+
+def has_redis() -> bool:
+    """Check if Redis is available."""
+    try:
+        import redis
+        return True
+    except ImportError:
+        return False
+
+def use_redis_feature() -> None:
+    """Use Redis feature if available."""
+    if not has_redis():
+        raise ImportError(
+            "Redis feature requires redis package. "
+            "Install with: pip install myapp[redis]"
+        )
+    # Use Redis
+    import redis
+    client = redis.Redis()
+    # ...
+```
+
+### Testing with and without Optional Dependencies
+
+```python
+# tests/test_optional_deps.py
+import pytest
+
+def test_without_optional_dep():
+    """Test that code works without optional dependency."""
+    # Uninstall optional dependency for this test
+    # Code should gracefully degrade
+    pass
+
+@pytest.mark.requires_redis
+def test_with_redis():
+    """Test that code works with Redis."""
+    pytest.importorskip("redis")
+    # Test Redis functionality
+    pass
+```
+
+### Error Messages
+
+```python
+def require_optional_dependency(module_name: str, extra: str) -> None:
+    """Require optional dependency or raise helpful error."""
+    try:
+        __import__(module_name)
+    except ImportError:
+        raise ImportError(
+            f"{module_name} is required for this feature. "
+            f"Install with: pip install myapp[{extra}]"
+        )
+
+# Usage
+def use_postgres_feature() -> None:
+    """Use PostgreSQL feature."""
+    require_optional_dependency("psycopg2", "postgres")
+    # Use PostgreSQL
+```
+
+## Integration
+
+This rule works in conjunction with:
+
+- `python/pyproject-toml.mdc` - Defining optional dependencies
+- `python/dependency-pinning.mdc` - Version pinning for optional deps
+- `python/testing-framework.mdc` - Testing with/without optional deps
