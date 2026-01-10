@@ -8,7 +8,7 @@ alwaysApply: false
 
 ## Requirement
 
-For all Click CLI projects, there SHALL be commands to install and uninstall shell completions with automatic shell detection.
+For all Click CLI projects, bash completion SHALL be a mandatory requirement. All Click-based CLI tools SHALL provide commands to install and uninstall shell completions with automatic shell detection.
 
 All Click-based CLI tools SHALL automatically detect the user's shell and install the appropriate completion script.
 
@@ -21,23 +21,23 @@ Completions SHALL be supported for the following shells:
 
 ## Required Commands
 
-All Click-based CLI tools SHALL provide the following commands:
+All Click-based CLI tools SHALL provide the following commands using a `completion` subcommand group:
 
 ### Install Completions
 
-- `{tool} install-completions` - Auto-detect shell and install appropriate completions
-- `{tool} install-completions --shell {bash|zsh|fish}` - Install completions for specific shell
-- `{tool} install-completions --rc` - Install completions and add to shell RC file automatically
+- `{tool} completion install` - Auto-detect shell and install appropriate completions
+- `{tool} completion install --shell {bash|zsh|fish}` - Install completions for specific shell
+- `{tool} completion install --rc` - Install completions and add to shell RC file automatically
 
 ### Uninstall Completions
 
-- `{tool} uninstall-completions` - Remove completions for detected shell
-- `{tool} uninstall-completions --shell {bash|zsh|fish}` - Remove completions for specific shell
-- `{tool} uninstall-completions --rc` - Remove completions and clean up shell RC file
+- `{tool} completion uninstall` - Remove completions for detected shell
+- `{tool} completion uninstall --shell {bash|zsh|fish}` - Remove completions for specific shell
+- `{tool} completion uninstall --rc` - Remove completions and clean up shell RC file
 
 ## Shell Detection
 
-The `install-completions` command SHALL automatically detect the user's shell by:
+The `completion install` command SHALL automatically detect the user's shell by:
 1. Checking the `SHELL` environment variable
 2. Checking the parent process name if `SHELL` is not set
 3. Falling back to bash if detection fails
@@ -69,6 +69,22 @@ When using `--rc` flag, the commands SHALL:
 - Preserve existing RC file content
 - Add comments to identify the completion installation
 
+### Absolute Path Requirement
+
+When inserting completion script sourcing into shell RC files (`.bashrc`, `.zshrc`, or `config.fish`), the commands SHALL use absolute paths to the command executable. The absolute path SHALL be determined at installation time using the actual command location. This ensures completions work when installed from a venv even if the venv path changes or the command is invoked from different directories.
+
+### Additional Requirements
+
+1. **Dynamic Path Resolution**: The absolute path SHALL be determined dynamically at installation time using `sys.executable`, `__file__`, or `shutil.which()` to locate the actual command executable location, ensuring it works for both venv and system-wide installations.
+
+2. **Path Verification**: Before adding completion script sourcing to RC files, the system SHALL verify that the absolute path exists and is executable. If the path cannot be verified, the installation SHALL fail with a clear error message.
+
+3. **Venv Detection**: The completion installation SHALL detect if the command is running from a virtual environment and use the venv's absolute path. This ensures completions continue to work even if the current working directory changes.
+
+4. **Uninstall Path Flexibility**: The uninstall command SHALL be able to remove completion entries from RC files even if the installation path has changed. This SHALL be accomplished by matching on command name patterns, comment markers, or completion script signatures, not just exact path matches.
+
+5. **Idempotent Operations**: Both install and uninstall operations SHALL be idempotent. Running `{tool} completion install` multiple times SHALL not create duplicate entries in RC files, and running `{tool} completion uninstall` when completions are not installed SHALL succeed without error.
+
 ## Makefile Targets
 
 Projects SHALL provide Makefile targets for completion installation:
@@ -76,11 +92,11 @@ Projects SHALL provide Makefile targets for completion installation:
 ```makefile
 .PHONY: install-completions
 install-completions:
-	@${VENV}/bin/python -m ${PROJECT} install-completions --rc
+	@${VENV}/bin/python -m ${PROJECT} completion install --rc
 
 .PHONY: uninstall-completions
 uninstall-completions:
-	@${VENV}/bin/python -m ${PROJECT} uninstall-completions --rc
+	@${VENV}/bin/python -m ${PROJECT} completion uninstall --rc
 ```
 
 The Makefile targets SHALL use the virtual environment Python executable and SHALL automatically add completions to the shell RC file.
@@ -90,6 +106,7 @@ The Makefile targets SHALL use the virtual environment Python executable and SHA
 ```python
 import click
 import os
+import sys
 import shutil
 from pathlib import Path
 
@@ -134,27 +151,101 @@ def get_rc_file(shell: str) -> Path:
     }
     return rc_files.get(shell, home / '.bashrc')
 
+def get_command_absolute_path() -> Path:
+    """
+    Get the absolute path to the command executable.
+    
+    Detects if running from venv and uses the venv's absolute path.
+    Uses sys.executable, __file__, or shutil.which() to locate the command.
+    
+    Returns
+    -------
+    Path
+        Absolute path to the command executable
+    
+    Raises
+    ------
+    RuntimeError
+        If the command path cannot be determined
+    """
+    # Try sys.executable first (works for venv and system-wide)
+    if sys.executable:
+        executable_path = Path(sys.executable).resolve()
+        if executable_path.exists() and executable_path.is_file():
+            return executable_path
+    
+    # Try finding via __file__ if available
+    if '__file__' in globals():
+        file_path = Path(__file__).resolve()
+        if file_path.exists():
+            return file_path
+    
+    # Try shutil.which() as fallback
+    command_name = os.path.basename(sys.argv[0]) if sys.argv else 'python'
+    which_path = shutil.which(command_name)
+    if which_path:
+        return Path(which_path).resolve()
+    
+    raise RuntimeError(f"Cannot determine absolute path for command: {command_name}")
+
+def verify_path_executable(path: Path) -> bool:
+    """
+    Verify that the path exists and is executable.
+    
+    Parameters
+    ----------
+    path : Path
+        Path to verify
+    
+    Returns
+    -------
+    bool
+        True if path exists and is executable, False otherwise
+    """
+    return path.exists() and path.is_file() and os.access(path, os.X_OK)
+
 @click.group()
 def cli():
     """Main CLI entry point."""
     pass
 
-@cli.command()
+@cli.group()
+def completion():
+    """Shell completion commands."""
+    pass
+
+@completion.command()
 @click.option('--shell', type=click.Choice(['bash', 'zsh', 'fish']), help='Shell to install completions for')
 @click.option('--rc', is_flag=True, help='Add completion to shell RC file')
-def install_completions(shell, rc):
+def install(shell: str | None, rc: bool) -> None:
     """Install shell completions for this CLI tool."""
     if not shell:
         shell = detect_shell()
         click.echo(f"Detected shell: {shell}")
     
-    # Generate completion script using Click's built-in support
+    # Get absolute path to command
+    try:
+        command_path = get_command_absolute_path()
+    except RuntimeError as e:
+        click.echo(f"Error: {e}", err=True)
+        sys.exit(1)
+    
+    # Verify path is executable
+    if not verify_path_executable(command_path):
+        click.echo(f"Error: Command path is not executable: {command_path}", err=True)
+        sys.exit(1)
+    
+    # Generate completion script using Click's built-in support with absolute path
+    command_abs_path = str(command_path)
     if shell == 'bash':
-        completion_script = f"__{cli.name}_COMPLETE=bash_source {cli.name}"
+        completion_script = f"__{cli.name}_COMPLETE=bash_source {command_abs_path}"
     elif shell == 'zsh':
-        completion_script = f"__{cli.name}_COMPLETE=zsh_source {cli.name}"
+        completion_script = f"__{cli.name}_COMPLETE=zsh_source {command_abs_path}"
     elif shell == 'fish':
-        completion_script = f"__{cli.name}_COMPLETE=fish_source {cli.name}"
+        completion_script = f"__{cli.name}_COMPLETE=fish_source {command_abs_path}"
+    else:
+        click.echo(f"Error: Unsupported shell: {shell}", err=True)
+        sys.exit(1)
     
     click.echo(f"Installation command for {shell}:")
     click.echo(f"  eval \"$({completion_script})\"")
@@ -162,26 +253,28 @@ def install_completions(shell, rc):
     if rc:
         rc_file = get_rc_file(shell)
         completion_line = f'eval "$({completion_script})"'
+        comment_line = f"# {cli.name} completions"
         
-        # Check if already installed
+        # Check if already installed (idempotent check)
         if rc_file.exists():
             content = rc_file.read_text()
-            if completion_line in content:
+            # Check for existing completion entry by comment or command pattern
+            if comment_line in content or (cli.name in content and 'COMPLETE' in content):
                 click.echo(f"Completions already installed in {rc_file}")
                 return
         
         # Add to RC file
         with rc_file.open('a') as f:
-            f.write(f"\n# {cli.name} completions\n")
+            f.write(f"\n{comment_line}\n")
             f.write(f"{completion_line}\n")
         
         click.echo(f"Completions installed in {rc_file}")
         click.echo(f"Restart your shell or run: source {rc_file}")
 
-@cli.command()
+@completion.command()
 @click.option('--shell', type=click.Choice(['bash', 'zsh', 'fish']), help='Shell to uninstall completions for')
 @click.option('--rc', is_flag=True, help='Remove completion from shell RC file')
-def uninstall_completions(shell, rc):
+def uninstall(shell: str | None, rc: bool) -> None:
     """Uninstall shell completions for this CLI tool."""
     if not shell:
         shell = detect_shell()
@@ -190,26 +283,36 @@ def uninstall_completions(shell, rc):
     if rc:
         rc_file = get_rc_file(shell)
         if not rc_file.exists():
-            click.echo(f"RC file {rc_file} does not exist")
+            # Idempotent: succeed if already uninstalled
+            click.echo(f"RC file {rc_file} does not exist. Completions not installed.")
             return
         
         content = rc_file.read_text()
         lines = content.split('\n')
         new_lines = []
         skip_next = False
+        comment_pattern = f"# {cli.name} completions"
+        found_entry = False
         
-        for i, line in enumerate(lines):
-            if f"# {cli.name} completions" in line:
+        # Remove completion entries by matching on comment and command patterns
+        # (flexible uninstall that works even if path changed)
+        for line in lines:
+            if comment_pattern in line:
                 skip_next = True
+                found_entry = True
                 continue
-            if skip_next and cli.name in line and 'COMPLETE' in line:
+            if skip_next and (cli.name in line and 'COMPLETE' in line):
                 skip_next = False
                 continue
             skip_next = False
             new_lines.append(line)
         
-        rc_file.write_text('\n'.join(new_lines))
-        click.echo(f"Completions removed from {rc_file}")
+        if found_entry:
+            rc_file.write_text('\n'.join(new_lines))
+            click.echo(f"Completions removed from {rc_file}")
+        else:
+            # Idempotent: succeed if already uninstalled
+            click.echo(f"Completions not found in {rc_file}. Already uninstalled.")
     else:
         click.echo("Completions removed (RC file not modified)")
 ```
