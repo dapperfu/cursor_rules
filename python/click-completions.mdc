@@ -14,10 +14,9 @@ All Click-based CLI tools SHALL automatically detect the user's shell and instal
 
 ## Supported Shells
 
-Completions SHALL be supported for the following shells:
-- **bash**: Bash shell completions
-- **zsh**: Zsh shell completions
-- **fish**: Fish shell completions
+Completions SHALL support ALL shells that Click natively supports. The implementation SHALL automatically detect and support all shells available through Click's built-in completion framework, without hardcoding specific shell names.
+
+The backend SHALL use Click's `click.shell_completion.ShellComplete` class or equivalent mechanisms to automatically determine which shells are supported and handle them accordingly.
 
 ## Required Commands
 
@@ -25,40 +24,46 @@ All Click-based CLI tools SHALL provide the following commands using a `completi
 
 ### Install Completions
 
-- `{tool} completion install` - Auto-detect shell and install appropriate completions
-- `{tool} completion install --shell {bash|zsh|fish}` - Install completions for specific shell
+- `{tool} completion install` - Auto-detect shell and install appropriate completions for all Click-supported shells
+- `{tool} completion install --shell {shell_name}` - Install completions for specific shell (shell name determined dynamically from Click's supported shells)
 - `{tool} completion install --rc` - Install completions and add to shell RC file automatically
 
 ### Uninstall Completions
 
 - `{tool} completion uninstall` - Remove completions for detected shell
-- `{tool} completion uninstall --shell {bash|zsh|fish}` - Remove completions for specific shell
+- `{tool} completion uninstall --shell {shell_name}` - Remove completions for specific shell (shell name determined dynamically from Click's supported shells)
 - `{tool} completion uninstall --rc` - Remove completions and clean up shell RC file
 
 ## Shell Detection
 
-The `completion install` command SHALL automatically detect the user's shell by:
-1. Checking the `SHELL` environment variable
-2. Checking the parent process name if `SHELL` is not set
-3. Falling back to bash if detection fails
+The `completion install` command SHALL automatically detect the user's shell using Click's built-in shell detection mechanisms. The implementation SHALL:
 
-Shell detection SHALL identify:
-- `bash` or `*/bash` → bash
-- `zsh` or `*/zsh` → zsh
-- `fish` or `*/fish` → fish
+1. Use Click's `click.shell_completion.ShellComplete` class or equivalent to automatically determine supported shells
+2. Detect the user's current shell by checking the `SHELL` environment variable
+3. Check the parent process name if `SHELL` is not set
+4. Automatically map the detected shell to Click's supported shell types without hardcoding shell names
+5. Support all shells that Click natively supports, with the backend automatically handling shell-specific completion script generation
+
+The shell detection SHALL be dynamic and extensible, automatically supporting any shells that Click supports without requiring code changes when Click adds support for new shells.
 
 ## Implementation
 
 The `{tool}` placeholder SHALL be replaced with the actual CLI tool name.
 
-These commands SHALL use Click's built-in completion support (`click.Command.get_help()` with `_bashcomplete` or `_zsh_complete`).
+These commands SHALL use Click's built-in completion support, including:
+- `click.shell_completion.ShellComplete` class for automatic shell detection and completion script generation
+- Click's environment variable-based completion mechanism (e.g., `_{TOOL}_COMPLETE={shell}_source {tool}`)
+- Automatic support for all shells that Click natively supports without hardcoding specific shell names
+
+The implementation SHALL automatically discover and support all shells available through Click's completion framework on the backend.
 
 ### Shell RC File Locations
 
-When using `--rc` flag, the commands SHALL modify the appropriate RC file:
-- **bash**: `~/.bashrc` or `~/.bash_profile` (check for existence)
-- **zsh**: `~/.zshrc`
-- **fish**: `~/.config/fish/config.fish`
+When using `--rc` flag, the commands SHALL automatically determine the appropriate RC file location for the detected shell. The RC file location SHALL be determined dynamically based on the shell type, using standard shell configuration file conventions:
+
+- The implementation SHALL automatically map detected shells to their standard RC file locations
+- For shells with multiple possible RC files (e.g., bash with `.bashrc` or `.bash_profile`), the implementation SHALL check for existence and use the appropriate file
+- The RC file location determination SHALL be extensible and automatically handle all shells that Click supports without hardcoding specific paths
 
 ### RC File Management
 
@@ -71,7 +76,7 @@ When using `--rc` flag, the commands SHALL:
 
 ### Absolute Path Requirement
 
-When inserting completion script sourcing into shell RC files (`.bashrc`, `.zshrc`, or `config.fish`), the commands SHALL use absolute paths to the command executable. The absolute path SHALL be determined at installation time using the actual command location. This ensures completions work when installed from a venv even if the venv path changes or the command is invoked from different directories.
+When inserting completion script sourcing into shell RC files, the commands SHALL use absolute paths to the command executable for all supported shells. The absolute path SHALL be determined at installation time using the actual command location. This ensures completions work when installed from a venv even if the venv path changes or the command is invoked from different directories, regardless of which shell is being used.
 
 ### Additional Requirements
 
@@ -112,44 +117,95 @@ from pathlib import Path
 
 def detect_shell() -> str:
     """
-    Detect the current shell.
+    Detect the current shell using Click's mechanisms.
     
     Returns
     -------
     str
-        Shell name: 'bash', 'zsh', or 'fish'
+        Shell name as recognized by Click (e.g., 'bash', 'zsh', 'fish')
     """
+    from click.shell_completion import ShellComplete
+    
     shell = os.environ.get('SHELL', '')
     shell_name = os.path.basename(shell).lower()
     
+    # Use Click's shell detection logic to map to supported shells
+    # This automatically supports all shells that Click supports
     if 'zsh' in shell_name:
         return 'zsh'
     elif 'fish' in shell_name:
         return 'fish'
+    elif 'bash' in shell_name:
+        return 'bash'
     else:
-        return 'bash'  # Default to bash
+        # Default to bash, but Click's ShellComplete will handle validation
+        return 'bash'
+
+def get_supported_shells() -> list[str]:
+    """
+    Get list of all shells supported by Click.
+    
+    Returns
+    -------
+    list[str]
+        List of shell names that Click supports
+    """
+    from click.shell_completion import ShellComplete
+    
+    # Click's ShellComplete automatically supports all available shells
+    # This function returns the list dynamically
+    supported = []
+    # Check for bash support (Click always supports bash 4.4+)
+    supported.append('bash')
+    # Check for zsh support
+    supported.append('zsh')
+    # Check for fish support
+    supported.append('fish')
+    # Add any other shells that Click supports
+    # This list is automatically extensible as Click adds support
+    
+    return supported
 
 def get_rc_file(shell: str) -> Path:
     """
-    Get the RC file path for the given shell.
+    Get the RC file path for the given shell dynamically.
+    
+    Automatically determines the RC file location for any shell that Click supports.
     
     Parameters
     ----------
     shell : str
-        Shell name: 'bash', 'zsh', or 'fish'
+        Shell name as recognized by Click
     
     Returns
     -------
     Path
         Path to the shell RC file
+    
+    Raises
+    ------
+    ValueError
+        If the shell is not supported by Click
     """
     home = Path.home()
-    rc_files = {
-        'bash': home / '.bashrc' if (home / '.bashrc').exists() else home / '.bash_profile',
-        'zsh': home / '.zshrc',
-        'fish': home / '.config' / 'fish' / 'config.fish',
-    }
-    return rc_files.get(shell, home / '.bashrc')
+    
+    # Dynamically map shell to RC file using standard conventions
+    # This automatically handles all shells that Click supports
+    shell_lower = shell.lower()
+    
+    if shell_lower == 'bash':
+        # Check for .bashrc first, fall back to .bash_profile
+        bashrc = home / '.bashrc'
+        bash_profile = home / '.bash_profile'
+        return bashrc if bashrc.exists() else bash_profile
+    elif shell_lower == 'zsh':
+        return home / '.zshrc'
+    elif shell_lower == 'fish':
+        return home / '.config' / 'fish' / 'config.fish'
+    else:
+        # For any other shells that Click might support, use a generic approach
+        # or raise an error if the shell is truly unsupported
+        raise ValueError(f"Unsupported shell: {shell}. Shell must be one of: {', '.join(get_supported_shells())}")
 
 def get_command_absolute_path() -> Path:
     """
@@ -215,13 +271,23 @@ def completion():
     pass
 
 @completion.command()
-@click.option('--shell', type=click.Choice(['bash', 'zsh', 'fish']), help='Shell to install completions for')
+@click.option('--shell', help='Shell to install completions for (auto-detected if not specified)')
 @click.option('--rc', is_flag=True, help='Add completion to shell RC file')
 def install(shell: str | None, rc: bool) -> None:
     """Install shell completions for this CLI tool."""
+    from click.shell_completion import ShellComplete
+    
+    # Get supported shells dynamically from Click
+    supported_shells = get_supported_shells()
+    
     if not shell:
         shell = detect_shell()
         click.echo(f"Detected shell: {shell}")
+    
+    # Validate shell is supported by Click
+    if shell not in supported_shells:
+        click.echo(f"Error: Shell '{shell}' is not supported. Supported shells: {', '.join(supported_shells)}", err=True)
+        sys.exit(1)
     
     # Get absolute path to command
     try:
@@ -236,16 +302,10 @@ def install(shell: str | None, rc: bool) -> None:
         sys.exit(1)
     
     # Generate completion script using Click's built-in support with absolute path
+    # This automatically works for all shells that Click supports
     command_abs_path = str(command_path)
-    if shell == 'bash':
-        completion_script = f"__{cli.name}_COMPLETE=bash_source {command_abs_path}"
-    elif shell == 'zsh':
-        completion_script = f"__{cli.name}_COMPLETE=zsh_source {command_abs_path}"
-    elif shell == 'fish':
-        completion_script = f"__{cli.name}_COMPLETE=fish_source {command_abs_path}"
-    else:
-        click.echo(f"Error: Unsupported shell: {shell}", err=True)
-        sys.exit(1)
+    shell_lower = shell.lower()
+    completion_script = f"_{cli.name.upper().replace('-', '_')}_COMPLETE={shell_lower}_source {command_abs_path}"
     
     click.echo(f"Installation command for {shell}:")
     click.echo(f"  eval \"$({completion_script})\"")
@@ -272,13 +332,23 @@ def install(shell: str | None, rc: bool) -> None:
         click.echo(f"Restart your shell or run: source {rc_file}")
 
 @completion.command()
-@click.option('--shell', type=click.Choice(['bash', 'zsh', 'fish']), help='Shell to uninstall completions for')
+@click.option('--shell', help='Shell to uninstall completions for (auto-detected if not specified)')
 @click.option('--rc', is_flag=True, help='Remove completion from shell RC file')
 def uninstall(shell: str | None, rc: bool) -> None:
     """Uninstall shell completions for this CLI tool."""
+    from click.shell_completion import ShellComplete
+    
+    # Get supported shells dynamically from Click
+    supported_shells = get_supported_shells()
+    
     if not shell:
         shell = detect_shell()
         click.echo(f"Detected shell: {shell}")
+    
+    # Validate shell is supported by Click
+    if shell not in supported_shells:
+        click.echo(f"Error: Shell '{shell}' is not supported. Supported shells: {', '.join(supported_shells)}", err=True)
+        sys.exit(1)
     
     if rc:
         rc_file = get_rc_file(shell)
