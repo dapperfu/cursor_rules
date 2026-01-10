@@ -1,0 +1,344 @@
+---
+description: TOML configuration file requirement for Python CLI applications
+globs: ["*.py", "**/*.py"]
+alwaysApply: false
+---
+
+# Python TOML Configuration Requirement
+
+## Requirement
+
+All Python CLI applications SHALL use TOML files for configuration.
+
+All CLI applications using a configuration file SHALL provide configuration management through a `config` Click command group with `generate` and `validate` subcommands.
+
+### Configuration File Format
+
+- Configuration files SHALL use the `.toml` extension (no exceptions)
+- Default configuration file SHALL be named `config.toml`
+- Configuration file lookup order SHALL be:
+  1. Explicit path provided via `--config` or `-c` option
+  2. `config.toml` in the current working directory
+  3. Path specified in environment variable (application-specific, e.g., `APP_CONFIG_PATH`)
+- Applications SHALL accept a `--config` or `-c` option to specify an alternative configuration file path
+- If no explicit path is provided and no `config.toml` exists in CWD, applications SHALL check for an environment variable with the config path
+
+### TOML Library
+
+- Applications SHALL use `tomllib` (Python 3.11+ standard library) for parsing TOML files
+- For Python versions < 3.11, applications SHALL use `tomli` as a backport dependency
+
+### config generate Command
+
+- All CLI applications using configuration files SHALL provide a `config generate` Click subcommand
+- The `config generate` command SHALL generate a default configuration file with:
+  - **Required values**: Placeholders in the format `<placeholder_name>` (e.g., `<database_password>`, `<api_key>`)
+  - **Optional values**: Actual default values that can be used as-is
+  - **Maximum documentation**: Every configuration option SHALL have a comment explaining:
+    - What the option is used for
+    - Default value (if optional)
+    - Valid value ranges or constraints
+    - Examples of valid values
+  - **Enum options**: For configuration options that accept enumerated values, ALL possible values SHALL be listed with descriptions:
+    ```toml
+    # Log level for application logging
+    # Options:
+    #   - "DEBUG": Detailed diagnostic information for debugging
+    #   - "INFO": General informational messages about application flow
+    #   - "WARNING": Warning messages for potentially problematic situations
+    #   - "ERROR": Error messages for error conditions
+    #   - "CRITICAL": Critical error messages for serious failures
+    # Default: "INFO"
+    log_level = "INFO"
+    ```
+- Default values SHALL be extracted from code (constants, default parameters) when possible
+- If code extraction is not feasible, default values SHALL come from a template file
+- If the target configuration file already exists, `config generate` SHALL prompt the user for confirmation before overwriting
+- The generated file SHALL be written to the location specified by `--config/-c`, or to `config.toml` in the current working directory if not specified
+
+### config validate Command
+
+- All CLI applications using configuration files SHALL provide a `config validate` Click subcommand
+- The `config validate` command SHALL:
+  - Load the configuration file (following the lookup order specified above)
+  - Validate all configuration options
+  - Check for required fields (those with placeholders in generated config)
+  - Verify correct types for all values
+  - Validate value ranges and constraints
+  - Check enum values against allowed options
+  - Report all validation errors with clear messages indicating what is wrong and where
+  - Exit with code 0 if valid, non-zero if invalid
+
+### Configuration Validation on Load
+
+- Applications SHALL validate the TOML configuration file upon loading (in addition to the `config validate` command)
+- Validation SHALL check for required fields, correct types, and valid value ranges
+- Invalid configurations SHALL produce clear error messages indicating what is wrong
+
+### Configuration Structure
+
+- The TOML configuration structure SHALL be flexible and application-specific
+- No standard structure is required, allowing each application to organize configuration as needed
+
+## Rationale
+
+Using TOML for configuration provides:
+- Human-readable configuration format
+- Type safety and validation capabilities
+- Standard library support in Python 3.11+ (tomllib)
+- Consistent configuration approach across Python CLI applications
+- Better integration with modern Python tooling (pyproject.toml also uses TOML)
+
+The `config generate` command ensures:
+- Users can easily discover all available configuration options
+- Required values are clearly marked with placeholders
+- Default values are clearly documented and accessible
+- All enum options are listed with descriptions
+- Configuration files can be generated programmatically
+- Users are protected from accidentally overwriting existing configurations
+- Maximum documentation helps users understand each configuration option
+
+The `config validate` command ensures:
+- Configuration files can be validated before application startup
+- Validation errors are caught early with clear error messages
+- CI/CD pipelines can validate configuration files
+- Configuration correctness can be verified independently
+
+The configuration lookup order ensures:
+- Flexibility: explicit paths override defaults
+- Convenience: config.toml in CWD is the default
+- Environment support: environment variables for deployment flexibility
+- Consistency: all applications follow the same lookup pattern
+
+## Implementation
+
+### TOML Library Selection
+
+Applications SHALL detect Python version and use the appropriate library:
+
+```python
+import sys
+
+if sys.version_info >= (3, 11):
+    import tomllib
+else:
+    try:
+        import tomli as tomllib
+    except ImportError:
+        raise ImportError("tomli is required for Python < 3.11")
+```
+
+### Configuration Loading
+
+Applications SHALL load configuration following the lookup order:
+
+```python
+import click
+import pathlib
+import os
+import sys
+
+if sys.version_info >= (3, 11):
+    import tomllib
+else:
+    import tomli as tomllib
+
+def load_config(config_path: str | None = None) -> dict:
+    """Load configuration from TOML file following lookup order."""
+    resolved_path = find_config_file(config_path)
+    
+    if resolved_path is None:
+        raise FileNotFoundError(
+            "Configuration file not found. "
+            "Use 'config generate' to create one, or specify with --config/-c"
+        )
+    
+    with open(resolved_path, "rb") as f:
+        config = tomllib.load(f)
+    
+    validate_config(config)
+    return config
+
+def find_config_file(explicit_path: str | None) -> pathlib.Path | None:
+    """Find configuration file following lookup order."""
+    # 1. Explicit path provided
+    if explicit_path:
+        path = pathlib.Path(explicit_path)
+        return path if path.exists() else None
+    
+    # 2. config.toml in current working directory
+    cwd_config = pathlib.Path.cwd() / "config.toml"
+    if cwd_config.exists():
+        return cwd_config
+    
+    # 3. Environment variable (replace APP_CONFIG_PATH with app-specific name)
+    env_var = os.getenv("APP_CONFIG_PATH")
+    if env_var:
+        path = pathlib.Path(env_var)
+        return path if path.exists() else None
+    
+    return None
+```
+
+### config Command Group
+
+Applications SHALL provide a `config` command group with `generate` and `validate` subcommands:
+
+```python
+@click.group()
+def cli() -> None:
+    """Main CLI application."""
+    pass
+
+@cli.group("config")
+def config_group() -> None:
+    """Configuration management commands."""
+    pass
+
+@config_group.command("generate")
+@click.option(
+    "--config", "-c",
+    type=click.Path(),
+    default=None,
+    help="Path to configuration file (default: config.toml in current directory)"
+)
+@click.option(
+    "--force",
+    is_flag=True,
+    help="Overwrite existing configuration file without prompting"
+)
+def config_generate(config: str | None, force: bool) -> None:
+    """Generate default configuration file with placeholders for required values."""
+    if config is None:
+        config_path = pathlib.Path.cwd() / "config.toml"
+    else:
+        config_path = pathlib.Path(config)
+    
+    if config_path.exists() and not force:
+        if not click.confirm(f"Configuration file exists at {config_path}. Overwrite?"):
+            click.echo("Aborted.")
+            return
+    
+    # Generate config with placeholders and documentation
+    config_content = generate_config_template()
+    config_path.write_text(config_content)
+    
+    click.echo(f"Configuration file generated at {config_path}")
+    click.echo("Please replace <placeholder> values with actual values.")
+
+@config_group.command("validate")
+@click.option(
+    "--config", "-c",
+    type=click.Path(),
+    default=None,
+    help="Path to configuration file to validate"
+)
+def config_validate(config: str | None) -> None:
+    """Validate configuration file."""
+    config_path = find_config_file(config)
+    
+    if config_path is None:
+        click.echo("Error: Configuration file not found.", err=True)
+        sys.exit(1)
+    
+    try:
+        config_data = load_config(str(config_path))
+        validate_config(config_data)
+        click.echo(f"Configuration file {config_path} is valid.")
+    except Exception as e:
+        click.echo(f"Error: Configuration file is invalid: {e}", err=True)
+        sys.exit(1)
+
+def find_config_file(explicit_path: str | None) -> pathlib.Path | None:
+    """Find configuration file following lookup order."""
+    if explicit_path:
+        path = pathlib.Path(explicit_path)
+        return path if path.exists() else None
+    
+    # Check current working directory
+    cwd_config = pathlib.Path.cwd() / "config.toml"
+    if cwd_config.exists():
+        return cwd_config
+    
+    # Check environment variable
+    env_var = os.getenv("APP_CONFIG_PATH")  # Replace with app-specific name
+    if env_var:
+        path = pathlib.Path(env_var)
+        return path if path.exists() else None
+    
+    return None
+
+def generate_config_template() -> str:
+    """Generate TOML config template with placeholders and documentation."""
+    return """# Application Configuration
+# Generated by: <app-name> config generate
+# Replace <placeholder> values with actual values
+
+[database]
+# Database connection hostname or IP address
+# Required: Yes
+# Example: "localhost" or "db.example.com"
+host = "<database_host>"
+
+# Database connection port
+# Required: No
+# Default: 5432
+# Valid range: 1-65535
+port = 5432
+
+# Database name
+# Required: Yes
+# Example: "myapp_db"
+name = "<database_name>"
+
+# Database user password
+# Required: Yes
+# Example: "secure_password_123"
+password = "<database_password>"
+
+[logging]
+# Log level for application logging
+# Required: No
+# Options:
+#   - "DEBUG": Detailed diagnostic information for debugging
+#   - "INFO": General informational messages about application flow
+#   - "WARNING": Warning messages for potentially problematic situations
+#   - "ERROR": Error messages for error conditions
+#   - "CRITICAL": Critical error messages for serious failures
+# Default: "INFO"
+log_level = "INFO"
+"""
+```
+
+### Configuration Validation
+
+Applications SHALL validate configuration:
+
+```python
+def validate_config(config: dict) -> None:
+    """Validate configuration structure and values."""
+    required_fields = ["app", "database"]  # Example
+    for field in required_fields:
+        if field not in config:
+            raise ValueError(f"Required configuration field missing: {field}")
+    
+    # Type and value validation
+    if "port" in config.get("server", {}):
+        port = config["server"]["port"]
+        if not isinstance(port, int) or not (1 <= port <= 65535):
+            raise ValueError(f"Invalid port value: {port}")
+```
+
+## Exceptions
+
+This requirement does NOT apply to:
+- Simple scripts that do not require configuration files
+- Scripts that are only used internally and not exposed as user-facing tools
+- Applications where configuration is handled entirely through environment variables or command-line arguments
+
+## Integration
+
+This rule complements:
+- `click-required.mdc` - Ensures Click is used for CLI applications
+- `python-version.mdc` - Specifies Python 3.10+ requirement (note: tomllib requires 3.11+, so tomli backport needed for 3.10)
+- `pyproject-toml.mdc` - Already uses TOML for project configuration
