@@ -1,0 +1,274 @@
+---
+description: Rust custom logging levels between INFO and DEBUG with verbosity flag mapping
+globs: ["*.rs", "**/*.rs", "Cargo.toml"]
+alwaysApply: false
+---
+
+# Rust Logging Levels
+
+## Requirement
+
+**MANDATORY**: ALL Rust projects MUST implement custom logging levels between INFO and DEBUG to provide granular verbosity control. This requirement is MANDATORY and SHALL NOT be considered optional. These levels SHALL correspond to command-line verbosity flags and use descriptive names for consistent use across Rust projects.
+
+Projects MUST use the `log` crate as the logging facade (standard Rust practice). Projects MAY use `env_logger`, `tracing`, or other logging backends, but MUST implement the required custom logging levels regardless of the underlying logging mechanism.
+
+## Custom Logging Level Definitions
+
+Rust's standard `log` crate provides ERROR, WARN, INFO, DEBUG, and TRACE levels. To provide granular verbosity control between INFO and DEBUG, projects MUST extend the standard levels with custom levels or map verbosity flags appropriately.
+
+The following custom logging levels MUST be defined and used:
+
+- **VERBOSE**: General verbose output, one level below INFO. Corresponds to `-v` flag.
+- **DETAIL**: Detailed information about operations. Corresponds to `-vv` flag.
+- **TRACE**: Execution flow tracing. Corresponds to `-vvv` flag. (Note: This may map to the standard TRACE level)
+- **FINE**: Fine-grained debugging information. Corresponds to `-vvvv` flag.
+
+Standard Rust logging levels:
+- **ERROR**: Error-level messages
+- **WARN**: Warning-level messages
+- **INFO (20)**: Informational messages
+- **DEBUG (10)**: Debug-level messages
+- **TRACE (5)**: Trace-level messages (standard Rust level)
+
+## Implementation Requirements
+
+1. **log Crate Dependency**: ALL Rust projects MUST include the `log` crate as a dependency. This is MANDATORY.
+
+2. **Custom Level Extension**: ALL projects MUST extend the standard log levels with custom levels between INFO and DEBUG, or map verbosity flags to appropriate standard levels. This is MANDATORY.
+
+3. **Logger Initialization**: ALL projects MUST initialize a logger backend (e.g., `env_logger`, `tracing`) that supports the custom levels or maps verbosity flags appropriately. This is MANDATORY.
+
+4. **Verbosity Mapping**: Command-line verbosity flags MUST map to logging levels as follows:
+   - No flag: INFO level
+   - `-v`: VERBOSE (or INFO with verbose filter)
+   - `-vv`: DETAIL (or DEBUG with detail filter)
+   - `-vvv`: TRACE (standard Rust TRACE level)
+   - `-vvvv`: FINE (or TRACE with fine filter)
+   - `-vvvvv` or more: TRACE (standard Rust TRACE level)
+
+5. **Proper Usage**: ALL logging MUST use the `log` crate macros (`error!`, `warn!`, `info!`, `debug!`, `trace!`) or custom macros that extend these, not `println!`, `eprintln!`, or `dbg!` statements that bypass the level system. This is MANDATORY.
+
+## Implementation Example
+
+The following example demonstrates a complete implementation using the `log` crate with custom level filtering:
+
+```rust
+// Cargo.toml dependencies:
+// [dependencies]
+// log = "0.4"
+// env_logger = "0.11"
+
+use log::{Level, LevelFilter, Metadata, Record};
+
+// Custom log levels as numeric values for filtering
+const LOG_LEVEL_VERBOSE: u8 = 18;
+const LOG_LEVEL_DETAIL: u8 = 16;
+const LOG_LEVEL_TRACE: u8 = 14;
+const LOG_LEVEL_FINE: u8 = 12;
+
+// Custom logger that supports verbosity-based filtering
+struct VerbosityLogger {
+    verbosity: u8,
+}
+
+impl VerbosityLogger {
+    fn new(verbosity: u8) -> Self {
+        Self { verbosity }
+    }
+    
+    fn should_log(&self, level: Level) -> bool {
+        let level_value = match level {
+            Level::Error => 30,
+            Level::Warn => 25,
+            Level::Info => 20,
+            Level::Debug => 10,
+            Level::Trace => 5,
+        };
+        
+        // Map verbosity to minimum log level
+        let min_level = match self.verbosity {
+            0 => 20,  // INFO
+            1 => 18,  // VERBOSE
+            2 => 16,  // DETAIL
+            3 => 14,  // TRACE
+            4 => 12,  // FINE
+            _ => 5,   // TRACE (standard)
+        };
+        
+        level_value >= min_level
+    }
+}
+
+impl log::Log for VerbosityLogger {
+    fn enabled(&self, metadata: &Metadata) -> bool {
+        self.should_log(metadata.level())
+    }
+    
+    fn log(&self, record: &Record) {
+        if self.enabled(record.metadata()) {
+            eprintln!(
+                "[{}] {}:{} [{}] {}",
+                chrono::Local::now().format("%Y-%m-%d %H:%M:%S%.3f"),
+                record.file().unwrap_or("unknown"),
+                record.line().unwrap_or(0),
+                record.level(),
+                record.args()
+            );
+        }
+    }
+    
+    fn flush(&self) {}
+}
+
+// Initialize logger with verbosity
+pub fn init_logger(verbosity: u8) {
+    let logger = VerbosityLogger::new(verbosity);
+    log::set_boxed_logger(Box::new(logger))
+        .map(|()| log::set_max_level(LevelFilter::Trace))
+        .expect("Failed to initialize logger");
+}
+
+// Usage example
+fn main() {
+    let verbosity = parse_verbosity(std::env::args().collect());
+    init_logger(verbosity);
+    
+    log::info!("Application starting");
+    log::info!("Verbose information"); // Will show at verbosity 1+
+    log::debug!("Detailed operation information"); // Will show at verbosity 2+
+    log::trace!("Execution flow tracing"); // Will show at verbosity 3+
+    log::trace!("Fine-grained debug information"); // Will show at verbosity 4+
+}
+
+fn parse_verbosity(args: Vec<String>) -> u8 {
+    for arg in args {
+        if arg.starts_with("-v") {
+            return (arg.len() - 1) as u8; // Count 'v' characters
+        }
+    }
+    0
+}
+```
+
+## Alternative Implementation with env_logger
+
+For projects using `env_logger`, verbosity can be mapped to RUST_LOG environment variable:
+
+```rust
+use log::{info, debug, trace};
+use env_logger::Builder;
+use std::env;
+
+pub fn init_logger_from_verbosity(verbosity: u8) {
+    let rust_log = match verbosity {
+        0 => "info",
+        1 => "info",  // VERBOSE maps to info level
+        2 => "debug", // DETAIL maps to debug level
+        3 => "trace", // TRACE maps to trace level
+        4 => "trace", // FINE maps to trace level
+        _ => "trace",
+    };
+    
+    env::set_var("RUST_LOG", rust_log);
+    Builder::from_default_env().init();
+}
+
+// Usage
+fn main() {
+    let verbosity = parse_verbosity(std::env::args().collect());
+    init_logger_from_verbosity(verbosity);
+    
+    info!("Application starting");
+    info!("Verbose information");
+    debug!("Detailed operation information");
+    trace!("Execution flow tracing");
+    trace!("Fine-grained debug information");
+}
+```
+
+## Custom Macros for Explicit Levels
+
+Projects may define custom macros to explicitly use VERBOSE, DETAIL, and FINE levels:
+
+```rust
+use log::{info, debug, trace};
+
+// Custom macros that map to appropriate standard levels
+#[macro_export]
+macro_rules! log_verbose {
+    ($($arg:tt)*) => {
+        log::info!($($arg)*); // VERBOSE maps to INFO
+    };
+}
+
+#[macro_export]
+macro_rules! log_detail {
+    ($($arg:tt)*) => {
+        log::debug!($($arg)*); // DETAIL maps to DEBUG
+    };
+}
+
+#[macro_export]
+macro_rules! log_fine {
+    ($($arg:tt)*) => {
+        log::trace!($($arg)*); // FINE maps to TRACE
+    };
+}
+
+// Usage
+fn main() {
+    log_verbose!("Verbose information");
+    log_detail!("Detailed operation information");
+    log::trace!("Execution flow tracing");
+    log_fine!("Fine-grained debug information");
+}
+```
+
+## Integration with tracing
+
+Projects using the `tracing` crate MUST still implement verbosity mapping:
+
+```rust
+use tracing::{info, debug, trace};
+use tracing_subscriber::{EnvFilter, fmt};
+
+pub fn init_tracing_from_verbosity(verbosity: u8) {
+    let filter = match verbosity {
+        0 => EnvFilter::new("info"),
+        1 => EnvFilter::new("info"),  // VERBOSE
+        2 => EnvFilter::new("debug"),  // DETAIL
+        3 => EnvFilter::new("trace"),  // TRACE
+        4 => EnvFilter::new("trace"),  // FINE
+        _ => EnvFilter::new("trace"),
+    };
+    
+    tracing_subscriber::fmt()
+        .with_env_filter(filter)
+        .init();
+}
+```
+
+## Cargo.toml Dependencies
+
+Projects MUST include the following dependencies:
+
+```toml
+[dependencies]
+log = "0.4"
+
+# Choose one logger backend:
+env_logger = "0.11"  # For simple applications
+# OR
+tracing = "0.1"
+tracing-subscriber = "0.3"  # For more advanced applications
+```
+
+## Usage Guidelines
+
+- Use **ERROR** for error conditions that prevent operation.
+- Use **WARN** for warning conditions that may indicate problems.
+- Use **INFO** for normal operational messages that users should see by default.
+- Use **VERBOSE** (mapped to INFO) for additional context that helps understand what the program is doing.
+- Use **DETAIL** (mapped to DEBUG) for detailed information about operations, such as function parameters or intermediate results.
+- Use **TRACE** (standard Rust level) for execution flow information, such as function entry/exit points.
+- Use **FINE** (mapped to TRACE) for very detailed debugging information, such as variable values or state dumps.
