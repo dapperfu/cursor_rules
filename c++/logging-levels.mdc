@@ -1,0 +1,291 @@
+---
+description: C++ custom logging levels between INFO and DEBUG with verbosity flag mapping
+globs: ["*.cpp", "**/*.cpp", "*.hpp", "**/*.hpp", "*.cc", "**/*.cc", "*.h", "**/*.h"]
+alwaysApply: false
+---
+
+# C++ Logging Levels
+
+## Requirement
+
+**MANDATORY**: ALL C++ projects MUST implement custom logging levels between INFO (20) and DEBUG (10) to provide granular verbosity control. This requirement is MANDATORY and SHALL NOT be considered optional. These levels SHALL correspond to command-line verbosity flags and use descriptive names for consistent use across C++ projects.
+
+Projects MAY use spdlog, glog, custom logging implementations, or third-party logging libraries, but MUST implement the required custom logging levels regardless of the underlying logging mechanism.
+
+## Custom Logging Level Definitions
+
+The following custom logging levels MUST be defined and used:
+
+- **VERBOSE (18)**: General verbose output, one level below INFO. Corresponds to `-v` flag.
+- **DETAIL (16)**: Detailed information about operations. Corresponds to `-vv` flag.
+- **TRACE (14)**: Execution flow tracing. Corresponds to `-vvv` flag.
+- **FINE (12)**: Fine-grained debugging information. Corresponds to `-vvvv` flag.
+
+Standard logging levels remain unchanged:
+- **INFO (20)**: Informational messages
+- **DEBUG (10)**: Debug-level messages
+
+## Implementation Requirements
+
+1. **Level Constants**: ALL C++ projects MUST define constants for these levels using enum class or constexpr constants. This is MANDATORY.
+
+2. **Logger Interface**: ALL projects MUST provide logging methods or functions for each custom level (e.g., `logger.verbose()`, `logger.detail()`, `logger.trace()`, `logger.fine()`). This is MANDATORY.
+
+3. **Level Checking**: ALL logging methods MUST check the current log level before logging to avoid unnecessary string formatting. This is MANDATORY.
+
+4. **Verbosity Mapping**: Command-line verbosity flags MUST map to logging levels as follows:
+   - No flag: INFO level (20)
+   - `-v`: VERBOSE (18)
+   - `-vv`: DETAIL (16)
+   - `-vvv`: TRACE (14)
+   - `-vvvv`: FINE (12)
+   - `-vvvvv` or more: DEBUG (10)
+
+5. **Proper Usage**: ALL logging MUST use the defined logging interface, not std::cout, std::cerr, or printf statements that bypass the level system. This is MANDATORY.
+
+## Implementation Example
+
+The following example demonstrates a complete implementation using modern C++:
+
+```cpp
+#ifndef LOG_LEVELS_HPP
+#define LOG_LEVELS_HPP
+
+#include <iostream>
+#include <sstream>
+#include <string>
+#include <chrono>
+#include <iomanip>
+#include <mutex>
+
+/* Log level enum class for type safety */
+enum class LogLevel : int {
+    ERROR   = 30,
+    WARN    = 25,
+    INFO    = 20,
+    VERBOSE = 18,
+    DETAIL  = 16,
+    TRACE   = 14,
+    FINE    = 12,
+    DEBUG   = 10
+};
+
+/* Global log level (default to INFO) */
+extern LogLevel g_log_level;
+extern std::mutex g_log_mutex;
+
+/* Convert log level to string */
+inline const char* log_level_name(LogLevel level) {
+    switch (level) {
+        case LogLevel::ERROR:   return "ERROR";
+        case LogLevel::WARN:     return "WARN";
+        case LogLevel::INFO:     return "INFO";
+        case LogLevel::VERBOSE:  return "VERBOSE";
+        case LogLevel::DETAIL:   return "DETAIL";
+        case LogLevel::TRACE:    return "TRACE";
+        case LogLevel::FINE:     return "FINE";
+        case LogLevel::DEBUG:    return "DEBUG";
+        default:                 return "UNKNOWN";
+    }
+}
+
+/* Get current timestamp */
+inline std::string get_timestamp() {
+    auto now = std::chrono::system_clock::now();
+    auto time_t = std::chrono::system_clock::to_time_t(now);
+    auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(
+        now.time_since_epoch()) % 1000;
+    
+    std::stringstream ss;
+    ss << std::put_time(std::localtime(&time_t), "%Y-%m-%d %H:%M:%S");
+    ss << '.' << std::setfill('0') << std::setw(3) << ms.count();
+    return ss.str();
+}
+
+/* Internal logging function */
+inline void log_message(LogLevel level, const char* file, int line, 
+                        const std::string& message) {
+    if (static_cast<int>(level) < static_cast<int>(g_log_level)) {
+        return;
+    }
+    
+    std::lock_guard<std::mutex> lock(g_log_mutex);
+    
+    const char* filename = strrchr(file, '/') ? strrchr(file, '/') + 1 : file;
+    
+    std::cerr << "[" << get_timestamp() << "] "
+              << filename << ":" << line << " "
+              << "[" << log_level_name(level) << "] "
+              << message << std::endl;
+}
+
+/* Logging macro helper */
+#define LOG_MESSAGE(level, message) \
+    do { \
+        std::stringstream ss; \
+        ss << message; \
+        log_message(level, __FILE__, __LINE__, ss.str()); \
+    } while (0)
+
+/* Logging macros */
+#define LOG_ERROR(msg)   LOG_MESSAGE(LogLevel::ERROR, msg)
+#define LOG_WARN(msg)    LOG_MESSAGE(LogLevel::WARN, msg)
+#define LOG_INFO(msg)    LOG_MESSAGE(LogLevel::INFO, msg)
+#define LOG_VERBOSE(msg) LOG_MESSAGE(LogLevel::VERBOSE, msg)
+#define LOG_DETAIL(msg)  LOG_MESSAGE(LogLevel::DETAIL, msg)
+#define LOG_TRACE(msg)   LOG_MESSAGE(LogLevel::TRACE, msg)
+#define LOG_FINE(msg)    LOG_MESSAGE(LogLevel::FINE, msg)
+#define LOG_DEBUG(msg)   LOG_MESSAGE(LogLevel::DEBUG, msg)
+
+/* Set log level from verbosity count */
+inline void set_log_level_from_verbosity(int verbosity) {
+    switch (verbosity) {
+        case 0: g_log_level = LogLevel::INFO; break;
+        case 1: g_log_level = LogLevel::VERBOSE; break;
+        case 2: g_log_level = LogLevel::DETAIL; break;
+        case 3: g_log_level = LogLevel::TRACE; break;
+        case 4: g_log_level = LogLevel::FINE; break;
+        default: g_log_level = LogLevel::DEBUG; break;
+    }
+}
+
+#endif /* LOG_LEVELS_HPP */
+```
+
+### Usage Example
+
+```cpp
+#include "log_levels.hpp"
+#include <string>
+
+LogLevel g_log_level = LogLevel::INFO;
+std::mutex g_log_mutex;
+
+int main(int argc, char* argv[]) {
+    int verbosity = 0;
+    
+    /* Parse verbosity flags */
+    for (int i = 1; i < argc; i++) {
+        std::string arg = argv[i];
+        if (arg.find("-v") == 0) {
+            verbosity = arg.length() - 1; /* Count 'v' characters */
+        }
+    }
+    
+    set_log_level_from_verbosity(verbosity);
+    
+    LOG_INFO("Application starting");
+    LOG_VERBOSE("Verbose information");
+    LOG_DETAIL("Detailed operation information");
+    LOG_TRACE("Function entry point");
+    LOG_FINE("Fine-grained debug information");
+    LOG_DEBUG("Debug-level information");
+    
+    return 0;
+}
+```
+
+## Logger Class Example
+
+For object-oriented designs, a logger class may be used:
+
+```cpp
+class Logger {
+public:
+    static Logger& getInstance() {
+        static Logger instance;
+        return instance;
+    }
+    
+    void setLevel(LogLevel level) {
+        level_ = level;
+    }
+    
+    void setLevelFromVerbosity(int verbosity) {
+        set_log_level_from_verbosity(verbosity);
+        level_ = g_log_level;
+    }
+    
+    void error(const std::string& msg) const {
+        log(LogLevel::ERROR, msg);
+    }
+    
+    void warn(const std::string& msg) const {
+        log(LogLevel::WARN, msg);
+    }
+    
+    void info(const std::string& msg) const {
+        log(LogLevel::INFO, msg);
+    }
+    
+    void verbose(const std::string& msg) const {
+        log(LogLevel::VERBOSE, msg);
+    }
+    
+    void detail(const std::string& msg) const {
+        log(LogLevel::DETAIL, msg);
+    }
+    
+    void trace(const std::string& msg) const {
+        log(LogLevel::TRACE, msg);
+    }
+    
+    void fine(const std::string& msg) const {
+        log(LogLevel::FINE, msg);
+    }
+    
+    void debug(const std::string& msg) const {
+        log(LogLevel::DEBUG, msg);
+    }
+    
+private:
+    LogLevel level_ = LogLevel::INFO;
+    
+    void log(LogLevel level, const std::string& msg) const {
+        if (static_cast<int>(level) >= static_cast<int>(level_)) {
+            log_message(level, __FILE__, __LINE__, msg);
+        }
+    }
+};
+
+/* Convenience macros */
+#define LOGGER Logger::getInstance()
+```
+
+## Integration with spdlog
+
+Projects using spdlog MUST still implement the custom levels:
+
+```cpp
+#include <spdlog/spdlog.h>
+#include <spdlog/sinks/stdout_color_sinks.h>
+
+void setup_spdlog_with_custom_levels(int verbosity) {
+    auto logger = spdlog::stdout_color_mt("console");
+    
+    /* Map verbosity to spdlog level */
+    spdlog::level::level_enum spdlog_level;
+    switch (verbosity) {
+        case 0: spdlog_level = spdlog::level::info; break;
+        case 1: spdlog_level = spdlog::level::info; /* VERBOSE maps to info */ break;
+        case 2: spdlog_level = spdlog::level::debug; /* DETAIL maps to debug */ break;
+        case 3: spdlog_level = spdlog::level::trace; /* TRACE maps to trace */ break;
+        case 4: spdlog_level = spdlog::level::trace; /* FINE maps to trace */ break;
+        default: spdlog_level = spdlog::level::trace; break;
+    }
+    
+    logger->set_level(spdlog_level);
+    
+    /* Custom formatter to show VERBOSE, DETAIL, FINE levels */
+    logger->set_pattern("[%Y-%m-%d %H:%M:%S.%e] [%l] %v");
+}
+```
+
+## Usage Guidelines
+
+- Use **INFO** for normal operational messages that users should see by default.
+- Use **VERBOSE** for additional context that helps understand what the program is doing.
+- Use **DETAIL** for detailed information about operations, such as function parameters or intermediate results.
+- Use **TRACE** for execution flow information, such as function entry/exit points.
+- Use **FINE** for very detailed debugging information, such as variable values or state dumps.
+- Use **DEBUG** for the most detailed debugging information, typically only useful during development.
