@@ -1,0 +1,184 @@
+# Python Main Module Patterns
+
+## Requirement
+
+Python applications SHALL use `__main__.py` appropriately for entry points and CLI/library separation.
+
+### When to Use __main__.py
+
+- Packages that can be executed directly SHALL use `__main__.py`
+- CLI applications SHALL use `__main__.py` for entry point
+- Libraries MAY use `__main__.py` for development/testing entry points
+- `__main__.py` SHALL contain minimal code, delegating to main functions
+
+### Entry Point Patterns
+
+- `__main__.py` SHALL call a `main()` function defined elsewhere
+- `__main__.py` SHALL handle argument parsing (or delegate to Click)
+- `__main__.py` SHALL handle top-level exception handling
+- `__main__.py` SHALL set up logging configuration when needed
+
+### CLI vs Library Separation
+
+- CLI code SHALL be separated from library code
+- Library code SHALL NOT have side effects at import time
+- CLI entry points SHALL be the only place with side effects at module level
+
+## Rationale
+
+Using `__main__.py` properly provides:
+
+- **Executability**: Packages can be run directly (`python -m package`)
+- **Separation**: Clear separation between CLI and library code
+- **Testing**: Library code can be tested without CLI side effects
+- **Reusability**: Library code can be imported without executing CLI
+- **Standards**: Follows Python packaging best practices
+- **Flexibility**: Multiple entry points possible (CLI, API, etc.)
+
+## Implementation
+
+### Basic __main__.py Pattern
+
+```python
+# app/__main__.py
+"""Entry point for running app as module: python -m app"""
+import sys
+from app.cli import main
+
+if __name__ == "__main__":
+    sys.exit(main())
+```
+
+### __main__.py with Click
+
+```python
+# app/__main__.py
+"""Entry point for CLI application."""
+import sys
+import click
+from app.cli import cli
+
+if __name__ == "__main__":
+    cli()  # Click handles sys.exit
+```
+
+### __main__.py with Exception Handling
+
+```python
+# app/__main__.py
+"""Entry point with top-level exception handling."""
+import sys
+import logging
+from app.cli import main
+
+logger = logging.getLogger(__name__)
+
+if __name__ == "__main__":
+    try:
+        sys.exit(main())
+    except KeyboardInterrupt:
+        logger.info("Interrupted by user")
+        sys.exit(130)
+    except Exception as e:
+        logger.exception("Unhandled exception")
+        sys.exit(1)
+```
+
+### Separating CLI and Library Code
+
+```python
+# app/cli.py - CLI code
+"""CLI interface for application."""
+import click
+from app.core import process_data  # Library function
+
+@click.command()
+@click.argument("input_file")
+@click.option("--output", "-o", help="Output file")
+def cli(input_file: str, output: str | None) -> None:
+    """CLI entry point."""
+    result = process_data(input_file)  # Use library function
+    if output:
+        write_output(result, output)
+    else:
+        click.echo(result)
+
+# app/core.py - Library code (no side effects)
+"""Core library functionality."""
+def process_data(input_file: str) -> str:
+    """Process data (library function, no side effects)."""
+    # Pure library code, no CLI dependencies
+    with open(input_file) as f:
+        return f.read().upper()
+```
+
+### Multiple Entry Points
+
+```python
+# app/__main__.py
+"""Entry point with multiple modes."""
+import sys
+import click
+from app.cli import cli
+from app.api import run_api_server
+
+@click.group()
+def main() -> None:
+    """Main entry point."""
+    pass
+
+@main.command()
+def cli_mode() -> None:
+    """Run in CLI mode."""
+    cli()
+
+@main.command()
+def api_mode() -> None:
+    """Run in API server mode."""
+    run_api_server()
+
+if __name__ == "__main__":
+    main()
+```
+
+### Avoiding Side Effects at Import
+
+```python
+# Bad: Side effects at import time
+# app/core.py
+print("Initializing...")  # DON'T DO THIS
+database.connect()  # DON'T DO THIS
+
+# Good: No side effects at import
+# app/core.py
+def initialize() -> None:
+    """Initialize application (called explicitly)."""
+    database.connect()
+
+# app/__main__.py
+from app.core import initialize
+
+if __name__ == "__main__":
+    initialize()  # Explicit initialization
+    main()
+```
+
+### pyproject.toml Entry Points
+
+```toml
+# pyproject.toml
+[project.scripts]
+myapp = "app.cli:cli"
+
+# Or using [project.entry-points]
+[project.entry-points.console_scripts]
+myapp = "app.cli:cli"
+```
+
+## Integration
+
+This rule works in conjunction with:
+
+- `python/click-required.mdc` - Click for CLI applications
+- `python/module-organization.mdc` - Package structure
+- `python/imports.mdc` - Import organization

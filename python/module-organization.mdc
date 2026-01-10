@@ -1,0 +1,140 @@
+# Python Module Organization
+
+## Requirement
+
+Python code SHALL be organized into modules and packages following these guidelines.
+
+### Package Structure
+
+- Packages SHALL use `__init__.py` files (or be namespace packages for Python 3.3+)
+- Packages SHALL have a clear, hierarchical structure
+- Package depth SHALL NOT exceed 4 levels (avoid deep nesting)
+- Related functionality SHALL be grouped in the same package
+
+### __init__.py Usage
+
+- `__init__.py` files SHALL be used to define package public API
+- `__init__.py` files SHALL use `__all__` to explicitly export public names
+- `__init__.py` files MAY be empty for simple packages
+- `__init__.py` files SHALL NOT contain significant business logic
+
+### Module Naming
+
+- Module names SHALL be lowercase with underscores (`snake_case`)
+- Module names SHALL be descriptive and indicate module purpose
+- Module names SHALL NOT conflict with standard library modules
+
+### Avoiding Deep Nesting
+
+- Code SHALL NOT be nested deeper than 4 package levels
+- Deep nesting SHALL be refactored to flatter structure when possible
+- Example structure: `app/feature/subfeature/module.py` (4 levels max)
+
+## Rationale
+
+Proper module organization provides:
+
+- **Clarity**: Clear structure makes codebase easier to navigate
+- **Maintainability**: Well-organized code is easier to maintain
+- **Reusability**: Clear module boundaries enable code reuse
+- **Import Simplicity**: Shallow structure simplifies imports
+- **Scalability**: Good organization supports codebase growth
+- **Standards**: Follows Python packaging best practices
+
+## Implementation
+
+### Package Structure Example
+
+```
+project/
+├── app/
+│   ├── __init__.py          # Package initialization
+│   ├── models/              # Data models
+│   │   ├── __init__.py
+│   │   ├── user.py
+│   │   └── post.py
+│   ├── services/            # Business logic
+│   │   ├── __init__.py
+│   │   ├── auth.py
+│   │   └── email.py
+│   └── utils/               # Utilities
+│       ├── __init__.py
+│       └── helpers.py
+└── tests/
+    └── ...
+```
+
+### __init__.py with Public API
+
+```python
+# app/__init__.py
+from app.models import User, Post
+from app.services import AuthService, EmailService
+
+__all__ = [
+    "User",
+    "Post",
+    "AuthService",
+    "EmailService",
+]
+
+# app/models/__init__.py
+from app.models.user import User
+from app.models.post import Post
+
+__all__ = ["User", "Post"]
+```
+
+### Avoiding Deep Nesting
+
+```python
+# Bad: Too deeply nested (5+ levels)
+# app/feature/subfeature/component/helper/util.py
+
+# Good: Flatter structure (4 levels max)
+# app/feature/subfeature/util.py
+
+# Better: Extract to top level if possible
+# app/utils/feature_helper.py
+```
+
+### Module Naming
+
+```python
+# Good: Descriptive, lowercase, underscores
+# app/user_authentication.py
+# app/email_service.py
+# app/data_validators.py
+
+# Bad: Conflicting names
+# app/json.py  # Conflicts with standard library json
+# app/sys.py   # Conflicts with standard library sys
+
+# Bad: Unclear names
+# app/utils.py  # Too generic
+# app/helper.py  # Too vague
+```
+
+### Namespace Packages (Python 3.3+)
+
+```python
+# For namespace packages, omit __init__.py
+# Allows packages to be split across multiple directories
+
+# Directory 1: package/component1/
+# (no __init__.py)
+
+# Directory 2: package/component2/
+# (no __init__.py)
+
+# Both can be imported as:
+# from package import component1, component2
+```
+
+## Integration
+
+This rule works in conjunction with:
+
+- `python/no-src-directory.mdc` - Project structure without src/
+- `python/imports.mdc` - Import organization
+- `python/main-module.mdc` - Entry point patterns

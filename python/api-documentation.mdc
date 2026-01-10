@@ -1,0 +1,237 @@
+# Python API Documentation
+
+## Requirement
+
+Python libraries and applications with public APIs SHALL generate API documentation using Sphinx.
+
+### Sphinx Configuration
+
+- Projects SHALL include Sphinx configuration (`conf.py`, `index.rst`)
+- Sphinx SHALL be configured to extract docstrings from code
+- Documentation SHALL be built as part of the development workflow
+- Documentation SHALL be hosted (e.g., Read the Docs, GitHub Pages)
+
+### Docstring Format for Sphinx
+
+- Docstrings SHALL follow NumPy style (per `documentation.mdc`)
+- Docstrings SHALL include all required sections for Sphinx parsing
+- Docstrings SHALL use reStructuredText or Markdown format as configured
+
+### Documentation Builds
+
+- Documentation SHALL be built automatically in CI/CD
+- Documentation SHALL be updated when code changes
+- Broken documentation builds SHALL fail CI/CD
+
+## Rationale
+
+Generating API documentation provides:
+
+- **Discoverability**: Users can discover available APIs
+- **Reference**: Complete API reference for all public functions/classes
+- **Examples**: Documentation includes usage examples
+- **Maintainability**: Auto-generated docs stay in sync with code
+- **Professionalism**: Well-documented APIs are more professional
+- **Onboarding**: New developers can understand APIs quickly
+
+## Implementation
+
+### Sphinx Setup
+
+```bash
+# Install Sphinx
+pip install sphinx sphinx-rtd-theme
+
+# Initialize Sphinx
+sphinx-quickstart
+```
+
+### conf.py Configuration
+
+```python
+# conf.py
+import os
+import sys
+sys.path.insert(0, os.path.abspath('../'))
+
+extensions = [
+    'sphinx.ext.autodoc',
+    'sphinx.ext.napoleon',  # For NumPy/Google style docstrings
+    'sphinx.ext.viewcode',
+    'sphinx.ext.intersphinx',
+]
+
+# Napoleon settings for NumPy style
+napoleon_google_docstring = False
+napoleon_numpy_docstring = True
+napoleon_include_init_with_doc = False
+
+# Theme
+html_theme = 'sphinx_rtd_theme'
+
+# Autodoc settings
+autodoc_default_options = {
+    'members': True,
+    'undoc-members': True,
+    'show-inheritance': True,
+}
+```
+
+### index.rst Structure
+
+```rst
+.. My Project documentation master file
+
+Welcome to My Project's documentation!
+========================================
+
+.. toctree::
+   :maxdepth: 2
+   :caption: Contents:
+
+   api
+
+Indices and tables
+==================
+
+* :ref:`genindex`
+* :ref:`modindex`
+* :ref:`search`
+```
+
+### api.rst for API Reference
+
+```rst
+API Reference
+=============
+
+.. automodule:: app
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+.. automodule:: app.models
+   :members:
+
+.. automodule:: app.services
+   :members:
+```
+
+### Building Documentation
+
+```bash
+# Build HTML documentation
+make html  # or: sphinx-build -b html . _build/html
+
+# Build PDF (requires LaTeX)
+make latexpdf
+
+# Build for Read the Docs
+sphinx-build -b html . _build/html
+```
+
+### Makefile Integration
+
+```makefile
+.PHONY: docs
+docs:
+	sphinx-build -b html docs/ docs/_build/html
+
+.PHONY: docs-live
+docs-live:
+	sphinx-autobuild docs/ docs/_build/html --watch app/
+
+.PHONY: docs-clean
+docs-clean:
+	rm -rf docs/_build/
+```
+
+### CI/CD Integration
+
+```yaml
+# .github/workflows/docs.yml
+name: Documentation
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  docs:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+      - name: Install dependencies
+        run: |
+          pip install sphinx sphinx-rtd-theme
+          pip install -e .
+      - name: Build documentation
+        run: |
+          cd docs
+          make html
+      - name: Check for warnings
+        run: |
+          cd docs
+          sphinx-build -b html -W . _build/html
+```
+
+### Read the Docs Configuration
+
+```yaml
+# .readthedocs.yml
+version: 2
+sphinx:
+  configuration: docs/conf.py
+python:
+  version: 3.11
+  install:
+    - method: pip
+      path: .
+      extra_requirements:
+        - docs
+```
+
+### Docstring Example for Sphinx
+
+```python
+def process_data(data: list[int], threshold: int = 10) -> list[int]:
+    """Process data with filtering.
+    
+    Parameters
+    ----------
+    data : list of int
+        Input data to process.
+    threshold : int, optional
+        Filter threshold (default is 10).
+    
+    Returns
+    -------
+    list of int
+        Filtered data values.
+    
+    Examples
+    --------
+    >>> process_data([1, 5, 15, 20], threshold=10)
+    [15, 20]
+    
+    Raises
+    ------
+    ValueError
+        If data is empty.
+    """
+    if not data:
+        raise ValueError("Data cannot be empty")
+    return [x for x in data if x >= threshold]
+```
+
+## Integration
+
+This rule works in conjunction with:
+
+- `python/documentation.mdc` - NumPy docstring style
+- `python/docstring-examples.mdc` - Executable examples in docstrings
+- `python/ci-cd.mdc` - Documentation builds in CI/CD

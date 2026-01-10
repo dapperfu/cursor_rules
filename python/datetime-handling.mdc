@@ -1,0 +1,176 @@
+# Python Date/Time Handling
+
+## Requirement
+
+Python code SHALL handle dates and times using timezone-aware datetime objects and follow ISO 8601 formatting standards.
+
+### Timezone Awareness
+
+- All datetime objects SHALL be timezone-aware
+- SHALL NOT use naive datetime objects (without timezone)
+- SHALL use `datetime.timezone.utc` for UTC times
+- SHALL use `zoneinfo` (Python 3.9+) or `pytz` for timezone handling
+
+### Library Usage
+
+- SHALL use `datetime` module from standard library for basic operations
+- SHALL use `dateutil` for complex parsing and timezone operations when needed
+- SHALL use `zoneinfo` (Python 3.9+) for timezone data
+- SHALL NOT use deprecated `time` module functions for date/time operations
+
+### ISO 8601 Formatting
+
+- Datetime strings SHALL use ISO 8601 format when serializing
+- SHALL use `datetime.isoformat()` for ISO 8601 output
+- SHALL parse ISO 8601 strings using `datetime.fromisoformat()` (Python 3.7+)
+
+## Rationale
+
+Proper datetime handling provides:
+
+- **Correctness**: Timezone-aware datetimes prevent timezone-related bugs
+- **Portability**: ISO 8601 is a standard format for interoperability
+- **Clarity**: Explicit timezones make code behavior clear
+- **Debugging**: Timezone-aware datetimes are easier to debug
+- **Standards**: Follows industry best practices for datetime handling
+- **Future-Proof**: Avoids deprecated APIs and uses modern standards
+
+## Implementation
+
+### Creating Timezone-Aware Datetimes
+
+```python
+from datetime import datetime, timezone, timedelta
+from zoneinfo import ZoneInfo  # Python 3.9+
+
+# UTC datetime
+utc_now = datetime.now(timezone.utc)
+
+# Specific timezone
+ny_time = datetime.now(ZoneInfo("America/New_York"))
+
+# From timestamp (timezone-aware)
+timestamp = 1234567890
+utc_dt = datetime.fromtimestamp(timestamp, tz=timezone.utc)
+
+# From components (timezone-aware)
+dt = datetime(2024, 1, 15, 10, 30, 0, tzinfo=timezone.utc)
+```
+
+### ISO 8601 Formatting
+
+```python
+from datetime import datetime, timezone
+
+# Create timezone-aware datetime
+dt = datetime(2024, 1, 15, 10, 30, 0, tzinfo=timezone.utc)
+
+# Format as ISO 8601
+iso_string = dt.isoformat()
+# Result: '2024-01-15T10:30:00+00:00'
+
+# Parse ISO 8601 string
+parsed = datetime.fromisoformat('2024-01-15T10:30:00+00:00')
+```
+
+### Timezone Conversions
+
+```python
+from datetime import datetime, timezone
+from zoneinfo import ZoneInfo
+
+# Convert between timezones
+utc_dt = datetime.now(timezone.utc)
+ny_dt = utc_dt.astimezone(ZoneInfo("America/New_York"))
+tokyo_dt = utc_dt.astimezone(ZoneInfo("Asia/Tokyo"))
+```
+
+### Using dateutil for Parsing
+
+```python
+from dateutil import parser
+from datetime import datetime
+
+# Parse various date formats (when needed)
+date_string = "2024-01-15 10:30:00 UTC"
+dt = parser.parse(date_string)
+
+# Parse with timezone
+dt_with_tz = parser.parse("2024-01-15T10:30:00-05:00")
+```
+
+### Database Storage
+
+```python
+from datetime import datetime, timezone
+from typing import Optional
+
+def store_datetime(dt: datetime) -> str:
+    """Store datetime in database (convert to UTC, then ISO format)."""
+    # Ensure timezone-aware
+    if dt.tzinfo is None:
+        raise ValueError("Datetime must be timezone-aware")
+    
+    # Convert to UTC for storage
+    utc_dt = dt.astimezone(timezone.utc)
+    
+    # Store as ISO 8601 string
+    return utc_dt.isoformat()
+
+def load_datetime(iso_string: str) -> datetime:
+    """Load datetime from database (ISO format, UTC)."""
+    dt = datetime.fromisoformat(iso_string)
+    # Ensure UTC
+    if dt.tzinfo != timezone.utc:
+        dt = dt.astimezone(timezone.utc)
+    return dt
+```
+
+### Common Patterns
+
+```python
+from datetime import datetime, timezone, timedelta
+
+# Current time (UTC)
+now = datetime.now(timezone.utc)
+
+# Time delta
+one_hour_later = now + timedelta(hours=1)
+one_day_ago = now - timedelta(days=1)
+
+# Comparison (timezone-aware)
+dt1 = datetime.now(timezone.utc)
+dt2 = datetime.now(timezone.utc)
+if dt1 > dt2:
+    # Comparison works correctly with timezone-aware datetimes
+    pass
+```
+
+### Avoiding Naive Datetimes
+
+```python
+# Bad: Naive datetime (no timezone)
+naive_dt = datetime.now()  # DON'T DO THIS
+
+# Good: Timezone-aware datetime
+aware_dt = datetime.now(timezone.utc)
+
+# Bad: Mixing naive and aware
+naive = datetime(2024, 1, 15)
+aware = datetime(2024, 1, 15, tzinfo=timezone.utc)
+# naive < aware  # Raises TypeError
+
+# Good: Both timezone-aware
+dt1 = datetime(2024, 1, 15, tzinfo=timezone.utc)
+dt2 = datetime(2024, 1, 15, tzinfo=ZoneInfo("America/New_York"))
+# Can compare after conversion
+dt1_ny = dt1.astimezone(ZoneInfo("America/New_York"))
+```
+
+## Integration
+
+This rule works in conjunction with:
+
+- `python/input-validation.mdc` - Validating datetime inputs
+- `python/typing.mdc` - Type hints for datetime objects
+- `python/string-formatting.mdc` - Formatting datetime strings

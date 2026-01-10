@@ -1,0 +1,213 @@
+# Python Caching
+
+## Requirement
+
+Python code SHALL use caching appropriately to improve performance while maintaining correctness.
+
+### When to Use Caching
+
+- Cache expensive computations (database queries, API calls, complex calculations)
+- Cache results that are expensive to compute but don't change frequently
+- Cache results that are accessed repeatedly with the same inputs
+- DO NOT cache results that must always be fresh or are cheap to compute
+
+### Caching Patterns
+
+- SHALL use `@functools.lru_cache` for function result caching
+- SHALL use `functools.cache` for unlimited size caching (Python 3.9+)
+- SHALL consider cache invalidation strategies
+- SHALL document cache behavior and invalidation in function docstrings
+
+### Cache Invalidation
+
+- SHALL implement cache invalidation when cached data can become stale
+- SHALL use TTL (time-to-live) for time-sensitive cached data
+- SHALL provide mechanisms to clear cache when needed
+- SHALL handle cache invalidation in multi-process/multi-threaded environments
+
+## Rationale
+
+Using caching appropriately provides:
+
+- **Performance**: Significantly improves performance for expensive operations
+- **Resource Efficiency**: Reduces load on databases, APIs, and compute resources
+- **User Experience**: Faster response times improve user experience
+- **Cost Reduction**: Fewer API calls and database queries reduce costs
+- **Scalability**: Caching helps applications scale by reducing backend load
+
+However, caching must be used carefully to avoid stale data and correctness issues.
+
+## Implementation
+
+### Using functools.lru_cache
+
+```python
+import functools
+from typing import Optional
+
+@functools.lru_cache(maxsize=128)
+def expensive_computation(n: int) -> int:
+    """Expensive computation with caching.
+    
+    Results are cached for up to 128 different input values.
+    Cache is automatically managed (LRU eviction).
+    """
+    # Expensive operation (e.g., database query, API call)
+    result = sum(i ** 2 for i in range(n))
+    return result
+
+# First call: computes result
+result1 = expensive_computation(1000)
+
+# Second call with same input: returns cached result
+result2 = expensive_computation(1000)  # Fast, uses cache
+```
+
+### Cache with Custom Key Function
+
+```python
+import functools
+from typing import Tuple
+
+@functools.lru_cache(maxsize=256)
+def fetch_user_data(user_id: int, include_metadata: bool = False) -> dict:
+    """Fetch user data with caching.
+    
+    Cached based on user_id and include_metadata.
+    """
+    # Expensive database query
+    return database.get_user(user_id, include_metadata)
+
+# Different parameter combinations are cached separately
+user1 = fetch_user_data(1, True)   # Cached
+user2 = fetch_user_data(1, False)  # Different cache entry
+```
+
+### Cache Invalidation
+
+```python
+import functools
+from datetime import datetime, timedelta
+from typing import Optional
+
+class TimedCache:
+    """Cache with time-based invalidation."""
+    
+    def __init__(self, ttl_seconds: int = 3600):
+        self.cache: dict = {}
+        self.ttl = timedelta(seconds=ttl_seconds)
+    
+    def get(self, key: str) -> Optional[any]:
+        """Get cached value if not expired."""
+        if key in self.cache:
+            value, timestamp = self.cache[key]
+            if datetime.now() - timestamp < self.ttl:
+                return value
+            else:
+                # Expired, remove from cache
+                del self.cache[key]
+        return None
+    
+    def set(self, key: str, value: any) -> None:
+        """Set cached value with timestamp."""
+        self.cache[key] = (value, datetime.now())
+    
+    def clear(self) -> None:
+        """Clear all cached values."""
+        self.cache.clear()
+
+# Usage
+cache = TimedCache(ttl_seconds=300)  # 5 minute TTL
+
+def get_api_data(endpoint: str) -> dict:
+    """Get API data with TTL caching."""
+    cached = cache.get(endpoint)
+    if cached is not None:
+        return cached
+    
+    # Fetch from API
+    data = api_client.get(endpoint)
+    cache.set(endpoint, data)
+    return data
+```
+
+### Manual Cache Clearing
+
+```python
+import functools
+
+@functools.lru_cache(maxsize=128)
+def cached_function(arg: int) -> int:
+    """Function with cache that can be cleared."""
+    return arg ** 2
+
+# Clear cache when needed
+cached_function.cache_clear()
+
+# Get cache info
+cache_info = cached_function.cache_info()
+print(f"Cache hits: {cache_info.hits}, misses: {cache_info.misses}")
+```
+
+### Cache with Dependencies
+
+```python
+import functools
+from typing import Callable, TypeVar
+
+T = TypeVar('T')
+
+def cache_with_invalidation(invalidate_on: Callable[[], bool]):
+    """Decorator for cache with custom invalidation."""
+    def decorator(func: Callable[..., T]) -> Callable[..., T]:
+        cached_func = functools.lru_cache(maxsize=256)(func)
+        
+        def wrapper(*args, **kwargs) -> T:
+            if invalidate_on():
+                cached_func.cache_clear()
+            return cached_func(*args, **kwargs)
+        
+        wrapper.cache_clear = cached_func.cache_clear
+        wrapper.cache_info = cached_func.cache_info
+        return wrapper
+    return decorator
+
+# Usage
+def should_invalidate() -> bool:
+    """Check if cache should be invalidated."""
+    # Check some condition (e.g., data changed)
+    return check_data_changed()
+
+@cache_with_invalidation(should_invalidate)
+def get_data(key: str) -> dict:
+    """Get data with conditional cache invalidation."""
+    return expensive_operation(key)
+```
+
+### When NOT to Cache
+
+```python
+# Bad: Caching cheap operations
+@functools.lru_cache(maxsize=128)
+def add(a: int, b: int) -> int:  # DON'T CACHE THIS
+    return a + b  # Too cheap to benefit from caching
+
+# Bad: Caching operations that must be fresh
+@functools.lru_cache(maxsize=128)
+def get_current_time() -> datetime:  # DON'T CACHE THIS
+    return datetime.now()  # Must always return current time
+
+# Bad: Caching operations with side effects
+@functools.lru_cache(maxsize=128)
+def process_payment(amount: float) -> bool:  # DON'T CACHE THIS
+    # Side effect: actual payment processing
+    return charge_credit_card(amount)  # Must execute every time
+```
+
+## Integration
+
+This rule works in conjunction with:
+
+- `python/performance-profiling.mdc` - Identify what to cache
+- `python/decorators.mdc` - Using decorators for caching
+- `python/async-await-patterns.mdc` - Async caching patterns

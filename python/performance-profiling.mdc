@@ -1,0 +1,163 @@
+# Python Performance Profiling
+
+## Requirement
+
+Python applications SHALL use profiling tools to identify and optimize performance bottlenecks when needed.
+
+### When to Profile
+
+- Profile code when performance issues are identified or suspected
+- Profile before optimizing (measure, don't guess)
+- Profile critical code paths (hot paths) regularly
+- Profile after significant code changes that may affect performance
+
+### Profiling Tools
+
+- SHALL use `cProfile` for function-level profiling
+- SHALL use `line_profiler` for line-level profiling when needed
+- SHALL use `memory_profiler` for memory usage analysis
+- SHALL use appropriate visualization tools for profiling results
+
+### Benchmarking
+
+- Performance-critical code SHALL include benchmarks
+- Benchmarks SHALL be run as part of CI/CD when appropriate
+- Benchmark results SHALL be tracked over time to detect regressions
+
+## Rationale
+
+Performance profiling provides:
+
+- **Data-Driven Optimization**: Identifies actual bottlenecks, not assumed ones
+- **Efficiency**: Focuses optimization efforts on code that matters
+- **Regression Detection**: Catches performance regressions early
+- **Understanding**: Helps understand code behavior and resource usage
+- **Quality**: Ensures applications meet performance requirements
+
+## Implementation
+
+### Using cProfile
+
+```python
+import cProfile
+import pstats
+from io import StringIO
+
+def profile_function(func):
+    """Profile a function using cProfile."""
+    profiler = cProfile.Profile()
+    profiler.enable()
+    result = func()
+    profiler.disable()
+    
+    # Generate report
+    stream = StringIO()
+    stats = pstats.Stats(profiler, stream=stream)
+    stats.sort_stats('cumulative')
+    stats.print_stats(20)  # Top 20 functions
+    print(stream.getvalue())
+    
+    return result
+
+# Usage
+def slow_function():
+    total = sum(range(1000000))
+    return total
+
+profile_function(slow_function)
+```
+
+### Command-Line Profiling
+
+```bash
+# Profile script execution
+python -m cProfile -o profile.stats script.py
+
+# Analyze results
+python -m pstats profile.stats
+# In pstats: sort cumulative, stats 20
+```
+
+### Using line_profiler
+
+```python
+# Install: pip install line_profiler
+
+@profile  # Decorator for line_profiler
+def process_data(data: list[int]) -> int:
+    """Process data with line-by-line profiling."""
+    total = 0
+    for item in data:
+        squared = item ** 2
+        total += squared
+    return total
+
+# Run: kernprof -l -v script.py
+```
+
+### Using memory_profiler
+
+```python
+# Install: pip install memory_profiler
+
+from memory_profiler import profile
+
+@profile
+def memory_intensive_function() -> list:
+    """Function with memory profiling."""
+    data = []
+    for i in range(1000000):
+        data.append(i ** 2)
+    return data
+
+# Run: python -m memory_profiler script.py
+```
+
+### Benchmarking with timeit
+
+```python
+import timeit
+
+def benchmark_function():
+    """Benchmark function execution time."""
+    setup = "from app.math import square"
+    stmt = "square(100)"
+    
+    # Run benchmark
+    time = timeit.timeit(stmt, setup=setup, number=1000000)
+    print(f"Function took {time:.4f} seconds for 1M iterations")
+
+# Command line
+# python -m timeit -s "from app.math import square" "square(100)"
+```
+
+### pytest-benchmark Integration
+
+```python
+# Install: pip install pytest-benchmark
+
+def test_function_performance(benchmark):
+    """Benchmark function performance."""
+    result = benchmark(expensive_function, arg1, arg2)
+    assert result is not None
+
+# Run: pytest --benchmark-only
+```
+
+### Profiling in Production
+
+```python
+# Use sampling profilers for production (lower overhead)
+import py-spy  # External tool, not Python library
+
+# Attach to running process
+# py-spy record -o profile.svg --pid 12345
+```
+
+## Integration
+
+This rule works in conjunction with:
+
+- `python/caching.mdc` - Caching to improve performance
+- `python/ci-cd.mdc` - Benchmarking in CI/CD
+- `python/testing-framework.mdc` - Performance tests

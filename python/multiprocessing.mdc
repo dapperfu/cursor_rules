@@ -1,0 +1,223 @@
+# Python Multiprocessing
+
+## Requirement
+
+Python code SHALL use multiprocessing appropriately for CPU-bound parallel operations.
+
+### When to Use Multiprocessing
+
+- CPU-bound operations that benefit from true parallelism
+- Operations that need to bypass the Global Interpreter Lock (GIL)
+- Operations that can be parallelized across multiple CPU cores
+- Long-running computations that can be split into independent tasks
+
+### Process Pool Patterns
+
+- SHALL use `multiprocessing.Pool` or `concurrent.futures.ProcessPoolExecutor`
+- SHALL use context managers for proper resource cleanup
+- SHALL handle process communication appropriately (queues, pipes, shared memory)
+
+### Shared State Considerations
+
+- SHALL minimize shared state between processes
+- SHALL use appropriate IPC mechanisms (queues, pipes) when needed
+- SHALL avoid shared mutable state when possible
+- SHALL use process-safe data structures when sharing is necessary
+
+## Rationale
+
+Using multiprocessing appropriately provides:
+
+- **True Parallelism**: Bypasses GIL for CPU-bound operations
+- **Performance**: Utilizes multiple CPU cores effectively
+- **Scalability**: Can scale to available CPU cores
+- **Isolation**: Process isolation provides fault tolerance
+- **Efficiency**: Optimal for CPU-bound workloads
+
+However, multiprocessing has overhead and should be used judiciously.
+
+## Implementation
+
+### Basic Process Pool
+
+```python
+from multiprocessing import Pool
+from typing import List
+
+def cpu_intensive_task(n: int) -> int:
+    """CPU-intensive computation."""
+    total = 0
+    for i in range(n):
+        total += i ** 2
+    return total
+
+def process_parallel(data: List[int]) -> List[int]:
+    """Process data in parallel using process pool."""
+    with Pool() as pool:
+        results = pool.map(cpu_intensive_task, data)
+    return results
+```
+
+### Using ProcessPoolExecutor
+
+```python
+from concurrent.futures import ProcessPoolExecutor
+import multiprocessing
+
+def process_data(data: List[int]) -> List[int]:
+    """Process data with ProcessPoolExecutor."""
+    with ProcessPoolExecutor(max_workers=multiprocessing.cpu_count()) as executor:
+        results = list(executor.map(cpu_intensive_task, data))
+    return results
+```
+
+### Process Communication with Queues
+
+```python
+from multiprocessing import Process, Queue
+from typing import List
+
+def worker(input_queue: Queue, output_queue: Queue) -> None:
+    """Worker process that processes items from queue."""
+    while True:
+        item = input_queue.get()
+        if item is None:  # Sentinel value to stop
+            break
+        result = process_item(item)
+        output_queue.put(result)
+
+def process_with_queues(items: List[int]) -> List[int]:
+    """Process items using queues for communication."""
+    input_queue = Queue()
+    output_queue = Queue()
+    
+    # Start worker processes
+    num_workers = multiprocessing.cpu_count()
+    workers = [
+        Process(target=worker, args=(input_queue, output_queue))
+        for _ in range(num_workers)
+    ]
+    
+    for w in workers:
+        w.start()
+    
+    # Send items to workers
+    for item in items:
+        input_queue.put(item)
+    
+    # Signal workers to stop
+    for _ in workers:
+        input_queue.put(None)
+    
+    # Collect results
+    results = []
+    for _ in items:
+        results.append(output_queue.get())
+    
+    # Wait for workers to finish
+    for w in workers:
+        w.join()
+    
+    return results
+```
+
+### Shared Memory (When Needed)
+
+```python
+from multiprocessing import Process, Array, Value
+import ctypes
+
+def worker(shared_array: Array, index: int, value: int) -> None:
+    """Worker that modifies shared array."""
+    shared_array[index] = value ** 2
+
+def process_with_shared_memory(data: List[int]) -> List[int]:
+    """Process data using shared memory."""
+    shared_array = Array(ctypes.c_int, len(data))
+    processes = []
+    
+    for i, value in enumerate(data):
+        p = Process(target=worker, args=(shared_array, i, value))
+        p.start()
+        processes.append(p)
+    
+    for p in processes:
+        p.join()
+    
+    return list(shared_array)
+```
+
+### Avoiding Shared Mutable State
+
+```python
+# Bad: Shared mutable state
+shared_dict = {}  # DON'T SHARE THIS
+
+def worker(key: str, value: int) -> None:
+    shared_dict[key] = value  # Race conditions!
+
+# Good: Return results, combine after
+def worker(key: str, value: int) -> tuple[str, int]:
+    return (key, value ** 2)  # Return result
+
+def process_data(data: dict[str, int]) -> dict[str, int]:
+    """Process data without shared state."""
+    with ProcessPoolExecutor() as executor:
+        results = executor.map(
+            lambda item: (item[0], process_value(item[1])),
+            data.items()
+        )
+    return dict(results)  # Combine results
+```
+
+### Process-Safe Patterns
+
+```python
+from multiprocessing import Manager
+
+def process_with_manager(data: List[int]) -> List[int]:
+    """Process data using Manager for process-safe structures."""
+    with Manager() as manager:
+        shared_list = manager.list()
+        
+        def worker(value: int) -> None:
+            result = process_value(value)
+            shared_list.append(result)
+        
+        with ProcessPoolExecutor() as executor:
+            executor.map(worker, data)
+        
+        return list(shared_list)
+```
+
+### When NOT to Use Multiprocessing
+
+```python
+# Bad: I/O-bound operations (use async instead)
+def fetch_urls(urls: List[str]) -> List[str]:
+    with ProcessPoolExecutor() as executor:  # DON'T DO THIS
+        return list(executor.map(requests.get, urls))
+
+# Good: Use async for I/O-bound
+async def fetch_urls(urls: List[str]) -> List[str]:
+    async with aiohttp.ClientSession() as session:
+        tasks = [fetch_url(session, url) for url in urls]
+        return await asyncio.gather(*tasks)
+
+# Bad: Small tasks (overhead > benefit)
+def add_numbers(numbers: List[int]) -> int:
+    with ProcessPoolExecutor() as executor:  # DON'T DO THIS
+        return sum(executor.map(lambda x: x + 1, numbers))
+
+# Good: Simple operation, no multiprocessing needed
+def add_numbers(numbers: List[int]) -> int:
+    return sum(x + 1 for x in numbers)
+```
+
+## Integration
+
+This rule works in conjunction with:
+
+- `python/threading-vs-async.mdc` - Choosing the right concurrency model
+- `python/performance-profiling.mdc` - Profiling to identify CPU-bound operations
+- `python/async-await-patterns.mdc` - Async for I/O-bound operations

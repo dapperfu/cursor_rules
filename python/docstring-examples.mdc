@@ -1,0 +1,187 @@
+# Python Docstring Examples
+
+## Requirement
+
+Python code SHALL include executable examples in docstrings when appropriate, using doctest format.
+
+### When to Include Examples
+
+- Public APIs (functions, classes, methods) SHALL include examples
+- Complex functions that benefit from demonstration SHALL include examples
+- Functions with non-obvious behavior SHALL include examples
+- Examples SHALL demonstrate common use cases
+
+### Example Format
+
+- Examples SHALL use doctest format for executable examples
+- Examples SHALL be clearly marked in docstrings
+- Examples SHALL be tested as part of the test suite
+- Examples SHALL be kept up-to-date with code changes
+
+### Doctest Integration
+
+- Projects SHALL run doctests as part of the test suite
+- Doctests SHALL pass when code is correct
+- Doctests SHALL be included in pytest test runs
+
+## Rationale
+
+Including executable examples in docstrings provides:
+
+- **Documentation**: Examples show how to use the code
+- **Testing**: Executable examples serve as tests
+- **Clarity**: Examples clarify complex behavior
+- **Discoverability**: Examples help users discover functionality
+- **Correctness**: Executable examples ensure documentation stays current
+- **Learning**: Examples help new developers understand code
+
+## Implementation
+
+### Basic Doctest Example
+
+```python
+def add(a: int, b: int) -> int:
+    """Add two numbers.
+    
+    Examples:
+        >>> add(2, 3)
+        5
+        >>> add(-1, 1)
+        0
+        >>> add(10, 20)
+        30
+    """
+    return a + b
+```
+
+### Complex Example with Multiple Cases
+
+```python
+def divide(a: float, b: float) -> float:
+    """Divide two numbers.
+    
+    Examples:
+        >>> divide(10, 2)
+        5.0
+        >>> divide(7, 3)
+        2.3333333333333335
+        >>> divide(0, 5)
+        0.0
+        
+    Raises:
+        ZeroDivisionError: If divisor is zero.
+        
+    Examples:
+        >>> divide(10, 0)
+        Traceback (most recent call last):
+        ...
+        ZeroDivisionError: division by zero
+    """
+    if b == 0:
+        raise ZeroDivisionError("division by zero")
+    return a / b
+```
+
+### Class Example
+
+```python
+class Calculator:
+    """Simple calculator with examples.
+    
+    Examples:
+        >>> calc = Calculator()
+        >>> calc.add(2, 3)
+        5
+        >>> calc.multiply(4, 5)
+        20
+        >>> calc.power(2, 8)
+        256
+    """
+    
+    def add(self, a: int, b: int) -> int:
+        """Add two numbers."""
+        return a + b
+    
+    def multiply(self, a: int, b: int) -> int:
+        """Multiply two numbers."""
+        return a * b
+    
+    def power(self, base: int, exponent: int) -> int:
+        """Raise base to exponent."""
+        return base ** exponent
+```
+
+### Doctest with pytest
+
+```python
+# pytest automatically discovers and runs doctests
+# No additional configuration needed
+
+# Run doctests
+# pytest --doctest-modules
+
+# Or specifically
+# pytest --doctest-modules app/math.py
+```
+
+### Handling Floating Point Precision
+
+```python
+def calculate_average(numbers: list[float]) -> float:
+    """Calculate average with doctest handling floating point.
+    
+    Examples:
+        >>> calculate_average([1, 2, 3, 4, 5])
+        3.0
+        >>> result = calculate_average([1.1, 2.2, 3.3])
+        >>> abs(result - 2.2) < 0.01  # Approximate comparison
+        True
+    """
+    return sum(numbers) / len(numbers)
+```
+
+### Skipping Examples in Doctest
+
+```python
+def experimental_feature() -> str:
+    """Experimental feature (examples may not work yet).
+    
+    Examples:
+        >>> experimental_feature()  # doctest: +SKIP
+        'result'
+    """
+    return "result"
+```
+
+### Running Doctests
+
+```bash
+# Run doctests for a module
+python -m doctest app/math.py -v
+
+# Run doctests for all modules
+python -m doctest app/**/*.py -v
+
+# With pytest
+pytest --doctest-modules -v
+```
+
+### Makefile Integration
+
+```makefile
+.PHONY: doctest
+doctest:
+	pytest --doctest-modules
+
+.PHONY: test
+test: doctest
+	pytest
+```
+
+## Integration
+
+This rule works in conjunction with:
+
+- `python/documentation.mdc` - NumPy docstring style (includes Examples section)
+- `python/testing-framework.mdc` - Running doctests with pytest
+- `python/api-documentation.mdc` - Examples in API documentation
