@@ -41,13 +41,13 @@ install: ## Install cursor-rules script to ~/.local/bin and configure shell PATH
 
 add-to-bashrc:
 	@if [ -f $(BASHRC) ]; then \
-		if ! grep -qF "$(BASH_PATH_LINE)" $(BASHRC); then \
+		if ! grep -qE '\.local/bin' $(BASHRC); then \
 			echo "" >> $(BASHRC); \
 			echo "# Added by cursor-rules install" >> $(BASHRC); \
 			echo "$(BASH_PATH_LINE)" >> $(BASHRC); \
 			echo "Added PATH to $(BASHRC)"; \
 		else \
-			echo "PATH already in $(BASHRC)"; \
+			echo ".local/bin already in PATH in $(BASHRC)"; \
 		fi; \
 	else \
 		echo "Creating $(BASHRC)"; \
@@ -57,25 +57,25 @@ add-to-bashrc:
 
 add-to-zshrc:
 	@if [ -f $(ZSHRC) ]; then \
-		if ! grep -qF "$(ZSH_PATH_LINE)" $(ZSHRC); then \
+		if ! grep -qE '\.local/bin' $(ZSHRC); then \
 			echo "" >> $(ZSHRC); \
 			echo "# Added by cursor-rules install" >> $(ZSHRC); \
 			echo "$(ZSH_PATH_LINE)" >> $(ZSHRC); \
 			echo "Added PATH to $(ZSHRC)"; \
 		else \
-			echo "PATH already in $(ZSHRC)"; \
+			echo ".local/bin already in PATH in $(ZSHRC)"; \
 		fi; \
 	fi
 
 add-to-fish:
 	@if [ -f $(FISH_CONFIG) ]; then \
-		if ! grep -qF "$(FISH_PATH_LINE)" $(FISH_CONFIG); then \
+		if ! grep -qE '\.local/bin' $(FISH_CONFIG); then \
 			echo "" >> $(FISH_CONFIG); \
 			echo "# Added by cursor-rules install" >> $(FISH_CONFIG); \
 			echo "$(FISH_PATH_LINE)" >> $(FISH_CONFIG); \
 			echo "Added PATH to $(FISH_CONFIG)"; \
 		else \
-			echo "PATH already in $(FISH_CONFIG)"; \
+			echo ".local/bin already in PATH in $(FISH_CONFIG)"; \
 		fi; \
 	fi
 
