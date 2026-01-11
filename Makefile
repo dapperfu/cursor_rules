@@ -12,9 +12,9 @@ ZSHRC := $$HOME/.zshrc
 FISH_CONFIG := $$HOME/.config/fish/config.fish
 
 # PATH entry markers (to identify our additions)
-BASH_PATH_LINE := export PATH="$$HOME/.local/bin:$$PATH"
-ZSH_PATH_LINE := export PATH="$$HOME/.local/bin:$$PATH"
-FISH_PATH_LINE := set -gx PATH "$$HOME/.local/bin" $$PATH
+BASH_PATH_LINE := export PATH="~/.local/bin/:$$PATH"
+ZSH_PATH_LINE := export PATH="~/.local/bin/:$$PATH"
+FISH_PATH_LINE := set -gx PATH "~/.local/bin/" $$PATH
 
 help: ## Display available targets and descriptions
 	@echo "Available targets:"
