@@ -6,8 +6,13 @@
 #
 # Usage:
 #   cursor-rules                    # Run in current directory
-#   cursor-rules /path/to/project   # Run in specified directory
+#   cursor-rules /path/to/project   # Run in specified directory (creates dir if needed)
 #   cursor-rules update             # Update the script itself from the repo
+#
+# The script will automatically:
+#   - Create the directory if it doesn't exist
+#   - Initialize a git repository if one doesn't exist
+#   - Add/update the cursor_rules submodule
 
 set -euo pipefail
 
@@ -63,19 +68,22 @@ update_script() {
 install_submodule() {
     local target_dir="$1"
     
-    # Change to target directory
+    # Create directory if it doesn't exist
     if [ ! -d "$target_dir" ]; then
-        echo -e "${RED}Error: Directory does not exist: $target_dir${NC}" >&2
-        exit 1
+        echo -e "${YELLOW}Directory does not exist. Creating: $target_dir${NC}"
+        mkdir -p "$target_dir"
     fi
+    
+    # Convert to absolute path
+    target_dir="$(cd "$target_dir" && pwd)"
     
     cd "$target_dir"
     
-    # Check if we're in a git repository
+    # Initialize git repository if it doesn't exist
     if ! git rev-parse --git-dir > /dev/null 2>&1; then
-        echo -e "${RED}Error: Not in a git repository: $target_dir${NC}" >&2
-        echo "Please run this script from the root of a git repository." >&2
-        exit 1
+        echo -e "${YELLOW}Not a git repository. Initializing git...${NC}"
+        git init .
+        echo -e "${GREEN}Git repository initialized.${NC}"
     fi
     
     # Create .cursor directory if it doesn't exist
@@ -94,6 +102,9 @@ install_submodule() {
             echo "To commit this update, run:"
             echo "  git add $SUBMODULE_PATH"
             echo "  git commit -m 'Update cursor rules submodule'"
+            echo ""
+            echo "Project directory: $target_dir"
+            echo "To navigate to this directory, run: cd $target_dir"
         else
             echo -e "${RED}Error: Failed to update submodule.${NC}" >&2
             exit 1
@@ -120,10 +131,20 @@ install_submodule() {
             echo ""
             echo "The cursor rules are now available at $SUBMODULE_PATH"
             echo "Cursor will automatically load all .mdc files from this directory."
+            echo ""
+            echo "Project directory: $target_dir"
         else
             echo -e "${RED}Error: Failed to add submodule.${NC}" >&2
             exit 1
         fi
+    fi
+    
+    # If script is being sourced (not executed), cd into the directory
+    if [[ "${BASH_SOURCE[0]}" != "${0}" ]]; then
+        echo "Changing to directory: $target_dir"
+        cd "$target_dir"
+    else
+        echo "To navigate to this directory, run: cd $target_dir"
     fi
 }
 
