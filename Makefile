@@ -65,14 +65,9 @@ add-to-zshrc:
 		else \
 			echo "PATH already in $(ZSHRC)"; \
 		fi; \
-	else \
-		echo "Creating $(ZSHRC)"; \
-		echo "# Added by cursor-rules install" > $(ZSHRC); \
-		echo "$(ZSH_PATH_LINE)" >> $(ZSHRC); \
 	fi
 
 add-to-fish:
-	@mkdir -p $$HOME/.config/fish
 	@if [ -f $(FISH_CONFIG) ]; then \
 		if ! grep -qF "$(FISH_PATH_LINE)" $(FISH_CONFIG); then \
 			echo "" >> $(FISH_CONFIG); \
@@ -82,10 +77,6 @@ add-to-fish:
 		else \
 			echo "PATH already in $(FISH_CONFIG)"; \
 		fi; \
-	else \
-		echo "Creating $(FISH_CONFIG)"; \
-		echo "# Added by cursor-rules install" > $(FISH_CONFIG); \
-		echo "$(FISH_PATH_LINE)" >> $(FISH_CONFIG); \
 	fi
 
 uninstall: ## Remove cursor-rules installation and PATH entries
