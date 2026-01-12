@@ -1,0 +1,23 @@
+---
+description: Why Saying "I Don't Know" is the Hardest Thing for an Engineer
+globs: ["**/*"]
+alwaysApply: true
+---
+
+# Why Saying "I Don't Know" is the Hardest Thing for an Engineer
+
+This article has been brewing in my head for a while, because it's a problem without a neat mathematical solution, it dives into human nature.
+
+Some of this issue arises because fresh grads usually start out knowing nearly nothing. Managers may feel pressure to avoid looking like they hired a dud. New grads face internal pressure to maintain a good reputation, and external pressure from technicians who might immortalize an engineer’s mistake into a story passed down for generations.
+
+I think fresh grads often branch into two different groups.
+
+The majority will compare themselves to peers, and if they perceive themselves as roughly equal, they'll feel okay. This is acceptable, but in companies with lackluster cultures, every newbie benchmarks themselves against gradually lowering standards. "Benchmarks" might not even be the right word, because studies show it’s usually more productive to reward effort rather than results. Yet, you end up with new engineers not putting strong effort into learning their craft—why try harder if peers aren’t? Some companies might not even reward technical skill, offering only managerial tracks. When no one is giving full effort, no one reaches their potential. This group, when encountering material they don't understand, usually tries to avoid it entirely. They fear that if people realize their ignorance, any mistake might stain their reputation, which is a legitimate concern. More than a few golden boys built careers by swinging only at underhanded pitches.
+
+The second group either genuinely loves their craft, fears falling behind, or likely a combination of the two. They see it as essential to their career to seize every opportunity to gather nuggets of knowledge and become irreplaceable experts. This group is the minority; out of a dozen fresh engineers, maybe two fit here. Ideally, a company would hire only this type, but that's not really feasible. People often slide between groups depending on life circumstances or their interest in their current role. Engineers in this second group ask lots of questions and actively build relationships with knowledgeable mentors. They often see their early jobs as stepping stones toward roles they truly want, deliberately seeking out challenging experiences from "lesser roles." When stumbling upon something they don't know, they tend to deep dive into it out of necessity and genuine curiosity. Engineers in this group usually bootstrap themselves significantly and become extremely resourceful.
+
+The first group can produce good engineers, but it is dependent on company culture and it is really, really, hard for a company to develop and maintain a company culture of everyone giving a proper effort.  I would say that any manager that is able to do this probably should be writing books on management. Company culture is a harder thing to fix than any technical problem.
+
+- Doug Millner P.E. [July 2025]
+
+https://www.linkedin.com/posts/doug-millner-p-e-26607a184_electricalengineering-engieneering-managers-activity-7351272004177596417-q70i/

@@ -1,0 +1,25 @@
+---
+description: USE WHEN defining or modifying Pony ORM Entities, relationships, keys, indexes, or model file layout.
+globs:
+alwaysApply: false
+---
+
+# Pony ORM Entity Modeling Rules
+
+## File layout
+- Location: `app/models/<entity>.py`
+- Exactly one `class <Entity>(db.Entity)` per file.
+- Export Entities from `app/models/__init__.py` for a stable import surface.
+
+## Entity definition
+- Use explicit attribute declarations: `PrimaryKey`, `Required`, `Optional`, `Set`.
+- Use `Required(..., unique=True)` or explicit indexes for uniqueness, and document intent near the field.
+- Prefer string-based relationship targets (`Set("OtherEntity")`) to avoid import cycles.
+
+## Relationships
+- Define both ends of a relationship (Pony relationships are defined by two attributes). :contentReference[oaicite:1]{index=1}
+- Name relationship attributes by role, not by table semantics (e.g., `orders`, `owner`, `created_by`).
+
+## Mapping customization
+- Only override table/column names when you have a strong interoperability need (existing schema, reporting, cross-service integration).
+- If you override mapping, keep it consistent and centralized, and document the external contract.

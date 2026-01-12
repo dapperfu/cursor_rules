@@ -1,0 +1,24 @@
+---
+description: USE WHEN setting up Pony ORM Database binding, mapping, environment configuration, or app startup wiring.
+globs:
+alwaysApply: false
+---
+
+# Pony ORM Database Setup Rules
+
+## Single Database instance
+- Create exactly one `Database()` instance for the app (e.g., `app/db/database.py`).
+- All Entities must import the same `db` instance.
+
+## Bind + mapping lifecycle
+- Bind via `db.bind(...)` during application startup, not during module import. :contentReference[oaicite:2]{index=2}
+- Import all Entity modules before calling `db.generate_mapping(...)`.
+- `db.generate_mapping(create_tables=True)` may create tables, foreign keys, and indexes if missing. :contentReference[oaicite:3]{index=3}
+
+## Environments
+- Dev/test: allow `create_tables=True` if you intentionally want auto-create behavior.
+- Prod: avoid auto-create; apply schema changes through controlled migration/DDL workflows (Pony has an ongoing migrations approach and workflow). :contentReference[oaicite:4]{index=4}
+
+## Configuration hygiene
+- No hard-coded credentials in code.
+- Parse config once (env vars, config file) and pass into the DB bind step.

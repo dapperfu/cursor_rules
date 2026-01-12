@@ -1,0 +1,28 @@
+--- 
+description: Core conventions for Python + Pony ORM in this repo. Apply when writing or editing Python code, especially anything touching persistence.
+globs: **/*.py,**/*.pyi
+alwaysApply: true
+---
+
+# Python + Pony ORM Core Conventions (Project Rules)
+
+## Architecture boundaries
+- Keep DB access inside a dedicated persistence layer (repositories/DAO/services), not sprinkled throughout handlers, CLI, or UI code.
+- Never perform DB I/O at import time. Imports must be side-effect free.
+
+## Model organization
+- Place Pony Entities under `app/models/`.
+- One Entity class per file.
+- No circular imports between models. Prefer Pony string references in relationships when needed.
+
+## Transactions
+- Every DB read/write must occur inside a `db_session` (decorator or context manager).
+- Keep transactions short; do not hold a session across slow I/O (network calls, file writes).
+
+## Schema evolution
+- For local dev/tests you may use `generate_mapping(create_tables=True)`.
+- For production, prefer explicit schema management (migrations or controlled DDL), and avoid auto-creating tables.
+
+## Coding standards
+- Prefer explicit imports (avoid `import *`) and type hints on public functions.
+- Raise domain-specific exceptions at the boundary (service layer) and log context once, close to the caller.

@@ -1,0 +1,21 @@
+---
+description: USE WHEN writing or optimizing Pony ORM queries (select/get/filter/order_by), avoiding N+1, or shaping returned data.
+globs:
+alwaysApply: false
+---
+
+# Pony ORM Query and Performance Rules
+
+## Prefer declarative queries
+- Use Pony query comprehensions and `Entity.select(...)` patterns, not manual loops that trigger per-row queries. :contentReference[oaicite:8]{index=8}
+- When you only need one object, use `Entity.get(...)` (or a constrained select) rather than selecting everything.
+
+## Avoid N+1
+- If iterating over a collection and accessing related entities, plan for prefetching or restructuring the query so related data is loaded intentionally.
+- Do not access relationship attributes inside large loops unless you are sure the query plan is efficient.
+
+## Shape outputs explicitly
+- For read paths, return DTOs/primitive structures from service functions (dicts, dataclasses), not raw Entities, unless the caller is also in a db_session and understands lazy loading.
+
+## Debugging and verification
+- When diagnosing performance, enable SQL debug temporarily and confirm query counts for critical paths (then turn it back off).

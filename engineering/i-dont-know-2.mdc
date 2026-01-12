@@ -1,0 +1,126 @@
+---
+description: Why the Most Confident Engineers Say ‘I Don’t Know’ More Often
+globs: ["**/*"]
+alwaysApply: true
+---
+
+# Why the Most Confident Engineers Say ‘I Don’t Know’ More Often
+
+The senior architect looked at me across the conference table and said six words that changed how I think about expertise: “I have no idea how that works.”
+
+We were in the middle of a critical system design review. The database was hitting performance limits. Everyone was looking at her — twenty years of experience, three patents, the person who’d built half our infrastructure. And she just… admitted ignorance.
+
+I was three years into my career. I thought confidence meant having all the answers. Watching her say “I don’t know” with zero hesitation felt like watching a magician reveal their tricks. Wait, that’s allowed?
+
+## The Fake-It Game
+
+My first two years as an engineer, I played a exhausting game: pretend you know everything, Google frantically under the desk, pray nobody asks follow-up questions.
+
+Someone would mention Kubernetes networking and I’d nod knowingly while internally panicking because I’d only deployed to Heroku. They’d reference CAP theorem and I’d make a vague comment about “trade-offs” while mentally noting to Wikipedia that later.
+
+I thought this was normal. I thought this was necessary. Every senior engineer around me seemed to know everything. They’d drop technology names like they were discussing the weather. They never paused, never hesitated, never admitted gaps.
+
+So I faked it. And it was exhausting.
+
+The breaking point came during a code review when I approved a pull request I didn’t understand because I was too afraid to ask what “memoization” meant. The PR introduced a memory leak that took down production. My fake confidence had become real risk.
+
+## The Engineer Who Changed My Mind
+
+Her name was Rachel, and she was the tech lead everyone wanted on their project. Not because she knew everything — but because she knew what she didn’t know.
+
+I watched her in meetings. Someone would propose using gRPC for internal services. She’d ask: “What’s the latency overhead compared to REST? I haven’t benchmarked that recently.”
+
+A junior engineer would mention they’re learning Elixir. She’d say: “I’ve never used it. What makes it good for your use case?”
+
+The CTO would reference some distributed systems paper. She’d pause: “I’m not familiar with that one. Can you send me the link?”
+
+Every. Single. Time. No embarrassment. No hedging. Just clean, honest “I don’t know.”
+
+And here’s what shocked me: people respected her more for it, not less.
+
+## The Confidence Paradox
+
+It took me months to understand what I was seeing. The engineers who said “I don’t know” most often were the ones people trusted most. The ones who never admitted ignorance? They were the ones we quietly worked around.
+
+The paradox is this: saying “I don’t know” is the highest form of confidence.
+
+Think about it. When you’re genuinely secure in your expertise, you don’t need to perform knowledge you don’t have. You’re not threatened by gaps because you know your value isn’t in omniscience — it’s in judgment, experience, and the ability to find answers.
+
+The fake-confident engineer is constantly defending a fragile image. The truly confident engineer has nothing to defend.
+
+Real confidence whispers “I don’t know yet.” Fake confidence shouts “obviously.”
+
+## What Happened When I Started Saying It
+
+Six months after that system design meeting, I was in a architecture discussion about caching strategies. Someone asked me about Redis persistence models.
+
+Old me would have mumbled something about “it depends on the use case” and hoped the conversation moved on.
+
+New me said: “I don’t know the details. I’ve only used Redis for session storage, which is in-memory. What persistence options exist?”
+
+The room didn’t gasp. Nobody lost respect. Instead, two people jumped in to explain RDB vs AOF persistence, and I actually learned something instead of pretending I already knew it.
+
+That’s when it clicked: every time you fake knowledge, you kill an opportunity to gain real knowledge.
+
+## The Three Types of “I Don’t Know”
+
+Not all ignorance admissions are equal. The senior engineers I respect most use three distinct flavors:
+
+“I don’t know, but I know how to find out.” This is the power move. You’re admitting a gap while demonstrating competence. “I haven’t worked with WebSockets before, but I’ve done similar real-time systems. Let me research the options and get back to you tomorrow.”
+
+“I don’t know, and I’d love to learn.” This is the growth mindset in action. It turns ignorance into curiosity. “I’ve never touched Terraform. Would you be willing to pair with me on this? I want to understand how you approach infrastructure as code.”
+
+“I don’t know, and we should find someone who does.” This is the most confident of all. You’re acknowledging when a problem exceeds your expertise and taking action to solve it anyway. “This database performance issue is beyond my experience level. Should we bring in a DBA to consult?”
+
+The fake-confident engineer would have tried to solve it themselves and made it worse.
+
+## The Hidden Cost of Fake Expertise
+
+Here’s what nobody tells you about pretending to know things: it’s not just exhausting — it’s dangerous.
+
+I watched a senior engineer once spend two weeks implementing a solution to a problem he didn’t fully understand because he was too proud to ask for clarification. The solution worked technically but solved the wrong problem. We had to throw it away.
+
+Two weeks of work. Gone. Because “I don’t know what you mean” felt too vulnerable to say.
+
+The cost isn’t just time — it’s trust. When your team discovers you’ve been faking knowledge, they stop believing you when you claim expertise in things you do know. Your credibility becomes binary: either you know everything or you know nothing.
+
+But when you’re honest about gaps? Your claims of expertise become more credible, not less.
+
+## The Moment It Became Natural
+
+It’s been three years since I started saying “I don’t know” without shame. Last month, a junior engineer came to me with a question about WebAssembly. Old me would have Google-bluffed my way through an answer.
+
+Instead, I said: “I’ve read about WASM but never used it in production. What are you trying to build?”
+
+She explained her project. I asked questions. Together, we figured out that she didn’t actually need WebAssembly — she needed better JavaScript optimization. I could help with that.
+
+If I’d pretended to know WASM, I’d have given bad advice about the wrong solution. By admitting ignorance, I could give good advice about the right solution.
+
+The Permission You’re Looking For
+If you’re reading this and thinking “but I’m not senior enough to admit ignorance” — you’ve got it backwards.
+
+You’re not senior enough to pretend you know everything.
+
+Senior engineers have earned the credibility to say “I don’t know” because they’ve proven they can find answers. But you don’t build that credibility by faking — you build it by being honest about what you’re learning along the way.
+
+The engineer who admits gaps and fills them becomes senior. The engineer who pretends there are no gaps stays junior — they’ve stopped learning.
+
+## What Changed
+
+I used to think confidence was having answers. Now I know confidence is being comfortable with questions.
+
+I used to think expertise meant knowing everything. Now I know expertise means knowing what you don’t know — and knowing how to find it.
+
+I used to think “I don’t know” was admission of weakness. Now I know it’s the beginning of strength.
+
+The best advice I ever got came from that senior architect, years after that first meeting. I asked her how she became so comfortable with uncertainty.
+
+She said: “I realized that every time I pretended to know something, I was choosing my ego over the team’s success. And that’s the most junior thing you can do.”
+
+The most confident thing you can say isn’t “I know.” It’s “I don’t know — let’s figure it out together.”
+
+That’s not weakness. That’s leadership.
+
+- toyezyadav - Nov 2, 2025
+
+https://medium.com/@toyezyadav/why-the-most-confident-engineers-say-i-dont-know-more-often-3c00e4daf874

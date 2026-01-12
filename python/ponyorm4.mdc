@@ -1,0 +1,22 @@
+---
+description: USE WHEN writing Pony ORM transactions, db_session usage, commit/rollback behavior, or any function that touches the database.
+globs:
+alwaysApply: false
+---
+
+# Pony ORM Sessions and Transactions Rules
+
+## Always use db_session
+- Wrap every DB interaction (reads included) in `@db_session` or `with db_session:` so connections are returned to the pool and the session cache is managed. :contentReference[oaicite:5]{index=5}
+
+## Keep sessions short
+- Do not hold a db_session open across slow operations (HTTP calls, large file operations, user prompts).
+- Prefer “service function per transaction”: one logical unit of work per db_session.
+
+## Commit and rollback
+- Default: let `db_session` commit on success and rollback on exception.
+- If you need multiple transactions in one session, call `commit()` or `rollback()` explicitly; the next query starts a new transaction. :contentReference[oaicite:6]{index=6}
+- Avoid very long sessions without explicit commits, as they may hold locks longer than intended. :contentReference[oaicite:7]{index=7}
+
+## Error handling
+- Catch exceptions at service boundaries, translate to domain errors, and ensure the exception is not swallowed inside a db_session unless you intentionally recover.
