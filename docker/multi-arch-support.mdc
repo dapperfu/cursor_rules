@@ -1,0 +1,175 @@
+# Docker Multi-Architecture Support
+
+## Requirement
+
+ALL Docker images SHALL support multiple architectures when the project targets multiple platforms or when cross-platform compatibility is required.
+
+1. **Buildx usage**: Multi-architecture builds SHALL use Docker Buildx. The `docker-build` Makefile target SHALL support multi-arch builds when specified.
+
+2. **Platform specification**: Supported platforms SHALL be explicitly specified. Common platforms include `linux/amd64`, `linux/arm64`, `linux/arm/v7`, and `linux/arm/v6`.
+
+3. **Buildx builder**: A Buildx builder instance SHALL be created and used for multi-arch builds. The builder SHALL be created if it does not exist.
+
+4. **Manifest lists**: Multi-arch images SHALL create manifest lists that reference architecture-specific images. Images SHALL be pushed to a registry to create manifest lists.
+
+5. **Platform-specific builds**: When platform-specific optimizations are required, separate Dockerfiles or build arguments SHALL be used. Platform detection SHALL be handled in the build process.
+
+6. **Testing**: Multi-arch images SHALL be tested on target platforms when possible. Emulation MAY be used for testing when physical hardware is unavailable.
+
+7. **Documentation**: Supported architectures SHALL be documented in project documentation. Build instructions SHALL include multi-arch build commands.
+
+## Rationale
+
+Multi-architecture support provides:
+
+- **Platform compatibility**: Images run on different CPU architectures (x86_64, ARM64, ARMv7, etc.)
+- **Cloud portability**: Enables deployment across different cloud providers and edge devices
+- **Developer experience**: Developers can use images on their native architecture
+- **Cost optimization**: ARM-based instances often provide better price/performance
+- **Future-proofing**: Supports emerging architectures and edge computing scenarios
+
+## Implementation
+
+### Buildx Setup
+
+```makefile
+BUILDER_NAME := multiarch-builder
+PLATFORMS := linux/amd64,linux/arm64
+
+docker-buildx-create:
+	@if ! docker buildx ls | grep -q $(BUILDER_NAME); then \
+		docker buildx create --name $(BUILDER_NAME) --use; \
+		docker buildx inspect --bootstrap; \
+	fi
+
+docker-buildx-use:
+	docker buildx use $(BUILDER_NAME)
+
+docker-build: docker-buildx-create
+	docker buildx build \
+		--platform $(PLATFORMS) \
+		-t $(IMAGE_NAME):$(IMAGE_TAG) \
+		--push \
+		.
+```
+
+### Docker Compose Multi-Arch
+
+```yaml
+# docker-compose.yml
+services:
+  app:
+    image: myapp:latest
+    platform: linux/amd64  # Specify platform for local development
+```
+
+### Multi-Arch Build with Manifest
+
+```makefile
+IMAGE_NAME := myapp
+IMAGE_TAG := v1.2.3
+PLATFORMS := linux/amd64,linux/arm64,linux/arm/v7
+
+docker-build-multiarch: docker-buildx-create
+	docker buildx build \
+		--platform $(PLATFORMS) \
+		-t $(IMAGE_NAME):$(IMAGE_TAG) \
+		-t $(IMAGE_NAME):latest \
+		--push \
+		.
+
+docker-build-multiarch-local: docker-buildx-create
+	docker buildx build \
+		--platform $(PLATFORMS) \
+		-t $(IMAGE_NAME):$(IMAGE_TAG) \
+		--load \
+		.
+```
+
+### Platform-Specific Dockerfiles
+
+```dockerfile
+# Dockerfile.amd64
+FROM --platform=linux/amd64 node:20-alpine
+# AMD64-specific optimizations
+```
+
+```dockerfile
+# Dockerfile.arm64
+FROM --platform=linux/arm64 node:20-alpine
+# ARM64-specific optimizations
+```
+
+### Build Arguments for Platform Detection
+
+```dockerfile
+# Dockerfile
+ARG TARGETPLATFORM
+ARG BUILDPLATFORM
+
+FROM --platform=${TARGETPLATFORM} node:20-alpine
+
+# Platform-specific build steps
+RUN if [ "$TARGETPLATFORM" = "linux/arm64" ]; then \
+      echo "Building for ARM64"; \
+    elif [ "$TARGETPLATFORM" = "linux/amd64" ]; then \
+      echo "Building for AMD64"; \
+    fi
+```
+
+### Makefile with Platform Selection
+
+```makefile
+PLATFORM ?= linux/amd64,linux/arm64
+IMAGE_NAME := myapp
+IMAGE_TAG := latest
+
+docker-buildx-create:
+	@if ! docker buildx ls | grep -q multiarch-builder; then \
+		docker buildx create --name multiarch-builder --use --driver docker-container; \
+		docker buildx inspect --bootstrap; \
+	fi
+
+docker-build:
+	docker buildx build \
+		--platform $(PLATFORM) \
+		-t $(IMAGE_NAME):$(IMAGE_TAG) \
+		--load \
+		.
+
+docker-build-push:
+	docker buildx build \
+		--platform $(PLATFORM) \
+		-t $(IMAGE_NAME):$(IMAGE_TAG) \
+		--push \
+		.
+
+docker-buildx-inspect:
+	docker buildx inspect
+```
+
+### Testing Multi-Arch Images
+
+```makefile
+docker-test-amd64:
+	docker run --rm --platform linux/amd64 $(IMAGE_NAME):$(IMAGE_TAG) /bin/sh -c "uname -m"
+
+docker-test-arm64:
+	docker run --rm --platform linux/arm64 $(IMAGE_NAME):$(IMAGE_TAG) /bin/sh -c "uname -m"
+```
+
+### CI/CD Integration
+
+```yaml
+# GitHub Actions example
+- name: Set up Docker Buildx
+  uses: docker/setup-buildx-action@v2
+
+- name: Build and push
+  uses: docker/build-push-action@v4
+  with:
+    context: .
+    platforms: linux/amd64,linux/arm64
+    push: true
+    tags: myapp:${{ github.ref_name }}
+```
