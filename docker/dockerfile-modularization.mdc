@@ -1,0 +1,188 @@
+# Dockerfile Modularization
+
+## Requirement
+
+ALL Dockerfiles SHALL be modularized when they exceed reasonable length to improve maintainability.
+
+1. **Length threshold**: Dockerfiles exceeding 200 lines SHALL be split into modular fragments using BuildKit includes.
+
+2. **BuildKit syntax**: Dockerfiles using includes SHALL use `# syntax=docker/dockerfile:1` at the top to enable BuildKit include syntax.
+
+3. **Fragment organization**: Fragments SHALL be organized by purpose in a `docker/` or `.docker/` directory:
+   - Base image and system setup
+   - System dependencies (packages)
+   - Application dependencies
+   - Application code and configuration
+   - Runtime configuration and entrypoint
+
+4. **Fragment naming**: Fragment files SHALL use descriptive names indicating their purpose (e.g., `base.dockerfile`, `dependencies.dockerfile`, `runtime.dockerfile`).
+
+5. **Main Dockerfile**: The main Dockerfile SHALL use `#include` directives to compose fragments in the correct order.
+
+## Rationale
+
+Modularizing Dockerfiles provides:
+
+- **Improved maintainability**: Smaller, focused fragments are easier to understand and modify
+- **Better code review**: Reviewers can focus on specific aspects (dependencies, runtime, etc.)
+- **Reusability**: Fragments can be shared across multiple Dockerfiles when appropriate
+- **Clearer structure**: Purpose-based organization makes the build process more transparent
+- **Easier testing**: Individual fragments can be tested in isolation
+
+## Implementation
+
+### Main Dockerfile Structure
+
+```dockerfile
+# syntax=docker/dockerfile:1
+
+#include docker/base.dockerfile
+#include docker/dependencies.dockerfile
+#include docker/application.dockerfile
+#include docker/runtime.dockerfile
+```
+
+### Fragment Organization
+
+Fragments SHALL be organized in a `docker/` directory (or `.docker/` for hidden directory):
+
+```
+project/
+├── Dockerfile
+└── docker/
+    ├── base.dockerfile
+    ├── dependencies.dockerfile
+    ├── application.dockerfile
+    └── runtime.dockerfile
+```
+
+### Fragment Examples
+
+#### base.dockerfile
+
+```dockerfile
+FROM debian:bookworm-slim
+
+ARG BUILD_DATE
+ARG VERSION
+
+LABEL org.opencontainers.image.created="${BUILD_DATE}" \
+      org.opencontainers.image.version="${VERSION}"
+
+WORKDIR /app
+```
+
+#### dependencies.dockerfile
+
+```dockerfile
+# System dependencies
+RUN apt-get update
+RUN apt-get install -y curl
+RUN apt-get install -y git
+
+# Application dependencies
+COPY package.json ./
+RUN npm ci --only=production
+```
+
+#### application.dockerfile
+
+```dockerfile
+# Application code
+COPY . .
+
+# Build application (if needed)
+RUN npm run build
+```
+
+#### runtime.dockerfile
+
+```dockerfile
+# Runtime configuration
+RUN addgroup -g 1001 -S appuser && \
+    adduser -S appuser -u 1001
+
+USER appuser
+
+EXPOSE 8080
+
+CMD ["node", "dist/index.js"]
+```
+
+### Multi-stage Build with Includes
+
+For multi-stage builds, fragments can be organized by stage:
+
+```dockerfile
+# syntax=docker/dockerfile:1
+
+# Build stage
+#include docker/build-base.dockerfile
+#include docker/build-dependencies.dockerfile
+#include docker/build-application.dockerfile
+
+# Runtime stage
+#include docker/runtime-base.dockerfile
+#include docker/runtime-dependencies.dockerfile
+#include docker/runtime-application.dockerfile
+```
+
+### Fragment Naming Conventions
+
+Fragment files SHALL use descriptive names:
+
+- `base.dockerfile` - Base image and initial setup
+- `system-deps.dockerfile` - System package dependencies
+- `app-deps.dockerfile` - Application dependencies (npm, pip, etc.)
+- `application.dockerfile` - Application code and build steps
+- `runtime.dockerfile` - Runtime configuration, user setup, entrypoint
+
+For multi-stage builds:
+
+- `build-*.dockerfile` - Build stage fragments
+- `runtime-*.dockerfile` - Runtime stage fragments
+
+### BuildKit Requirement
+
+BuildKit SHALL be enabled when building Dockerfiles with includes. This can be done by:
+
+1. Setting environment variable: `DOCKER_BUILDKIT=1`
+2. Using buildx: `docker buildx build`
+3. Enabling in Docker daemon configuration
+
+### Example Build Command
+
+```bash
+DOCKER_BUILDKIT=1 docker build -t myapp:latest .
+```
+
+Or with buildx:
+
+```bash
+docker buildx build -t myapp:latest .
+```
+
+## When to Modularize
+
+Dockerfiles SHALL be modularized when:
+
+- The Dockerfile exceeds 200 lines
+- The Dockerfile has multiple distinct concerns (base setup, dependencies, application, runtime)
+- Multiple Dockerfiles share common fragments
+- The project requires complex multi-stage builds
+
+Dockerfiles MAY remain monolithic when:
+
+- The Dockerfile is under 200 lines
+- The structure is simple and linear
+- There are no shared fragments with other Dockerfiles
+
+## Fragment Best Practices
+
+1. **Self-contained**: Each fragment SHALL be self-contained and not depend on variables or context from other fragments unless explicitly documented.
+
+2. **Comments**: Fragments SHALL include comments explaining their purpose at the top.
+
+3. **Ordering**: The main Dockerfile SHALL include fragments in the correct order to maintain build dependencies.
+
+4. **Version control**: All fragments SHALL be tracked in version control alongside the main Dockerfile.

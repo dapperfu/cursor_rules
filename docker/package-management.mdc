@@ -1,0 +1,132 @@
+# Docker Package Management
+
+## Requirement
+
+ALL Dockerfiles using Debian-based distributions (Debian, Ubuntu, etc.) SHALL follow these package management rules:
+
+1. **Single package per RUN**: Each `apt-get install` command SHALL install exactly one package per RUN instruction. Multiple packages SHALL NOT be installed in a single RUN command.
+
+2. **Avoid multi-line commands**: Multi-line commands SHALL be avoided in general. Each command SHALL be on its own line to maximize Docker layer caching.
+
+3. **Development workflow**: During development, new packages SHALL be added at the bottom of the Dockerfile to leverage Docker's layer caching. Existing package installations SHALL NOT be modified when adding new packages.
+
+4. **Production cleanup**: For production builds, packages SHALL be alphabetized for maintainability. Projects MAY choose to alphabetize within each existing RUN command or consolidate all packages into a single alphabetized RUN command.
+
+5. **apt-get update**: `apt-get update` SHALL be run before installing packages. The update and install SHALL be in separate RUN commands to maximize cache efficiency.
+
+## Rationale
+
+Following these package management rules provides:
+
+- **Maximum cache efficiency**: Installing one package per RUN command ensures that changing one package doesn't invalidate the cache for other packages
+- **Faster development builds**: Adding packages at the bottom preserves existing cache layers during development
+- **Better maintainability**: Alphabetized packages in production are easier to review and maintain
+- **Clearer git history**: Single-package changes result in focused, atomic commits
+
+## Implementation
+
+### Development Workflow Example
+
+During development, packages are added incrementally at the bottom:
+
+```dockerfile
+FROM debian:bookworm-slim
+
+RUN apt-get update
+RUN apt-get install -y curl
+
+# Application code copied here
+COPY . /app
+
+# New package added during development - goes at bottom
+RUN apt-get update
+RUN apt-get install -y git
+
+# Another new package added later - goes at bottom
+RUN apt-get update
+RUN apt-get install -y vim
+```
+
+### Production Cleanup - Option 1: Alphabetize Within Each RUN
+
+Alphabetize packages within each existing RUN command:
+
+```dockerfile
+FROM debian:bookworm-slim
+
+RUN apt-get update
+RUN apt-get install -y curl git vim
+```
+
+### Production Cleanup - Option 2: Consolidate and Alphabetize
+
+Consolidate all packages into a single alphabetized RUN command:
+
+```dockerfile
+FROM debian:bookworm-slim
+
+RUN apt-get update && \
+    apt-get install -y \
+        curl \
+        git \
+        vim && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
+```
+
+**Note**: When consolidating for production, the single RUN command MAY include cleanup commands (`apt-get clean` and `rm -rf /var/lib/apt/lists/*`) to reduce image size.
+
+### Incorrect Examples
+
+**DO NOT install multiple packages in one RUN:**
+
+```dockerfile
+# INCORRECT - Multiple packages in one RUN
+RUN apt-get update && apt-get install -y curl git vim
+```
+
+**DO NOT use multi-line continuation for single packages:**
+
+```dockerfile
+# INCORRECT - Unnecessary multi-line for single package
+RUN apt-get update && \
+    apt-get install -y curl
+```
+
+**DO NOT modify existing package installations during development:**
+
+```dockerfile
+# INCORRECT - Modifying existing installation invalidates cache
+FROM debian:bookworm-slim
+RUN apt-get update
+RUN apt-get install -y curl git  # Adding git here invalidates curl cache
+```
+
+### Correct Development Pattern
+
+```dockerfile
+FROM debian:bookworm-slim
+
+# Initial packages
+RUN apt-get update
+RUN apt-get install -y curl
+
+# Application setup
+WORKDIR /app
+COPY package.json ./
+RUN npm install
+
+# New package needed during development - add at bottom
+RUN apt-get update
+RUN apt-get install -y git
+
+# Application code
+COPY . .
+CMD ["npm", "start"]
+```
+
+## Workflow
+
+1. **Development**: Add new packages at the bottom of the Dockerfile, one package per RUN command
+2. **Production preparation**: Before production deployment, alphabetize packages using one of the documented approaches
+3. **Review**: Alphabetized packages make it easier to review and identify unnecessary dependencies

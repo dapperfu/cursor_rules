@@ -18,6 +18,10 @@ ALL Dockerfiles SHALL follow these best practices:
 
 7. **Single purpose**: Each Dockerfile SHALL build a single-purpose image following the single responsibility principle.
 
+8. **Package management**: Debian-based package installation SHALL follow the rules specified in `docker/package-management.mdc`.
+
+9. **Dockerfile modularization**: Long Dockerfiles SHALL be split using BuildKit includes as specified in `docker/dockerfile-modularization.mdc`.
+
 ## Rationale
 
 Following Dockerfile best practices provides:
@@ -27,6 +31,8 @@ Following Dockerfile best practices provides:
 - **Security**: Non-root users and specific version tags reduce security vulnerabilities
 - **Reproducibility**: Specific version tags ensure consistent builds across environments
 - **Maintainability**: Single-purpose images are easier to understand and maintain
+- **Cache optimization**: Single-package-per-RUN commands maximize Docker layer cache efficiency
+- **Modularity**: Split Dockerfiles improve maintainability and reviewability
 
 ## Implementation
 
