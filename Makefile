@@ -1,4 +1,4 @@
-.PHONY: install uninstall check clean build run help
+.PHONY: install uninstall check clean build run help docker-bootstrap
 
 # Variables
 SCRIPT_NAME := cursor-rules
@@ -24,6 +24,7 @@ help: ## Display available targets and descriptions
 	@echo "  make clean      - Remove temporary files and build artifacts"
 	@echo "  make build      - No-op for this interpreted project"
 	@echo "  make run        - Show help message"
+	@echo "  make docker-bootstrap - Bootstrap Docker installation on apt-based distributions"
 	@echo "  make help        - Display this help message"
 
 install: ## Install cursor-rules script to ~/.local/bin and configure shell PATH
@@ -165,3 +166,25 @@ run: ## Show help message
 	@echo "This project provides cursor rules for development."
 	@echo "Run 'make help' to see available targets."
 	@echo "Run 'make install' to install the cursor-rules script."
+
+docker-bootstrap: ## Bootstrap Docker installation on apt-based distributions
+	@echo "Checking for apt-based distribution..."
+	@command -v apt-get >/dev/null 2>&1 || (echo "Error: apt-get not found. This target only supports apt-based distributions (Debian/Ubuntu)." && exit 1)
+	@echo "Installing Docker prerequisites..."
+	@sudo apt-get update
+	@sudo apt-get install -y ca-certificates curl gnupg lsb-release
+	@echo "Adding Docker's official GPG key..."
+	@sudo install -m 0755 -d /etc/apt/keyrings
+	@curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+	@sudo chmod a+r /etc/apt/keyrings/docker.gpg
+	@echo "Setting up Docker repository..."
+	@echo "deb [arch=$(shell dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu $(shell lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+	@sudo apt-get update
+	@echo "Installing Docker Engine, CLI, containerd, and Docker Compose plugin..."
+	@sudo apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+	@echo "Adding user $(USER) to docker group..."
+	@sudo usermod -aG docker $(USER)
+	@echo ""
+	@echo "Docker installation complete!"
+	@echo "Please log out and log back in for group membership to take effect."
+	@echo "You can verify installation with: docker --version && docker compose version"
