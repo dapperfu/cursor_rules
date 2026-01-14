@@ -1,0 +1,142 @@
+# Docker Health Checks
+
+## Requirement
+
+ALL Docker containers SHALL implement health checks to monitor container status and enable automatic recovery.
+
+1. **Health check definition**: Containers SHALL define health checks in Dockerfiles or docker-compose.yml files. Health checks SHALL verify that the container is functioning correctly, not just that it is running.
+
+2. **Health check command**: Health check commands SHALL be lightweight and non-intrusive. Commands SHALL check application readiness, not just process existence.
+
+3. **Health check interval**: Health check intervals SHALL be configured appropriately for the application type. Default interval SHALL be 30 seconds unless specific requirements dictate otherwise.
+
+4. **Health check timeout**: Health check timeouts SHALL be shorter than the interval. Default timeout SHALL be 10 seconds unless specific requirements dictate otherwise.
+
+5. **Health check retries**: Health check retries SHALL be configured to allow for transient failures. Default retries SHALL be 3 unless specific requirements dictate otherwise.
+
+6. **Start period**: Health checks SHALL include a start period to allow containers time to initialize. Default start period SHALL be 40 seconds unless specific requirements dictate otherwise.
+
+7. **Health check endpoint**: Applications SHALL provide a dedicated health check endpoint (e.g., `/health`, `/healthz`, `/ready`) when possible. The endpoint SHALL return appropriate HTTP status codes (200 for healthy, 503 for unhealthy).
+
+## Rationale
+
+Health checks provide:
+
+- **Reliability**: Automatic detection of unhealthy containers enables recovery
+- **Orchestration**: Container orchestrators use health checks for service management
+- **Monitoring**: Health status enables monitoring and alerting systems
+- **Load balancing**: Load balancers can route traffic away from unhealthy containers
+- **Debugging**: Health check failures provide early warning of application issues
+
+## Implementation
+
+### Dockerfile Health Check
+
+```dockerfile
+# Dockerfile
+HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
+  CMD curl -f http://localhost:8080/health || exit 1
+```
+
+### Docker Compose Health Check
+
+```yaml
+# docker-compose.yml
+services:
+  api:
+    image: myapp-api:latest
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+```
+
+### HTTP Health Check Endpoint
+
+```yaml
+# docker-compose.yml - HTTP endpoint health check
+services:
+  web:
+    image: myapp-web:latest
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+```
+
+### Database Health Check
+
+```yaml
+# docker-compose.yml - Database health check
+services:
+  database:
+    image: postgres:15
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+```
+
+### Custom Script Health Check
+
+```dockerfile
+# Dockerfile - Custom health check script
+COPY healthcheck.sh /usr/local/bin/
+RUN chmod +x /usr/local/bin/healthcheck.sh
+HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
+  CMD /usr/local/bin/healthcheck.sh
+```
+
+```bash
+#!/bin/sh
+# healthcheck.sh
+if curl -f http://localhost:8080/health; then
+  exit 0
+else
+  exit 1
+fi
+```
+
+### Health Check Status Inspection
+
+```makefile
+docker-health:
+	docker inspect --format='{{.State.Health.Status}}' $(CONTAINER_NAME)
+
+docker-health-logs:
+	docker inspect --format='{{json .State.Health}}' $(CONTAINER_NAME) | jq
+```
+
+### Application Health Endpoint Example
+
+```python
+# Python Flask example
+@app.route('/health')
+def health():
+    # Check database connection
+    try:
+        db.session.execute('SELECT 1')
+    except Exception:
+        return {'status': 'unhealthy'}, 503
+    
+    # Check external dependencies
+    if not check_external_service():
+        return {'status': 'unhealthy'}, 503
+    
+    return {'status': 'healthy'}, 200
+```
+
+### Health Check Best Practices
+
+- Use dedicated health check endpoints that don't impact application performance
+- Keep health check logic simple and fast
+- Avoid health checks that modify application state
+- Return appropriate HTTP status codes (200 for healthy, 503 for unhealthy)
+- Log health check failures for debugging
+- Consider separate readiness and liveness checks for complex applications
