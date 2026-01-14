@@ -1,0 +1,79 @@
+# Dockerfile Best Practices
+
+## Requirement
+
+ALL Dockerfiles SHALL follow these best practices:
+
+1. **Multi-stage builds**: Dockerfiles SHALL use multi-stage builds to minimize final image size and separate build dependencies from runtime dependencies.
+
+2. **Layer caching optimization**: Instructions SHALL be ordered from least to most frequently changing to maximize layer cache hits. Dependencies SHALL be installed before copying application code.
+
+3. **.dockerignore file**: Projects SHALL include a `.dockerignore` file to exclude unnecessary files from the build context, reducing build time and image size.
+
+4. **Minimal base images**: Base images SHALL use minimal variants (e.g., `alpine`, `slim`) when possible to reduce image size and attack surface.
+
+5. **Non-root user**: Containers SHALL run as non-root users when possible. User creation SHALL be done in a separate layer before copying application files.
+
+6. **Specific version tags**: Base images SHALL use specific version tags instead of `latest` to ensure reproducible builds.
+
+7. **Single purpose**: Each Dockerfile SHALL build a single-purpose image following the single responsibility principle.
+
+## Rationale
+
+Following Dockerfile best practices provides:
+
+- **Reduced image size**: Multi-stage builds and minimal base images result in smaller, faster-to-pull images
+- **Faster builds**: Layer caching optimization and .dockerignore reduce build time
+- **Security**: Non-root users and specific version tags reduce security vulnerabilities
+- **Reproducibility**: Specific version tags ensure consistent builds across environments
+- **Maintainability**: Single-purpose images are easier to understand and maintain
+
+## Implementation
+
+### Multi-stage Build Example
+
+```dockerfile
+# Build stage
+FROM node:20-alpine AS builder
+WORKDIR /app
+COPY package*.json ./
+RUN npm ci
+COPY . .
+RUN npm run build
+
+# Runtime stage
+FROM node:20-alpine
+WORKDIR /app
+RUN addgroup -g 1001 -S nodejs && \
+    adduser -S nodejs -u 1001
+COPY --from=builder --chown=nodejs:nodejs /app/dist ./dist
+COPY --from=builder --chown=nodejs:nodejs /app/package*.json ./
+RUN npm ci --only=production
+USER nodejs
+CMD ["node", "dist/index.js"]
+```
+
+### .dockerignore Example
+
+```
+node_modules
+npm-debug.log
+.git
+.gitignore
+.env
+*.md
+.DS_Store
+coverage
+.vscode
+.idea
+```
+
+### Layer Ordering
+
+1. Base image with specific version
+2. System dependencies and tools
+3. Application dependencies (package.json, requirements.txt, etc.)
+4. Application code
+5. Runtime configuration
+6. User creation and permissions
+7. Entrypoint/command
