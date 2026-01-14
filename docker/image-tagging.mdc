@@ -1,0 +1,64 @@
+# Docker Image Tagging
+
+## Requirement
+
+ALL Docker images SHALL follow these tagging conventions:
+
+1. **Semantic versioning**: Images SHALL be tagged using semantic versioning (MAJOR.MINOR.PATCH) when applicable. Examples: `v1.2.3`, `2.0.1`.
+
+2. **Latest tag restrictions**: The `latest` tag SHALL NOT be used for production deployments. The `latest` tag MAY be used for development convenience but SHALL NOT be relied upon for reproducible builds.
+
+3. **Git commit tags**: Images SHALL be tagged with git commit SHA or short SHA for traceability. Format: `sha-<full-sha>` or `sha-<short-sha>`. Example: `sha-abc123def456` or `sha-abc123`.
+
+4. **Build metadata tags**: Images MAY include build metadata tags such as build date, branch name, or build number for additional traceability.
+
+5. **Tag format**: Tags SHALL use lowercase alphanumeric characters, hyphens, underscores, periods, and colons only. Tags SHALL NOT contain spaces or special characters.
+
+6. **Multiple tags**: A single image MAY have multiple tags (e.g., version tag, commit SHA tag, and branch tag) to support different use cases.
+
+## Rationale
+
+Proper image tagging provides:
+
+- **Reproducibility**: Specific version tags enable reproducible deployments
+- **Traceability**: Git commit tags link images to source code versions
+- **Rollback capability**: Version tags enable easy rollback to previous versions
+- **Environment consistency**: Consistent tagging across environments reduces deployment errors
+- **Security**: Avoiding `latest` tag prevents unexpected updates in production
+
+## Implementation
+
+### Tagging Examples
+
+```bash
+# Semantic versioning
+docker build -t myapp:v1.2.3 .
+docker build -t myapp:1.2.3 .
+
+# Git commit SHA
+docker build -t myapp:sha-abc123def456 .
+docker build -t myapp:sha-abc123 .
+
+# Multiple tags
+docker build -t myapp:v1.2.3 -t myapp:sha-abc123 -t myapp:main .
+
+# Build metadata
+docker build -t myapp:v1.2.3 -t myapp:build-20240115 -t myapp:branch-feature-x .
+```
+
+### Makefile Integration
+
+```makefile
+VERSION := $(shell git describe --tags --always --dirty)
+COMMIT_SHA := $(shell git rev-parse --short HEAD)
+
+docker-build:
+	docker build -t myapp:$(VERSION) -t myapp:sha-$(COMMIT_SHA) .
+```
+
+### Prohibited Tag Formats
+
+- `latest` (for production)
+- Tags with spaces: `myapp:version 1.2.3`
+- Tags with special characters: `myapp:v1.2.3@beta`
+- Uppercase tags: `myapp:V1.2.3` (use lowercase)
