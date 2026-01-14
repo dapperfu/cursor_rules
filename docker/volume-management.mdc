@@ -1,0 +1,112 @@
+# Docker Volume Management
+
+## Requirement
+
+ALL Docker volume and bind mount usage SHALL follow these conventions:
+
+1. **Named volumes**: Named volumes SHALL be used instead of anonymous volumes for data persistence. Volume names SHALL follow the project naming convention: `<project-name>-<volume-purpose>`.
+
+2. **Volume naming**: Volume names SHALL use lowercase alphanumeric characters and hyphens only. Names SHALL be descriptive of their purpose (e.g., `myapp-data`, `myapp-cache`, `myapp-logs`).
+
+3. **Bind mount paths**: Bind mount paths SHALL use absolute paths. Relative paths SHALL NOT be used for bind mounts.
+
+4. **Volume lifecycle**: Volumes SHALL be explicitly managed. The `docker-clean` Makefile target SHALL include options to remove volumes when appropriate.
+
+5. **Volume permissions**: When using bind mounts, the host directory SHALL have appropriate permissions. Containers running as non-root users SHALL have access to bind-mounted directories.
+
+6. **Volume drivers**: Custom volume drivers SHALL be documented. Default local driver SHALL be used unless specific requirements dictate otherwise.
+
+7. **Volume backup**: Critical data volumes SHALL have backup procedures documented. Volumes containing persistent data SHALL NOT be removed without backup verification.
+
+## Rationale
+
+Proper volume management provides:
+
+- **Data persistence**: Named volumes ensure data survives container lifecycle
+- **Portability**: Consistent volume naming enables easy migration and backup
+- **Security**: Proper permissions prevent unauthorized access
+- **Maintainability**: Explicit volume management reduces orphaned volumes
+- **Reproducibility**: Standardized volume names enable consistent environments
+
+## Implementation
+
+### Named Volume Example
+
+```dockerfile
+# Dockerfile
+VOLUME ["/app/data", "/app/logs"]
+```
+
+```yaml
+# docker-compose.yml
+services:
+  app:
+    image: myapp:latest
+    volumes:
+      - myapp-data:/app/data
+      - myapp-logs:/app/logs
+
+volumes:
+  myapp-data:
+    name: myapp-data
+  myapp-logs:
+    name: myapp-logs
+```
+
+### Bind Mount Example
+
+```yaml
+# docker-compose.yml
+services:
+  app:
+    image: myapp:latest
+    volumes:
+      - /absolute/path/to/data:/app/data:ro  # Read-only bind mount
+      - /absolute/path/to/config:/app/config:rw  # Read-write bind mount
+```
+
+### Makefile Volume Management
+
+```makefile
+VOLUME_NAME := myapp-data
+
+docker-volume-create:
+	docker volume create $(VOLUME_NAME)
+
+docker-volume-rm:
+	docker volume rm $(VOLUME_NAME) || true
+
+docker-clean: docker-stop
+	docker rm $(CONTAINER_NAME) || true
+	docker rmi $(IMAGE_NAME):$(IMAGE_TAG) || true
+	@echo "To remove volumes, run: make docker-volume-rm"
+	docker system prune -f
+
+docker-clean-all: docker-clean docker-volume-rm
+	docker system prune -af --volumes
+```
+
+### Volume Inspection
+
+```makefile
+docker-volume-inspect:
+	docker volume inspect $(VOLUME_NAME)
+
+docker-volume-ls:
+	docker volume ls
+```
+
+### Permission Handling
+
+```dockerfile
+# Dockerfile - Set up user with appropriate permissions
+RUN addgroup -g 1001 -S appgroup && \
+    adduser -S appuser -u 1001 -G appgroup
+
+# Ensure volume directories are owned by the user
+RUN mkdir -p /app/data /app/logs && \
+    chown -R appuser:appgroup /app/data /app/logs
+
+USER appuser
+VOLUME ["/app/data", "/app/logs"]
+```
