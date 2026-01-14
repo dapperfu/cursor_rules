@@ -1,0 +1,206 @@
+# Docker Environment Variables
+
+## Requirement
+
+ALL Docker containers SHALL follow these environment variable management practices:
+
+1. **Environment file usage**: Environment variables SHALL be managed through `.env` files or environment files (e.g., `.env.development`, `.env.production`). Environment files SHALL be excluded from version control via `.gitignore`.
+
+2. **Secrets management**: Secrets SHALL NOT be stored in Dockerfiles, docker-compose.yml files, or environment files committed to version control. Secrets SHALL be managed through Docker secrets, external secret management systems, or environment variables injected at runtime.
+
+3. **Environment variable documentation**: All environment variables SHALL be documented. Required variables SHALL be clearly identified. Default values SHALL be provided when appropriate.
+
+4. **Environment file templates**: Projects SHALL provide `.env.example` or `.env.template` files documenting required environment variables. Template files SHALL include descriptions and example values.
+
+5. **Variable naming**: Environment variable names SHALL use UPPERCASE with underscores (e.g., `DATABASE_URL`, `API_KEY`). Names SHALL be descriptive and follow a consistent naming convention.
+
+6. **Sensitive data handling**: Environment variables containing sensitive data (passwords, API keys, tokens) SHALL be clearly marked and handled with appropriate security measures.
+
+7. **Runtime injection**: Environment variables SHALL be injectable at runtime. Docker Compose SHALL use `${VARIABLE}` or `${VARIABLE:-default}` syntax for variable substitution.
+
+8. **Validation**: Applications SHALL validate required environment variables at startup. Missing required variables SHALL cause the application to fail fast with clear error messages.
+
+## Rationale
+
+Proper environment variable management provides:
+
+- **Security**: Prevents secrets from being committed to version control
+- **Flexibility**: Enables different configurations for different environments
+- **Documentation**: Template files serve as documentation for required configuration
+- **Reproducibility**: Consistent variable naming enables predictable behavior
+- **Maintainability**: Clear separation of configuration from code
+
+## Implementation
+
+### .env File Example
+
+```bash
+# .env
+DATABASE_URL=postgresql://user:password@localhost:5432/mydb
+API_KEY=your-api-key-here
+DEBUG=false
+LOG_LEVEL=info
+```
+
+### .env.example Template
+
+```bash
+# .env.example
+# Database connection string
+DATABASE_URL=postgresql://user:password@localhost:5432/mydb
+
+# API key for external service
+API_KEY=your-api-key-here
+
+# Debug mode (true/false)
+DEBUG=false
+
+# Logging level (debug, info, warn, error)
+LOG_LEVEL=info
+
+# Application port
+PORT=8080
+```
+
+### Docker Compose with Environment Variables
+
+```yaml
+# docker-compose.yml
+services:
+  app:
+    image: myapp:latest
+    env_file:
+      - .env
+    environment:
+      - NODE_ENV=${NODE_ENV:-production}
+      - PORT=${PORT:-8080}
+    # Or use environment file directly
+    # env_file: .env.development
+```
+
+### Docker Secrets (Swarm)
+
+```yaml
+# docker-compose.yml
+services:
+  app:
+    image: myapp:latest
+    secrets:
+      - db_password
+      - api_key
+    environment:
+      - DB_PASSWORD_FILE=/run/secrets/db_password
+      - API_KEY_FILE=/run/secrets/api_key
+
+secrets:
+  db_password:
+    external: true
+  api_key:
+    external: true
+```
+
+### Runtime Environment Injection
+
+```makefile
+ENV_FILE := .env
+IMAGE_NAME := myapp
+CONTAINER_NAME := myapp-container
+
+docker-run:
+	docker run -d \
+		--name $(CONTAINER_NAME) \
+		--env-file $(ENV_FILE) \
+		-e EXTRA_VAR=value \
+		$(IMAGE_NAME):latest
+
+docker-run-custom-env:
+	docker run -d \
+		--name $(CONTAINER_NAME) \
+		-e DATABASE_URL=postgresql://custom:url \
+		-e API_KEY=custom-key \
+		$(IMAGE_NAME):latest
+```
+
+### Dockerfile ARG and ENV
+
+```dockerfile
+# Dockerfile
+# Build arguments (available at build time)
+ARG NODE_ENV=production
+ARG BUILD_VERSION
+
+# Environment variables (available at runtime)
+ENV NODE_ENV=${NODE_ENV}
+ENV APP_VERSION=${BUILD_VERSION}
+
+# Use environment variables in the application
+CMD ["node", "index.js"]
+```
+
+### Application Environment Validation
+
+```python
+# Python example - Validate required environment variables
+import os
+import sys
+
+REQUIRED_VARS = ['DATABASE_URL', 'API_KEY', 'LOG_LEVEL']
+
+def validate_env():
+    missing = [var for var in REQUIRED_VARS if not os.getenv(var)]
+    if missing:
+        print(f"Error: Missing required environment variables: {', '.join(missing)}")
+        sys.exit(1)
+
+if __name__ == '__main__':
+    validate_env()
+    # Start application
+```
+
+```javascript
+// Node.js example - Validate required environment variables
+const requiredVars = ['DATABASE_URL', 'API_KEY', 'LOG_LEVEL'];
+
+function validateEnv() {
+  const missing = requiredVars.filter(varName => !process.env[varName]);
+  if (missing.length > 0) {
+    console.error(`Error: Missing required environment variables: ${missing.join(', ')}`);
+    process.exit(1);
+  }
+}
+
+validateEnv();
+// Start application
+```
+
+### .gitignore for Environment Files
+
+```
+# Environment files
+.env
+.env.local
+.env.*.local
+.env.development
+.env.production
+.env.staging
+
+# Keep template files
+!.env.example
+!.env.template
+```
+
+### Makefile Environment Management
+
+```makefile
+ENV_FILE := .env
+ENV_EXAMPLE := .env.example
+
+docker-env-check:
+	@if [ ! -f $(ENV_FILE) ]; then \
+		echo "Error: $(ENV_FILE) not found. Copy $(ENV_EXAMPLE) to $(ENV_FILE) and configure."; \
+		exit 1; \
+	fi
+
+docker-run: docker-env-check
+	docker run --env-file $(ENV_FILE) $(IMAGE_NAME):latest
+```
