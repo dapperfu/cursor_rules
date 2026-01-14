@@ -1,0 +1,150 @@
+# Docker Network Configuration
+
+## Requirement
+
+ALL Docker network usage SHALL follow these conventions:
+
+1. **Named networks**: Custom networks SHALL use named networks instead of default bridge network. Network names SHALL follow the project naming convention: `<project-name>-<network-purpose>`.
+
+2. **Network naming**: Network names SHALL use lowercase alphanumeric characters and hyphens only. Names SHALL be descriptive of their purpose (e.g., `myapp-frontend`, `myapp-backend`, `myapp-database`).
+
+3. **Network drivers**: Network driver selection SHALL be explicit. The `bridge` driver SHALL be used for single-host deployments unless specific requirements dictate otherwise (e.g., `overlay` for Swarm, `macvlan` for direct host access).
+
+4. **Network isolation**: Services SHALL be placed on appropriate networks to enforce isolation. Services that do not need to communicate SHALL be on separate networks.
+
+5. **Network lifecycle**: Networks SHALL be explicitly managed. The `docker-clean` Makefile target SHALL include options to remove networks when appropriate.
+
+6. **IP address management**: Static IP addresses SHALL NOT be used unless required. Docker SHALL manage IP address assignment automatically.
+
+7. **Network aliases**: Services SHALL use network aliases for service discovery. Aliases SHALL be consistent with service names.
+
+## Rationale
+
+Proper network configuration provides:
+
+- **Service isolation**: Named networks enable logical separation of services
+- **Security**: Network isolation prevents unauthorized service communication
+- **Service discovery**: Network aliases enable reliable service-to-service communication
+- **Portability**: Consistent network naming enables easy migration
+- **Maintainability**: Explicit network management reduces orphaned networks
+
+## Implementation
+
+### Named Network Example
+
+```yaml
+# docker-compose.yml
+services:
+  frontend:
+    image: myapp-frontend:latest
+    networks:
+      - myapp-frontend
+
+  backend:
+    image: myapp-backend:latest
+    networks:
+      - myapp-backend
+      - myapp-internal
+
+  database:
+    image: postgres:15
+    networks:
+      - myapp-internal
+
+networks:
+  myapp-frontend:
+    name: myapp-frontend
+    driver: bridge
+  myapp-backend:
+    name: myapp-backend
+    driver: bridge
+  myapp-internal:
+    name: myapp-internal
+    driver: bridge
+```
+
+### Network with Aliases
+
+```yaml
+# docker-compose.yml
+services:
+  api:
+    image: myapp-api:latest
+    networks:
+      myapp-internal:
+        aliases:
+          - api
+          - api-service
+
+networks:
+  myapp-internal:
+    name: myapp-internal
+```
+
+### Makefile Network Management
+
+```makefile
+NETWORK_NAME := myapp-network
+
+docker-network-create:
+	docker network create $(NETWORK_NAME)
+
+docker-network-rm:
+	docker network rm $(NETWORK_NAME) || true
+
+docker-network-ls:
+	docker network ls
+
+docker-network-inspect:
+	docker network inspect $(NETWORK_NAME)
+
+docker-clean: docker-stop
+	docker rm $(CONTAINER_NAME) || true
+	docker rmi $(IMAGE_NAME):$(IMAGE_TAG) || true
+	@echo "To remove networks, run: make docker-network-rm"
+	docker system prune -f
+
+docker-clean-all: docker-clean docker-network-rm
+	docker system prune -af --volumes --networks
+```
+
+### Custom Network Driver
+
+```yaml
+# docker-compose.yml - Overlay network for Swarm
+networks:
+  myapp-overlay:
+    name: myapp-overlay
+    driver: overlay
+    attachable: true
+```
+
+### Network Isolation Example
+
+```yaml
+# docker-compose.yml - Isolated frontend and backend networks
+services:
+  frontend:
+    image: myapp-frontend:latest
+    networks:
+      - myapp-frontend  # Isolated from backend
+
+  backend:
+    image: myapp-backend:latest
+    networks:
+      - myapp-backend  # Isolated from frontend
+      - myapp-database  # Can communicate with database
+
+  database:
+    image: postgres:15
+    networks:
+      - myapp-database  # Only accessible by backend
+
+networks:
+  myapp-frontend:
+    name: myapp-frontend
+  myapp-backend:
+    name: myapp-backend
+  myapp-database:
+    name: myapp-database
+```
