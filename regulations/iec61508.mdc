@@ -1,0 +1,207 @@
+---
+description: IEC 61508 functional safety requirements for developing safety-related E/E/PE software; apply when a project, its safety plan, or the user identifies IEC 61508 or a Safety Integrity Level (SIL 1-4)
+globs: []
+alwaysApply: false
+---
+
+# IEC 61508 Functional Safety Software Development
+
+## Requirement
+
+When a project is identified as subject to IEC 61508 by its safety plan, requirements, contract, or the user, all development of safety-related software SHALL follow this rule.
+
+This rule is written against IEC 61508:2010 (Edition 2.0), primarily Part 3 (software requirements), with supporting requirements from Part 1 (general requirements) and Part 2 (E/E/PE system requirements). Table references are to IEC 61508-3 Annexes A and B unless stated otherwise. If the safety plan names a later edition, that edition SHALL be used where it differs.
+
+The project's safety plan and functional safety management procedures SHALL take precedence where they are stricter or more specific than this rule. Where a sector standard derived from IEC 61508 applies (e.g., IEC 61511 process industry, IEC 62061 machinery, EN 50128/EN 50716 railway, ISO 26262 road vehicles; see `regulations/iso26262.mdc`), the sector standard SHALL take precedence.
+
+Compliance is established by verification, validation, and independent functional safety assessment, not by code generation.
+
+## Establish the Safety Context Before Writing Code
+
+Before creating or modifying safety-related code, Cursor SHALL identify from project documentation:
+
+1. The SIL (1-4) of each safety function the code implements and the systematic capability required of the software.
+2. The software safety requirement IDs being implemented.
+3. The safe state of each safety function and the time allowed to reach it (process safety time or required response time).
+4. The coding standard, language subset, and approved toolchain (compiler, version, and options).
+5. Whether the same software also implements non-safety functions or safety functions of a different SIL.
+
+If any item is missing, Cursor SHALL ask the user and SHALL NOT assume a value. Until the SIL is confirmed, Cursor SHALL apply the SIL 4 requirements of this rule and SHALL state that assumption in its response.
+
+Software that implements both safety and non-safety functions SHALL be treated entirely as safety-related, and software that implements safety functions of different SILs SHALL be treated entirely at the highest SIL, unless the design demonstrates spatial and temporal independence between them (IEC 61508-3 7.4.2.8, 7.4.2.9, and Annex F).
+
+## Reading the SIL Tables
+
+IEC 61508-3 rates each technique per SIL as Highly Recommended (HR), Recommended (R), no recommendation (-), or Not Recommended (NR). In this rule, HR maps to SHALL, R maps to SHOULD, and NR maps to SHALL NOT.
+
+Not applying an HR technique requires a rationale recorded in the safety plan and agreed with the assessor. Cursor SHALL NOT omit an HR technique without that rationale.
+
+## Software Architecture (Table A.2)
+
+The software architecture SHALL:
+
+- Be modular (HR, all SILs): each module has a single responsibility and a fully defined interface (Table B.9), and hides its internal state (information hiding, HR at SIL 2-4).
+- Execute deterministically: cyclic execution with a guaranteed maximum cycle time, or a time-triggered architecture (HR at SIL 2-4). Event-driven designs SHALL have a demonstrated worst-case response time. At SIL 4, cyclic or time-triggered execution SHOULD be used instead of event-driven execution.
+- Allocate memory, tasks, queues, and buffers statically at initialization (static resource allocation, HR at SIL 3-4).
+- Synchronise access to shared resources statically, by design-time ownership or schedule rather than run-time locking (HR at SIL 4, R at SIL 3).
+- Detect faults (HR at SIL 3-4): range and plausibility checks on inputs, program sequence (control flow) monitoring, and error detecting codes on safety-critical data and messages (HR at SIL 4).
+- Define the reaction to every detected fault: reach the safe state or degrade gracefully (HR at SIL 3-4) within the process safety time.
+
+Safety-related software SHALL NOT use artificial-intelligence-based fault correction or dynamic reconfiguration (NR at SIL 2-4), and SHALL NOT use backward recovery at SIL 4 (NR).
+
+## Language and Coding Standard (Tables A.3, B.1, B.9)
+
+- The language SHALL be suitable and strongly typed (HR, all SILs) and restricted to a defined subset at SIL 3-4 (HR): MISRA C:2012 or MISRA C:2023 for C (see `c/misra-compliance.mdc`), MISRA C++:2023 for C++ (see `c++/misra-compliance.mdc`), or SPARK for Ada.
+- The language version SHALL be the one covered by the coding standard and the toolchain evidence (e.g., C++17 for MISRA C++:2023). This overrides `c++/cpp-standard.mdc` for safety-related code.
+- Dynamically typed or garbage-collected languages (e.g., Python, JavaScript) SHALL NOT implement safety functions at SIL 2-4 unless the safety plan documents the justification. They can be used for support tools, which then fall under the Tools section.
+- The coding standard SHALL prohibit unsafe language features (e.g., undefined behaviour, unstructured design), promote understandability, and support verification and testing (7.4.4.13).
+
+Code-level requirements by SIL:
+
+| Requirement (source table) | SIL 1 | SIL 2 | SIL 3 | SIL 4 |
+|---|---|---|---|---|
+| Follow the project coding standard (B.1) | SHALL | SHALL | SHALL | SHALL |
+| No dynamic objects: no heap allocation after initialization (B.1) | SHOULD | SHALL | SHALL | SHALL |
+| No dynamic variables (VLAs, `alloca`), or online checking of their creation (B.1) | - | SHOULD | SHALL | SHALL |
+| No recursion (B.1, limited use of recursion) | - | SHOULD | SHALL | SHALL |
+| Limited pointers: no pointer arithmetic beyond array indexing, no casts between pointer types, function pointers only in fixed dispatch tables (B.1) | - | SHOULD | SHALL | SHALL |
+| Limited interrupts: ISRs only capture data and signal tasks, with documented priorities and worst-case latency (B.1) | SHOULD | SHOULD | SHALL | SHALL |
+| No unstructured control flow: no `goto`, `setjmp`, or `longjmp` (B.1) | SHOULD | SHALL | SHALL | SHALL |
+| No implicit type conversions (B.1) | SHOULD | SHALL | SHALL | SHALL |
+| One entry and one exit point per function (B.9) | SHALL | SHALL | SHALL | SHALL |
+| Module size limit (B.9) | SHALL | SHALL | SHALL | SHALL |
+| Complexity control (B.9) | SHOULD | SHOULD | SHALL | SHALL |
+| Defensive programming (A.4) | - | SHOULD | SHALL | SHALL |
+
+If the project defines no size or complexity limits, the default limit SHALL be a cyclomatic complexity of 10 per function, and Cursor SHALL report that project limits are missing.
+
+Defensive programming SHALL include:
+
+- Validating every input at module boundaries for range, plausibility, and staleness.
+- Checking every return value and propagating errors (see `c/error-handling.mdc`).
+- A `default` branch in every `switch` that treats an unexpected value as a fault.
+- Initializing every variable before use.
+- Guarding against overflow, underflow, and division by zero.
+- Assertions in production code that invoke the defined fault reaction rather than `abort()`, unless aborting achieves the safe state.
+
+Each source file SHALL identify, where practicable, the legal entity (company and authors), a description, its inputs and outputs, and a reference to its configuration management history (7.4.4.13). Example in C89 with Doxygen (see `c/documentation.mdc`):
+
+```c
+/**
+ * @file    pressure_trip.c
+ * @brief   High-high pressure trip for PT-101; closes shutdown valve SDV-101.
+ * @author  Example Process Controls Inc. (J. Doe)
+ * @details Inputs:  PT-101 raw ADC counts, sampled every 10 ms.
+ *          Outputs: SDV-101 close command, consumed by valve_output.c.
+ *          Safety:  SIL 2 safety function SF-03.
+ *          History: version control, git log -- src/pressure_trip.c
+ */
+
+/**
+ * @brief  Evaluate the PT-101 trip for one 10 ms cycle.
+ * @param  raw_counts  PT-101 ADC reading.
+ * @param  close_cmd   Output: PRESSURE_TRIP_CLOSE or PRESSURE_TRIP_HOLD.
+ * @return 0 on success; a negative error code otherwise, on which the caller
+ *         SHALL command the safe state.
+ */
+int pressure_trip_evaluate(uint16_t raw_counts, uint8_t *close_cmd)
+{
+    int status = 0;
+
+    if (close_cmd == NULL) {
+        status = -PRESSURE_TRIP_ERR_PARAM;
+    } else if ((raw_counts < PT101_MIN_VALID_COUNTS) ||
+               (raw_counts > PT101_MAX_VALID_COUNTS)) {
+        *close_cmd = PRESSURE_TRIP_CLOSE;  /* Implements: SRS-SF-032 (open or shorted loop) */
+        status = -PRESSURE_TRIP_ERR_RANGE;
+    } else if (raw_counts >= PT101_TRIP_COUNTS) {
+        *close_cmd = PRESSURE_TRIP_CLOSE;  /* Implements: SRS-SF-031 */
+    } else {
+        *close_cmd = PRESSURE_TRIP_HOLD;
+    }
+
+    return status;                         /* single exit point */
+}
+```
+
+## Hardware Diagnostics Implemented in Software (IEC 61508-2)
+
+When software implements diagnostics credited in the hardware safety analysis (safe failure fraction and diagnostic coverage):
+
+- Each diagnostic SHALL trace to the FMEDA entry that claims it, including the claimed diagnostic coverage (low 60%, medium 90%, high 99%, per IEC 61508-2 Annex A).
+- Diagnostics SHALL use techniques suited to the claim, such as flash/ROM CRC signatures, RAM march or galpat tests or ECC, CPU self-tests, program sequence monitoring with an external watchdog that has a separate time base and a time window, clock monitoring, output readback, and message protection with CRC, sequence numbers, and timeouts (IEC 61784-3 for safety fieldbuses).
+- For a channel with hardware fault tolerance 0, the diagnostic test interval plus the time to reach the safe state SHALL be less than the process safety time in low demand mode, and the diagnostic test rate SHALL be at least 100 times the demand rate in high demand or continuous mode (IEC 61508-2 7.4.5.3).
+- Each diagnostic SHALL be verified by fault injection showing that the fault is detected and the safe state is reached in time.
+
+## Verification (Tables A.5, A.9, B.2, B.6, B.8)
+
+- Static analysis (HR at SIL 2-4) SHALL run on every change: coding standard conformance, control flow analysis, and data flow analysis. Static analysis of run-time error behaviour (e.g., abstract interpretation) SHALL be used at SIL 4 and SHOULD be used at SIL 1-3.
+- Module tests SHALL be derived from the software requirements and design, and SHALL show that each module performs its intended function and does not perform unintended functions (7.4.7).
+- Test cases SHALL include boundary value analysis (HR at SIL 2-4), equivalence classes, and error guessing for fault paths.
+- Structural coverage SHALL be measured on module tests against a 100% target (Table B.2):
+
+| Coverage | SIL 1 | SIL 2 | SIL 3 | SIL 4 |
+|---|---|---|---|---|
+| Entry points | SHALL | SHALL | SHALL | SHALL |
+| Statements | SHOULD | SHALL | SHALL | SHALL |
+| Branches | SHOULD | SHOULD | SHALL | SHALL |
+| MC/DC | SHOULD | SHOULD | SHOULD | SHALL |
+
+- Code that is not covered SHALL get an added test, a justification in the test report, or removal as dead code.
+- Response times and memory constraints SHALL be verified at all SILs (Table B.6): worst-case execution time against the cycle time, and peak stack and memory use against available memory with a documented margin. Stress (avalanche) testing SHALL be performed at SIL 3-4.
+- Integration tests SHALL exercise every module interface with valid, boundary, and invalid values (interface testing, HR at SIL 3-4).
+- Tests SHALL be automated and repeatable. Results SHALL record the item under test and its version, the test specification ID, tool versions, the verdict, and the coverage report.
+
+## Traceability (HR at SIL 3-4; applied here at all SILs)
+
+- Every safety-related function SHALL reference the software safety requirement or design IDs it implements, and every test SHALL reference the IDs it verifies, using the project's convention (e.g., `/* Implements: SRS-SF-031 */` and `/* Verifies: SRS-SF-031 */`).
+- Code that traces to no requirement is unintended functionality. Cursor SHALL remove it or ask for a requirement to be created and approved.
+- Cursor SHALL NOT invent requirement IDs.
+- Requirement changes SHALL be committed together with the implementing code (`git/commit-atomicity.mdc` Exception 2), using the project's requirements tooling (`requirements/` or `requirements-strictdoc/`).
+
+## Modification (7.8, Table A.8)
+
+- A change to safety-related software SHALL start from an authorized change request. Cursor SHALL ask for its reference if none is given.
+- Before editing, Cursor SHALL produce an impact analysis (HR, all SILs) listing the affected modules, requirements, tests, safety analyses (FMEA, FTA, FMEDA), and documents, and SHALL record it in the commit message `Justification` field (see `git/commit-format.mdc`).
+- The changed module SHALL be re-verified (HR, all SILs). Affected modules SHALL be re-verified and regression tests run (HR at SIL 2-4). The need to revalidate the complete system (HR at SIL 3-4) SHALL be reported to the user.
+- Every released item SHALL be under configuration management (HR, all SILs) with a unique version, and builds SHALL be reproducible from tagged source with the pinned toolchain.
+
+## Tools (7.4.4)
+
+Off-line support tools SHALL be classified, and their versions pinned and recorded:
+
+| Class | Definition | Examples |
+|---|---|---|
+| T1 | Generates no output that can contribute to the executable code | Text editor, configuration management tool |
+| T2 | Supports verification; a defect can hide errors but cannot create them | Static analyzer, coverage tool, test harness |
+| T3 | Generates output that contributes to the executable code | Compiler, linker, code generator |
+
+- T3 tools SHALL have evidence that they conform to their specification or that their failures are detected (e.g., certified compiler, validation suite, proven-in-use record).
+- Compiler version, options, and optimization level are part of the configuration. Changing any of them is a modification requiring impact analysis.
+- AI-generated code, including Cursor output, contributes directly to the executable but has no T3 qualification evidence. No credit SHALL be taken for the generator: generated code SHALL receive the full verification required for its SIL, exactly as hand-written code does, and SHALL be identifiable through the commit attribution required by `git/user-config.mdc` and `git/commit-format.mdc`.
+
+## Pre-existing Software (7.4.2.12)
+
+- A pre-existing element (third-party library, RTOS, open-source code, or code reused from another project) used in a safety function SHALL have compliance evidence through Route 1S (compliant development), Route 2S (proven in use), or Route 3S (assessment of non-compliant development), plus a safety manual.
+- Cursor SHALL NOT add a dependency to safety-related code without flagging that this evidence is required.
+
+## Prohibited Agent Actions
+
+Cursor SHALL NOT:
+
+- Describe code, a project, or a process as IEC 61508 compliant, certified, or meeting a SIL.
+- Act as reviewer, verifier, or assessor of code it generated. IEC 61508-1 Clause 8 requires functional safety assessment with independence that increases with SIL (independent person, department, or organization). Cursor can prepare checklists, test cases, and traceability matrices for those people.
+- Weaken a safety function, widen a trip limit, lengthen a timeout, disable a diagnostic or watchdog, or bypass a safe state without an approved change request reference from the user.
+- Change expected test results to make a failing test pass, lower a coverage target, or skip a required test without a documented and approved justification.
+- Suppress a compiler warning or static analysis finding (`#pragma`, `NOLINT`, `cppcheck-suppress`) without a documented deviation record (see `c/misra-compliance.mdc`).
+- Leave test hooks or debug bypasses in safety-related code paths of production builds.
+
+## Related Rules
+
+- `c/misra-compliance.mdc`, `c++/misra-compliance.mdc`: language subsets
+- `c/compiler-warnings.mdc`, `c++/static-analysis.mdc`: warnings and static analysis
+- `c/memory-management.mdc`, `c++/memory-management.mdc`: this rule takes precedence; no heap allocation after initialization at SIL 2-4
+- `requirements/` or `requirements-strictdoc/`: requirements management and traceability
+- `git/commit-atomicity.mdc`: commit requirement changes together with the implementing code
+- `regulations/iso26262.mdc`: road vehicle adaptation of IEC 61508
+- `regulations/ul9540.mdc`: energy storage systems, which can use IEC 61508 for safety controls
