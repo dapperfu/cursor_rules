@@ -1,0 +1,155 @@
+---
+description: UL 9540 energy storage system (ESS) safety requirements for battery management, ESS controller, energy management, and power control software; apply when a project develops or changes software for an ESS that is or will be listed to UL 9540
+globs: []
+alwaysApply: false
+---
+
+# UL 9540 Energy Storage System Software
+
+## Requirement
+
+When a project develops software that protects, controls, or monitors an energy storage system (ESS) that is or will be listed to ANSI/CAN/UL 9540, that software SHALL follow this rule. This includes battery management system (BMS) firmware, ESS and site controllers, energy management systems (EMS), power control systems (PCS), thermal management, gas detection and ventilation logic, and any HMI or cloud service that can command the ESS.
+
+This rule is written against UL 9540, third edition (2023). The edition the product is listed to SHALL be confirmed. UL 9540 evaluates the complete system and relies on component standards and installation codes:
+
+| Topic | Standard or code |
+|---|---|
+| Battery system | UL 1973 |
+| Inverter or converter, including grid support | UL 1741 (Supplement SB with IEEE 1547.1); see `regulations/ieee1547-2018.mdc` |
+| Thermal runaway fire propagation data | UL 9540A test method |
+| Controls and software relied upon for safety | UL 991 and UL 1998, or an alternative accepted by the certifier such as UL 60730-1 Annex H or IEC 61508 (see `regulations/iec61508.mdc`) |
+| Installation | NFPA 855, International Fire Code (IFC), NFPA 70 (NEC) Articles 706 and 705 |
+
+Listing is granted by a Nationally Recognized Testing Laboratory (NRTL) and covers the evaluated hardware and software versions. It is established by the NRTL's evaluation, not by code generation.
+
+## Establish the Safety Context Before Writing Code
+
+Before creating or modifying ESS software, Cursor SHALL identify:
+
+1. The UL 9540 edition, the listing scope (residential or non-residential, indoor or outdoor), and the certifying NRTL.
+2. The cell manufacturer's specified operating region (voltage, charge and discharge current, charge and discharge temperature limits, and state-of-charge limits) and the documents that define it (cell datasheet, UL 1973 report).
+3. The system safety analysis (e.g., FMEA or FTA) and the critical safety functions it assigns to software.
+4. The functional safety standard applied to controls relied upon for safety, and which software sections are critical, supervisory, or non-critical (UL 1998 terms).
+5. The UL 9540A test configuration and results the installation relies on, including detection and mitigation behavior (gas detection thresholds, exhaust ventilation, deflagration venting, fire alarm interfaces).
+6. Whether the ESS includes grid-interactive inverters or power control system (PCS) functions.
+
+If any item is missing, Cursor SHALL ask the user and SHALL NOT assume a limit, threshold, or timeout.
+
+## Protective Functions
+
+The BMS SHALL keep every cell inside the manufacturer's specified operating region and SHALL act (stop charging or discharging, open contactors) before a limit is exceeded. Protective functions SHALL cover, as applicable to the chemistry and design:
+
+- Cell overvoltage (overcharge) and undervoltage (overdischarge).
+- Charge and discharge overcurrent, and short circuit (backed by hardware protection where software cannot react fast enough).
+- Over-temperature during charge and discharge, and charging below the minimum charge temperature.
+- Cell imbalance beyond the specified limit.
+- Insulation (isolation) faults and ground faults.
+- Contactor welding and pre-charge failure.
+- Loss of thermal management (cooling or heating failure).
+- Off-gas, smoke, or thermal runaway indications where sensors are fitted.
+
+Each limit SHALL be a named constant or validated configuration value that cites its source document. Protective limits SHALL NOT be changeable by the EMS, a cloud service, the HMI, or an end user; only an authorized service configuration that is part of the evaluated configuration can change them.
+
+## Independence and Safe State
+
+- Protective functions SHALL run on the controller evaluated for safety and SHALL NOT depend on the EMS, cloud services, the HMI, or other non-critical software.
+- External commands SHALL only request operation inside the protective limits. A command that would disable, override, or widen a protective function SHALL be rejected and logged.
+- Non-critical software SHALL be separated from critical software so that it cannot corrupt critical data or block critical execution (e.g., memory protection, static allocation, independent scheduling).
+- Each protective function SHALL have a defined safe state (e.g., contactors open, power conversion disabled, thermal management running) and a defined maximum time to reach it.
+- The safe state SHALL be entered on loss of control power, on independent hardware watchdog timeout, on loss of communication beyond a defined timeout (between BMS modules, BMS and PCS, or BMS and EMS), and on sensor failure (open, short, out of range, stuck, or disagreement with redundant sensors). A failed sensor SHALL NOT be replaced by a default or stale value beyond its defined validity time.
+- Protective functions SHALL be active, and power-up self-tests passed, before contactors close.
+- Faults that the safety analysis classifies as hazardous (e.g., overcharge, thermal runaway indication, contactor weld) SHALL latch and require a deliberate, authorized reset. Software SHALL NOT automatically retry into the same fault.
+
+Example in C89 (see `c/` rules), supervising the BMS-to-PCS link:
+
+```c
+/**
+ * @brief  Supervise the BMS-to-PCS link once per BMS_CYCLE_MS cycle.
+ *         Implements: BMS-SR-077.
+ * @param  link  Link state. rx_count is a volatile counter written only by the
+ *               receive handler; this function owns rx_count_seen and silent_ms.
+ * @return 0 while the link is healthy; a negative error code otherwise, after
+ *         the contactors have been commanded open and the fault latched.
+ */
+int bms_pcs_link_supervise(bms_link_t *link)
+{
+    int status = 0;
+
+    if (link == NULL) {
+        bms_safe_state_enter(BMS_FAULT_INTERNAL);
+        status = -BMS_ERR_PARAM;
+    } else {
+        if (link->rx_count != link->rx_count_seen) {
+            link->rx_count_seen = link->rx_count;
+            link->silent_ms = 0U;
+        } else if (link->silent_ms < BMS_PCS_LINK_TIMEOUT_MS) {
+            link->silent_ms += BMS_CYCLE_MS;
+        }
+        if (link->silent_ms >= BMS_PCS_LINK_TIMEOUT_MS) {
+            bms_safe_state_enter(BMS_FAULT_PCS_COMM_LOSS);  /* opens contactors; latches */
+            status = -BMS_ERR_COMM_LOSS;
+        }
+    }
+
+    return status;
+}
+```
+
+## Thermal Runaway Detection and Response
+
+- Detection and response logic SHALL match the configuration tested to UL 9540A and evaluated for UL 9540: the same detection inputs, thresholds, and actions (isolate, alarm, start exhaust ventilation, signal the fire alarm system).
+- Changes to that logic SHALL be flagged to the user as possibly invalidating the UL 9540A data and the listing.
+- The BMS or energy storage management system SHALL transmit an alarm to an approved location for potentially hazardous temperatures and other hazardous conditions such as short circuit, overvoltage, or undervoltage, as NFPA 855 and the IFC require.
+
+## Software Development Process (UL 1998 or Accepted Alternative)
+
+- A software risk analysis SHALL trace each hazard from the system safety analysis to software safety requirements, the code implementing them, and the tests verifying them, using requirement IDs in code and tests (e.g., `/* Implements: BMS-SR-077 */`).
+- Critical software SHALL follow a documented coding standard (e.g., MISRA C; see `c/misra-compliance.mdc`), pass static analysis with documented deviations, avoid dynamic memory allocation after initialization, and use bounded loops with bounded execution time.
+- When IEC 61508 is the accepted route, `regulations/iec61508.mdc` SHALL be applied at the claimed SIL.
+- Software SHALL detect programmable component faults to the extent the evaluation requires (e.g., UL 60730-1 Annex H software Class B or Class C measures): CPU registers, program counter, interrupt handling, clock, invariable memory (CRC), variable memory (RAM tests), internal data paths, external communication (CRC, sequence, timeout), and inputs and outputs including A/D converters.
+- Critical software SHALL report its version and image checksum through the HMI or communication interface, so the installed software can be matched to the listing.
+- Firmware updates SHALL be authenticated (e.g., signed images) and SHALL NOT install software outside the evaluated configuration without re-evaluation.
+- Third-party and off-the-shelf software in critical sections SHALL be identified and evaluated as the certifier requires. Cursor SHALL NOT add such a dependency without flagging it.
+
+## Event Logging
+
+- Protective actions, faults, alarms, setting changes, resets, and firmware updates SHALL be logged with timestamps in non-volatile memory that survives power loss.
+- Logging SHALL NOT delay or block protective functions.
+
+## Power Control Systems
+
+When the ESS provides PCS functions that limit current or power, to protect busbars and conductors or to limit import or export (NEC 705.13):
+
+- PCS functions SHALL be part of the evaluated configuration and SHALL fail safe: on loss of a measurement (e.g., current transformer failure) or of the link to it, the system SHALL enter a state that cannot exceed the limit (e.g., stop exporting).
+- PCS settings SHALL be restricted to qualified persons through authenticated access, and every change SHALL be logged.
+- PCS response times SHALL meet the values of the evaluated configuration and SHALL be verified by test.
+
+## Verification
+
+- Each protective function SHALL be tested just inside, at, and just outside its limit, including sensor tolerance, and its response time SHALL be measured against the defined maximum.
+- Fault-injection tests SHALL cover sensor failures, communication loss on every link, watchdog timeout, memory faults, and loss of power during operation, and SHALL show that the safe state is reached in time.
+- Hardware-in-the-loop tests with a battery or cell emulator SHOULD run before certification testing.
+- Test records SHALL identify the software version, test procedure, tool versions, and results.
+
+## Change Control
+
+- Any change to critical software, protective limits, timeouts, thermal runaway response, or PCS logic SHALL be flagged to the user as certification-affecting and as needing NRTL review before field deployment. Cursor SHALL record this in the commit message `Justification` field (see `git/commit-format.mdc`).
+- Each such change SHALL include an impact analysis listing the affected hazards, requirements, code, and tests.
+
+## Prohibited Agent Actions
+
+Cursor SHALL NOT:
+
+- Describe software or an ESS as UL 9540 listed, certified, or compliant.
+- Change a protective limit, timeout, or threshold without a cited source and user approval.
+- Implement a remote, cloud, HMI, or EMS command that can disable, override, or widen a protective function.
+- Leave debug or maintenance bypasses (e.g., forced contactor close, disabled protections) in production builds. Test hooks SHALL be compiled out of production builds, and their absence SHALL be verified.
+- Change expected test results to make a failing test pass, or skip a required test, without a documented and approved justification.
+
+## Related Rules
+
+- `regulations/iec61508.mdc`: functional safety route for controls relied upon for safety
+- `regulations/ieee1547-2018.mdc`: grid-interactive inverter behavior
+- `c/misra-compliance.mdc`, `c/compiler-warnings.mdc`: embedded C firmware
+- `c/memory-management.mdc`: this rule takes precedence; no dynamic memory allocation after initialization in critical software
+- `git/commit-atomicity.mdc`: commit requirement changes together with the implementing code
