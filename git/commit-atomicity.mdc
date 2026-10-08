@@ -57,5 +57,6 @@ The exceptions ensure:
 
 This rule is referenced by:
 - `git/commit-requirement.mdc` - general commit requirements
+- `git/commit-requirement-ids.mdc` - StrictDoc requirement IDs in commit messages
 - `cursor/plans-commit-execution.mdc` - plan execution commit requirements
 - `cursor/plans-todo-commits.mdc` - TODO checkoff commit requirements

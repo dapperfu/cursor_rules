@@ -239,6 +239,7 @@ Rules are organized into category folders, with each rule file containing a sing
 ├── git/
 │   ├── user-config.mdc          # Git user configuration
 │   ├── commit-format.mdc         # Commit message format
+│   ├── commit-requirement-ids.mdc # StrictDoc requirement IDs in commit messages
 │   ├── push-requirement.mdc      # Push after commit
 │   └── upstream-sync.mdc         # Upstream sync workflow
 ├── makefile/
@@ -282,7 +283,8 @@ Rules are organized into category folders, with each rule file containing a sing
 │   ├── workflow.mdc               # StrictDoc workflow and make targets
 │   ├── pre-commit-generation.mdc  # Pre-commit HTML generation
 │   ├── html-output.mdc            # HTML output directory structure
-│   └── practices.mdc              # StrictDoc best practices
+│   ├── practices.mdc              # StrictDoc best practices
+│   └── commit-requirement-ids.mdc # Requirement IDs in commit messages (pair of git/)
 ├── regulations/
 │   ├── iec61508.mdc               # IEC 61508 functional safety (SIL 1-4)
 │   ├── ieee1547-2018.mdc          # IEEE 1547-2018 DER interconnection

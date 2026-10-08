@@ -1,0 +1,64 @@
+---
+description: StrictDoc requirements completed by a commit are named in that commit message
+globs: ["requirements/**/*.sdoc", "**/*.sdoc"]
+alwaysApply: false
+---
+
+# StrictDoc Requirements in Commit Messages
+
+## Requirement
+
+Once StrictDoc requirements are laid down, linkability in the source SHALL stay, and the commit message SHALL name the same requirements.
+
+Code and tests SHALL keep the requirement UID in a comment:
+
+```c
+/* Implements: SSS012 */
+```
+
+```c
+/* Verifies: SSS012 */
+```
+
+The commit that completes the work SHALL also carry those requirements, in addition to the git attribution template (prompt, context, justification, model, token estimate, and the other fields in `git/commit-format.mdc`).
+
+Because each commit is already atomic (`git/commit-atomicity.mdc`), the message is enough to see which requirements that commit completed. A reader SHALL be able to follow them from `git log` alone.
+
+The paired rule is `git/commit-requirement-ids.mdc`. This file and that file are one requirement. A change to either SHALL be reflected in the other.
+
+## What to Name
+
+After the change list and before `-----`:
+
+```
+Requirements:
+- Specifies SSS012: The software shall open the contactor within 100 ms when DC bus voltage exceeds the trip threshold.
+- Implements SSS012: The software shall open the contactor within 100 ms when DC bus voltage exceeds the trip threshold.
+```
+
+Each line SHALL be `- <role> <UID>: <one-line statement>`.
+
+Roles:
+
+- `Specifies` — this commit adds or changes that requirement in an `.sdoc` file
+- `Implements` — this commit's code is what satisfies that requirement
+- `Verifies` — this commit's test is what checks that requirement
+
+The UID SHALL be the requirement `UID` as written in the `.sdoc` file (for example `SSS012`). SHALL NOT invent a UID. When strictdoc-mcp is available, SHALL use the HRID it returns (`strictdoc/mcp-integration.mdc`).
+
+The statement SHALL be that requirement's `STATEMENT`, shortened to one line without changing its meaning.
+
+List only requirements this commit specifies, implements, or verifies. When an atomic commit updates the requirement and its implementation together (Exception 2 in `git/commit-atomicity.mdc`), list each role on its own line.
+
+A commit that completes none of them SHALL use exactly:
+
+```
+Requirements:
+- None
+```
+
+Before any `.sdoc` requirement exists, omit the section.
+
+## Check
+
+`git log --grep=SSS012` SHALL show the commits that completed SSS012, and each of those messages SHALL include the one-line statement.

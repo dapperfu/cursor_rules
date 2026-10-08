@@ -14,8 +14,21 @@ All git commit messages SHALL follow this format:
 2. Blank line
 3. List of changes (each prefixed with `- `)
 4. Blank line
-5. Separator line with exactly 5 dashes: `-----`
-6. Technical attribution section
+5. When the project contains StrictDoc requirements, a `Requirements:` section (see below). Omit this step when the project has no `.sdoc` requirements.
+6. Blank line, only when step 5 is present
+7. Separator line with exactly 5 dashes: `-----`
+8. Technical attribution section
+
+## StrictDoc Requirements Section
+
+Once StrictDoc requirements exist, this section SHALL appear after the change list and before `-----`. It is additional to the technical attribution below. Prompt, context, justification, model, IDE, and token estimate stay as specified.
+
+```
+Requirements:
+- Implements SSS012: The software shall open the contactor within 100 ms when DC bus voltage exceeds the trip threshold.
+```
+
+The paired rules `git/commit-requirement-ids.mdc` and `requirements-strictdoc/commit-requirement-ids.mdc` define the roles, the `None` case, and how the lines are written.
 
 ## Technical Attribution Format
 

@@ -1,0 +1,82 @@
+---
+description: Commit messages name the StrictDoc requirements each atomic commit completes
+globs: []
+alwaysApply: true
+---
+
+# StrictDoc Requirement IDs in Commit Messages
+
+## Requirement
+
+Once a project contains StrictDoc requirements (any `.sdoc` file), every git commit message SHALL name the requirements that commit completes.
+
+This section is in addition to the technical attribution in `git/commit-format.mdc`. Prompt, context, justification, model, IDE, generation method, code style, dependencies, and token estimate SHALL remain.
+
+Requirement IDs in the code SHALL remain, in a comment such as `/* Implements: SSS012 */` or `/* Verifies: SSS012 */`. The comment and the commit section are both required. See `requirements-strictdoc/practices.mdc`.
+
+Before any StrictDoc requirement exists, omit the `Requirements:` section.
+
+## Message Section
+
+Place the section after the change list and before the `-----` separator:
+
+```
+Requirements:
+- Implements SSS012: The software shall open the contactor within 100 ms when DC bus voltage exceeds the trip threshold.
+```
+
+Each requirement line SHALL be `- <role> <UID>: <one-line statement>`.
+
+Roles:
+
+- `Specifies` — this commit adds or changes that requirement in an `.sdoc` file
+- `Implements` — this commit's code is what satisfies that requirement
+- `Verifies` — this commit's test is what checks that requirement
+
+The UID SHALL be copied from the requirement (`UID`, or the project's requirement ID such as `SSS012`). SHALL NOT invent a UID.
+
+The statement SHALL be that requirement's `STATEMENT`, shortened to one line without changing its meaning. A reader of `git log` SHALL see which requirement was completed without opening the diff or the `.sdoc` file.
+
+A commit that specifies, implements, and verifies none of the requirements SHALL use exactly:
+
+```
+Requirements:
+- None
+```
+
+List every requirement the commit actually completes, one per line. SHALL NOT list a requirement the commit does not specify, implement, or verify.
+
+When one atomic commit both updates a requirement and lands its code (Exception 2 in `git/commit-atomicity.mdc`), list each role on its own line.
+
+## Why This Works
+
+Commits are already one change each (`git/commit-atomicity.mdc`). Naming the requirements in the message makes that commit the record of the requirements it completed. `git log --grep=SSS012` finds those commits.
+
+## Example
+
+```
+Open the contactor on DC overvoltage
+
+- Trip the contactor when bus voltage exceeds the threshold
+- Record the SSS012 link on the trip function
+
+Requirements:
+- Implements SSS012: The software shall open the contactor within 100 ms when DC bus voltage exceeds the trip threshold.
+
+-----
+Prompt: {{prompt}}
+Context: {{brief_description_of_what_this_code_does}}
+Justification: {{justification_of_changes}}
+
+Technical details:
+- Model: {{specific_llm_model}}
+- IDE: Cursor {{cursor_version}}
+- Generation method: AI-assisted pair programming
+- Code style: {{language_specific_style_guide}}
+- Dependencies: {{key_dependencies}}
+- Tokens: {{estimated_tokens_used_for_changes}}
+```
+
+## Cross-Link
+
+The paired rule is `requirements-strictdoc/commit-requirement-ids.mdc`. A change to either rule SHALL be reflected in the other.

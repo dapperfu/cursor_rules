@@ -55,7 +55,7 @@ SHALL follow these best practices for StrictDoc requirements management:
 - SHALL update requirements when implementing features
 - SHALL link test cases to specific requirements
 - SHALL maintain requirements during refactoring
-- SHALL document requirement changes in commit messages
+- SHALL name each requirement a commit specifies, implements, or verifies in that commit message (see `requirements-strictdoc/commit-requirement-ids.mdc` and `git/commit-requirement-ids.mdc`)
 
 ## Configuration Management
 

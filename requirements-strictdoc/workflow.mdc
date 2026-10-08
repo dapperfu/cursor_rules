@@ -45,6 +45,7 @@ When adding requirements, SHALL follow this process:
 
 - SHALL use StrictDoc's requirement linking syntax
 - SHALL reference requirements by ID in code comments
+- SHALL name those same requirement IDs in the commit message (see `requirements-strictdoc/commit-requirement-ids.mdc` and `git/commit-requirement-ids.mdc`)
 - SHALL maintain traceability between documents
 - SHALL link test descriptions to specific requirements
 
