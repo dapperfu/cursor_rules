@@ -1,0 +1,179 @@
+---
+description: ISO 26262 road vehicle functional safety requirements for developing ASIL-rated automotive software; apply when a project, its safety plan, or the user identifies ISO 26262, an ASIL (A-D), or safety-related automotive E/E development
+globs: []
+alwaysApply: false
+---
+
+# ISO 26262 Road Vehicle Functional Safety Software Development
+
+## Requirement
+
+When a project is identified as subject to ISO 26262 by its safety plan, Development Interface Agreement (DIA), requirements, or the user, all development of safety-related software SHALL follow this rule.
+
+This rule is written against ISO 26262:2018 (second edition), primarily Part 6 (product development at the software level), with supporting requirements from Part 2 (management of functional safety), Part 8 (supporting processes), and Part 9 (ASIL-oriented and safety-oriented analyses). Table references are to ISO 26262-6:2018 unless stated otherwise. If the safety plan names a later edition, that edition SHALL be used where it differs.
+
+The project's safety plan and DIA SHALL take precedence where they are stricter or more specific than this rule. For safety-related software outside road vehicles, see `regulations/iec61508.mdc`.
+
+Compliance is established by confirmation measures (confirmation reviews, functional safety audit, and functional safety assessment; ISO 26262-2), not by code generation.
+
+## Establish the Safety Context Before Writing Code
+
+Before creating or modifying safety-related code, Cursor SHALL identify from project documentation:
+
+1. The ASIL (QM, A, B, C, or D) of each software safety requirement implemented, including decomposed ASILs written as, for example, ASIL B(D).
+2. The software safety requirement IDs and their parent technical safety requirements.
+3. The safe state, the fault tolerant time interval (FTTI), and the fault handling time interval (fault detection plus fault reaction) allocated to the software.
+4. The modelling and coding guidelines (e.g., MISRA C:2012 or MISRA C:2023, MISRA C++:2023, AUTOSAR C++14), the target microcontroller and operating system, and the toolchain.
+5. The other software elements on the same ECU and their ASILs.
+
+If any item is missing, Cursor SHALL ask the user and SHALL NOT assume a value. Cursor SHALL NOT assume QM. Until the ASIL is confirmed, Cursor SHALL apply the ASIL D requirements of this rule and SHALL state that assumption in its response.
+
+ASIL determination (hazard analysis and risk assessment, ISO 26262-3) and ASIL decomposition (ISO 26262-9 Clause 5) are safety engineering decisions. Cursor SHALL NOT perform, change, or assume them. Decomposed elements keep the original ASIL in parentheses, and their integration SHALL be verified at the original ASIL.
+
+## Coexistence and Freedom From Interference (Annex D; ISO 26262-9 Clause 6)
+
+Software elements of different ASILs, including QM software, that share an ECU SHALL either all be developed to the highest ASIL present, or freedom from interference SHALL be shown for each fault class below. QM code that can interfere with ASIL code without these mechanisms SHALL be treated at the highest ASIL it can affect.
+
+| Fault class | Faults to address | Typical mechanisms |
+|---|---|---|
+| Timing and execution | Blocking, deadlock, livelock, wrong allocation of execution time, wrong synchronization | Time-triggered or fixed-priority scheduling, execution time budgets, deadline and alive supervision by an independent watchdog, program flow monitoring |
+| Memory | Corruption of content, access to memory allocated to another element | MPU or MMU partitioning, stack overflow detection, static allocation, ECC, redundant or inverse storage of critical data |
+| Exchange of information | Repetition, loss, delay, insertion, masquerade or wrong addressing, wrong sequence, corruption, asymmetric information to multiple receivers, blocked channel | End-to-end protection with CRC, sequence counter, data ID, and timeout monitoring (e.g., AUTOSAR E2E profiles) |
+
+## Software Safety Requirements (Clause 6; ISO 26262-8 Clause 6)
+
+- Each software safety requirement SHALL have a unique ID, a status, and an ASIL, and SHALL be unambiguous, atomic, consistent, feasible, and verifiable.
+- Software safety requirements SHALL cover safe and degraded states, detection of and reaction to hardware and software faults, self-tests, timing, operating modes (start-up, shutdown, degraded), and in-field modification (flashing and calibration).
+- Cursor SHALL NOT create, edit, or delete a safety requirement, or change its ASIL, without user approval.
+
+## Software Architectural Design (Clause 7, Table 3)
+
+ASIL software architecture SHALL apply these principles: hierarchical structure; restricted size and complexity of components; restricted size of interfaces; strong cohesion; loose coupling; appropriate scheduling properties; restricted use of interrupts; spatial isolation of components; and managed shared resources.
+
+Safety mechanisms SHALL be specified from the safety analysis of the architecture (Annex E) and selected from:
+
+- Error detection: range checks of inputs and outputs; plausibility checks (e.g., redundant sensors, reference model); detection of data errors (CRC, redundant storage); external monitoring (watchdog, monitor core); control flow monitoring; diverse software design.
+- Error handling: deactivation to reach and keep a safe state; static recovery; graceful degradation; homogeneous or diverse redundancy; correcting codes for data; access permission management.
+
+The software's fault detection time plus fault reaction time SHALL fit within the fault handling time interval allocated to it, which lies within the FTTI, and SHALL be verified by test.
+
+## Unit Design and Implementation (Clause 8, Tables 1 and 6)
+
+Coding guidelines SHALL cover the Table 1 topics: low complexity, a language subset, strong typing, defensive implementation, well-trusted design principles, unambiguous graphical representation (for models), style guides, naming conventions, and concurrency.
+
+ASIL software SHALL follow the Table 6 design principles. The standard rates most of them highly recommended from ASIL B or C upward; this rule applies all of them at every ASIL:
+
+- One entry and one exit point in each function.
+- No dynamic objects or variables; if unavoidable, an online test during their creation.
+- Every variable initialized.
+- No reuse of variable names (no shadowing).
+- No global variables, or a documented justification for each.
+- Restricted use of pointers.
+- No implicit type conversions.
+- No hidden data flow or control flow.
+- No unconditional jumps (`goto`).
+- No recursion.
+
+Units SHALL also be robust against implausible values, execution errors, division by zero, and errors in data and control flow (Clause 8).
+
+- Deviations from the coding guidelines SHALL be recorded with rationale through the guidelines' deviation process (e.g., MISRA Compliance:2020 deviation records).
+- The language version SHALL be the one covered by the coding guidelines and the compiler's qualification (e.g., C++17 for MISRA C++:2023). This overrides `c++/cpp-standard.mdc` for ASIL code.
+- When code is generated from models, the modelling guidelines SHALL apply to the models, and the generated code SHALL be verified per this rule, including back-to-back comparison with the model.
+
+Example in C89 (see `c/` rules), an end-to-end check of a received ASIL D signal:
+
+```c
+/**
+ * @brief  End-to-end check of a received steering torque request.
+ *         Implements: SWSR-EPS-041 (ASIL D).
+ * @param  frame  Received frame.
+ * @return 0 if valid; a negative error code otherwise, on which the caller
+ *         SHALL enter EPS_SAFE_STATE_TORQUE_OFF within the allocated time.
+ */
+int eps_torque_req_check(const eps_frame_t *frame)
+{
+    int status = 0;
+    uint8_t counter_delta;
+
+    if (frame == NULL) {
+        status = -EPS_ERR_PARAM;
+    } else if (eps_frame_crc(frame, EPS_TORQUE_DATA_ID) != frame->crc) {
+        status = -EPS_ERR_CRC;          /* corruption, or masquerade via the data ID */
+    } else {
+        counter_delta = (uint8_t)((frame->counter - eps_last_counter) & 0x0FU);
+        if ((counter_delta == 0U) || (counter_delta > EPS_MAX_COUNTER_DELTA)) {
+            status = -EPS_ERR_SEQUENCE; /* repetition, or too many lost frames */
+        } else {
+            eps_last_counter = frame->counter;
+            eps_rx_age_ms = 0U;         /* a cyclic task reports timeout (loss, delay) */
+        }
+    }
+
+    return status;
+}
+```
+
+## Unit Verification (Clause 9, Tables 7, 8, 9)
+
+- Every ASIL unit SHALL be verified by requirements-based tests, interface tests, and static code analysis.
+- Further Table 7 methods SHALL be applied where highly recommended for the ASIL, including inspection (from ASIL B), control flow and data flow analysis (from ASIL C), back-to-back comparison between model and generated code (from ASIL C), and fault injection and resource usage evaluation (ASIL D).
+- Test cases SHALL be derived by analysis of requirements at every ASIL, by equivalence classes and boundary values (highly recommended from ASIL B), and by error guessing (Table 8).
+- Structural coverage SHALL be measured (Table 9; ++ highly recommended, + recommended):
+
+| Metric | ASIL A | ASIL B | ASIL C | ASIL D |
+|---|---|---|---|---|
+| Statement coverage | ++ | ++ | + | + |
+| Branch coverage | + | ++ | ++ | ++ |
+| MC/DC | + | + | + | ++ |
+
+- The target for each highly recommended metric SHALL be 100% unless the verification plan sets another justified target. Gaps SHALL be closed with added tests or justified in the verification report.
+- Unit tests SHOULD run on the target processor. When they run on a host, differences between host and target (compiler, word size, endianness, floating point) SHALL be analyzed and covered by later tests on the target.
+
+## Integration and Embedded Software Testing (Clauses 10 and 11)
+
+- Integration tests SHALL verify the architecture's interfaces, the data and control flow between components, the safety mechanisms (fault injection is highly recommended from ASIL C), and resource usage (execution time, stack, memory, CPU load) against documented margins.
+- Function coverage and call coverage at the architectural level SHALL be measured (Table 12, highly recommended from ASIL C).
+- Embedded software SHALL be tested on the target hardware (e.g., hardware-in-the-loop) against the software safety requirements, including fault injection and the timing of safe state transitions.
+
+## Configuration and Calibration Data (Annex C)
+
+- Configuration and calibration data that affect safety-related behavior SHALL be specified with valid ranges, verified to the ASIL of the software they configure, and protected against unintended change (e.g., a CRC checked at start-up).
+- Software SHALL reject, or handle safely, calibration values outside their specified range.
+
+## Traceability
+
+- Every ASIL function SHALL reference the software safety requirement IDs it implements, and every test SHALL reference the IDs it verifies, using the project's convention (e.g., `/* Implements: SWSR-EPS-041 */` and `/* Verifies: SWSR-EPS-041 */`).
+- Code that traces to no requirement is unintended functionality. Cursor SHALL remove it or ask for a requirement to be created and approved.
+- Cursor SHALL NOT invent requirement IDs.
+- Requirement changes SHALL be committed together with the implementing code (`git/commit-atomicity.mdc` Exception 2), using the project's requirements tooling (`requirements/` or `requirements-strictdoc/`).
+
+## Supporting Processes (ISO 26262-8)
+
+- Configuration management (Clause 7): every work product SHALL be versioned and baselined, and builds SHALL be reproducible from tagged source and a pinned toolchain.
+- Change management (Clause 8): changes SHALL start from a change request. Cursor SHALL ask for its reference and SHALL record an impact analysis (affected requirements, units, tests, safety analyses, and work products) in the commit message `Justification` field (see `git/commit-format.mdc`).
+- Verification (Clause 9): verification SHALL be planned, specified, executed, and evaluated, and results SHALL record the version of the item under test.
+- Software tool confidence (Clause 11): every tool SHALL be classified by tool impact (TI1 if a malfunction can introduce or fail to detect an error, otherwise TI0) and tool error detection (TD1 high to TD3 low confidence of detection). TI0, or TI1 with TD1, gives TCL1; TI1 with TD2 gives TCL2; TI1 with TD3 gives TCL3. TCL2 and TCL3 tools SHALL be qualified. Tool versions SHALL be pinned.
+- AI-generated code, including Cursor output, has tool impact TI1. A project can classify the generator as TCL1 only if downstream verification (review, static analysis, and testing per this rule) gives high confidence of detecting its errors (TD1). Cursor SHALL NOT skip, shorten, or self-perform verification on the grounds that code was generated, and generated code SHALL be identifiable through the commit attribution required by `git/user-config.mdc` and `git/commit-format.mdc`.
+- Third-party software (libraries, RTOS, open-source code) used in ASIL software SHALL be qualified (Clause 12), supported by a proven-in-use argument (Clause 14), or developed per ISO 26262-6. Cursor SHALL NOT add such a dependency without flagging this.
+
+## Prohibited Agent Actions
+
+Cursor SHALL NOT:
+
+- Describe code, a project, or a process as ISO 26262 compliant, certified, or meeting an ASIL.
+- Act as reviewer, verifier, or assessor of code it generated. Confirmation measures require independence that increases with ASIL (ISO 26262-2). Cursor can prepare review checklists, test cases, and traceability matrices for those people.
+- Weaken or remove a safety mechanism, lengthen a timeout beyond its allocated time, disable a watchdog or end-to-end check, or bypass a safe state without an approved change request reference from the user.
+- Change expected test results to make a failing test pass, lower a coverage target, or skip a required verification method without a documented and approved justification.
+- Suppress a compiler warning or static analysis finding without a recorded deviation.
+- Leave test hooks, calibration back doors, or debug bypasses in production builds.
+
+## Related Rules
+
+- `regulations/iec61508.mdc`: generic functional safety basis; use for non-automotive projects
+- `c/misra-compliance.mdc`, `c++/misra-compliance.mdc`: language subsets
+- `c/compiler-warnings.mdc`, `c++/static-analysis.mdc`: warnings and static analysis
+- `c/memory-management.mdc`, `c++/memory-management.mdc`: this rule takes precedence; no dynamic memory after initialization in ASIL software
+- `requirements/` or `requirements-strictdoc/`: requirements management and traceability
+- `git/commit-atomicity.mdc`: commit requirement changes together with the implementing code
+
+Related standards outside this rule's scope: ISO 21448 (safety of the intended functionality) and ISO/SAE 21434 (cybersecurity engineering).
