@@ -193,6 +193,13 @@ Not all rules are relevant to every project. Here's guidance on which rule categ
 - `requirements/` - For projects using `doorstop` for requirements management
 - `requirements-strictdoc/` - For projects using `strictdoc` with MIL-STD-498 standards
 
+**Regulated and Safety-Critical Projects:**
+- `regulations/iec61508.mdc` - IEC 61508 functional safety for safety-related E/E/PE software (SIL 1-4)
+- `regulations/iso26262.mdc` - ISO 26262 road vehicle functional safety (ASIL A-D)
+- `regulations/ieee1547-2018.mdc` - IEEE 1547-2018 interconnection of distributed energy resources (inverters, plant controllers, DER communications)
+- `regulations/ul9540.mdc` - UL 9540 energy storage system software (BMS, ESS controllers, EMS, power control systems)
+- Combine with `c/` or `c++/` for coding standards, and with `requirements/` or `requirements-strictdoc/` for requirements traceability
+
 **Tool-Specific Rules:**
 - `tools/mitmproxy-logs.mdc` - Only if using mitmproxy for network debugging
 
@@ -276,6 +283,11 @@ Rules are organized into category folders, with each rule file containing a sing
 │   ├── pre-commit-generation.mdc  # Pre-commit HTML generation
 │   ├── html-output.mdc            # HTML output directory structure
 │   └── practices.mdc              # StrictDoc best practices
+├── regulations/
+│   ├── iec61508.mdc               # IEC 61508 functional safety (SIL 1-4)
+│   ├── ieee1547-2018.mdc          # IEEE 1547-2018 DER interconnection
+│   ├── iso26262.mdc               # ISO 26262 road vehicle functional safety (ASIL A-D)
+│   └── ul9540.mdc                 # UL 9540 energy storage systems
 └── workflow.mdc                    # General workflow
 ```
 
@@ -302,6 +314,8 @@ Rules use globs patterns in frontmatter to apply only to relevant files:
 - StrictDoc rules apply to `.sdoc` files and StrictDoc-related operations
 
 This ensures rules like NumPy documentation requirements only apply to Python files, not MATLAB files.
+
+Regulation rules in `regulations/` do not use globs. They set `globs: []` and `alwaysApply: false`, so the Cursor agent applies one only when the rule's `description` matches the work, for example when a project's safety plan names IEC 61508 or an ASIL. This keeps them out of unregulated projects when the whole repository is installed as a submodule. To always apply a regulation rule in a project known to be regulated, copy or fork the rule and set `alwaysApply: true`.
 
 ## Requirements Management Tool Selection
 
