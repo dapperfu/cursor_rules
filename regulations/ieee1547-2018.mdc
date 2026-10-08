@@ -1,0 +1,177 @@
+---
+description: IEEE 1547-2018 interconnection and interoperability requirements for distributed energy resource (DER) software; apply when a project implements inverter or plant controller grid behavior such as trip and ride-through, anti-islanding, enter service, grid support functions, or DER communications (IEEE 2030.5, IEEE 1815 DNP3, SunSpec Modbus)
+globs: []
+alwaysApply: false
+---
+
+# IEEE 1547-2018 DER Interconnection and Interoperability
+
+## Requirement
+
+When a project develops software that controls, configures, monitors, or tests distributed energy resources (DER) interconnected with an Area electric power system (Area EPS), that software SHALL follow this rule. This includes inverter and converter firmware, DER plant controllers, DER gateways, DER management system (DERMS) integrations, and conformance test automation.
+
+This rule is written against IEEE Std 1547-2018 as amended by IEEE Std 1547a-2020. Conformance test procedures are in IEEE Std 1547.1-2020. In the United States, certification is commonly to UL 1741 Supplement SB, which uses IEEE 1547.1-2020.
+
+The Area EPS operator (utility) decides which performance categories, functions, and settings are used, and its requirements SHALL take precedence over the defaults in this rule. Conformance is shown by type tests, production tests, and commissioning tests (IEEE 1547-2018 Clause 11), not by code generation.
+
+Requirements apply at the reference point of applicability (RPA), either the point of common coupling (PCC) or the point of DER connection (PoC), as determined per IEEE 1547-2018 4.2. Software that measures at the inverter terminals SHALL account for any difference from the RPA.
+
+## Establish the Interconnection Context Before Writing Code
+
+Before implementing or changing grid-facing behavior, Cursor SHALL identify:
+
+1. The normal operating performance category: A or B.
+2. The abnormal operating performance category: I, II, or III.
+3. The nominal voltage, system configuration (single-phase, or three-phase three-wire or four-wire), and nominal frequency. IEEE 1547-2018 settings assume 60 Hz.
+4. The Area EPS operator's required settings (e.g., California Rule 21, Hawaii Rule 14H, or the utility's IEEE 1547-2018 settings document).
+5. Whether the software controls a single DER unit or a DER plant of multiple units through a plant controller.
+6. The protocol or protocols offered at the local DER communication interface.
+
+If any item is missing, Cursor SHALL ask the user and SHALL NOT assume a category or invent a setting.
+
+## Terms That SHALL Be Implemented Exactly
+
+| Term | Required behavior |
+|---|---|
+| Cease to energize | Stop delivering active power and limit reactive power exchange; disconnection is not required |
+| Trip | Cease to energize and inhibit immediate return to service; may involve disconnection |
+| Momentary cessation | Temporarily cease to energize during a disturbance, with immediate restoration of output when the applicable voltage and frequency return to the defined ranges |
+| Clearing time | Time from the start of an abnormal condition until the DER ceases to energize, including measurement, filtering, decision, and output shutdown |
+| Ride-through | Continue operating as specified through voltage or frequency disturbances inside defined limits |
+
+## Default Values for Review
+
+The values below are IEEE 1547-2018 defaults, given as a starting point for review. Before a value is used in code, it SHALL be confirmed against the standard text and the Area EPS operator's required settings, and the code SHALL cite the clause or settings document it came from.
+
+Voltage trip defaults (pickup in per unit of nominal voltage, clearing time):
+
+| Function | Category I | Category II | Category III |
+|---|---|---|---|
+| OV2 | 1.20 pu, 0.16 s | 1.20 pu, 0.16 s | 1.20 pu, 0.16 s |
+| OV1 | 1.10 pu, 2.0 s | 1.10 pu, 2.0 s | 1.10 pu, 13.0 s |
+| UV1 | 0.70 pu, 2.0 s | 0.70 pu, 10.0 s | 0.88 pu, 21.0 s |
+| UV2 | 0.45 pu, 0.16 s | 0.45 pu, 0.16 s | 0.50 pu, 2.0 s |
+
+Other defaults:
+
+| Item | Default |
+|---|---|
+| Frequency trip (all categories) | OF2 62.0 Hz, 0.16 s; OF1 61.2 Hz, 300 s; UF1 58.5 Hz, 300 s; UF2 56.5 Hz, 0.16 s |
+| Continuous operation | 0.88-1.10 pu voltage; 58.8-61.2 Hz |
+| Rate of change of frequency ride-through | Category I 0.5 Hz/s; Category II 2.0 Hz/s; Category III 3.0 Hz/s |
+| Enter service window | 0.917-1.05 pu voltage and 59.5-60.1 Hz |
+| Enter service delay and period | 300 s delay; 300 s ramp period; no single step above 20% of nameplate active power |
+| Unintentional islanding | Detect, cease to energize, and trip within 2 s |
+| Disable permit service | Cease to energize and trip within 2 s |
+| Limit active power | Reach the new limit within 30 s, or as fast as the primary energy source allows if slower |
+| Reactive power capability at 20-100% of nameplate active power | Category A: inject 44%, absorb 25% of nameplate apparent power. Category B: inject 44%, absorb 44% |
+| Default reactive power mode | Constant power factor at unity |
+| Frequency-droop | 0.036 Hz deadband, 5% droop, 5 s open-loop response time |
+| DC current injection | At most 0.5% of rated output current |
+| Current distortion | Total rated-current distortion (TRD) at most 5% |
+| Steady-state measurement accuracy | Voltage within 1% of nominal; frequency within 10 mHz |
+
+## Protection and Ride-Through
+
+- Trip, ride-through, and anti-islanding functions SHALL run in a deterministic real-time context (fixed-rate control loop or interrupt) that does not depend on communications, logging, the HMI, or other non-real-time tasks.
+- Each trip function SHALL cease to energize no later than its clearing time setting, and SHALL NOT trip inside a continuous or mandatory operation region before the required ride-through duration has elapsed. Both constraints SHALL be tested.
+- The clearing time budget SHALL include the measurement window (RMS or frequency estimation), filtering, decision logic, and output shutdown, measured from the start of the abnormal condition, and SHALL be documented. A 0.16 s setting is about 10 cycles at 60 Hz.
+- Voltage functions SHALL use the applicable voltages defined by the standard for the system configuration (phase-to-neutral or phase-to-phase) and SHALL evaluate each phase.
+- Frequency estimation SHALL ride through phase-angle jumps, harmonics, and transients without spurious trips. Erroneous frequency measurement during faults has caused widespread inverter tripping (e.g., the 2016 Blue Cut Fire event analyzed by NERC).
+- Anti-islanding SHALL detect an unintentional island and trip within 2 s without causing trips during ride-through events.
+- After a trip, return to service SHALL follow the enter service criteria: voltage and frequency stay inside the enter service window for the full enter service delay, then output ramps over the enter service period with no step above 20% of nameplate active power.
+- The DER SHALL NOT energize the Area EPS while the Area EPS is de-energized (4.9).
+
+## Grid Support Functions
+
+- Voltage and reactive power control SHALL support the mutually exclusive modes required for the category: constant power factor, voltage-reactive power (volt-var), and constant reactive power, plus active power-reactive power (watt-var) for Category B. Only one mode SHALL be active at a time, and the default SHALL be constant power factor at unity.
+- Voltage-active power (volt-watt) and frequency-droop (frequency-power) responses SHALL be implemented as specified for the categories in use.
+- Curve parameters SHALL be validated before use: breakpoints ordered (e.g., V1 < V2 <= V3 < V4 for volt-var), reactive power within the DER's capability, and response times within their allowed ranges.
+- When responses conflict, they SHALL follow the prioritization of DER responses in IEEE 1547-2018 4.7.
+
+## Settings Management
+
+- Every setting SHALL be defined with its unit, its default and allowable range for each category, and the clause or settings document it came from.
+- A write outside the allowable range SHALL be rejected with an error and logged. Values SHALL NOT be silently clamped.
+- Settings SHALL be changeable locally and through the local DER communication interface, SHALL persist across power loss, and SHALL be integrity-checked (e.g., CRC) at start-up. If stored settings fail the check, the DER SHALL stay ceased to energize and raise an alarm rather than fall back to defaults that can differ from the utility-required settings.
+- Each setting change SHALL be logged with time, source (local or remote, and the user or client identity), old value, and new value.
+- Remote writes to protection and grid support settings SHALL be authenticated and authorized. IEEE 1547-2018 does not specify cybersecurity requirements; IEEE 1547.3-2023 gives guidance.
+
+Example in C89 (see `c/` rules), validating a requested trip setting. NaN fails every comparison, so testing for inclusion rejects it:
+
+```c
+/* Category III UV1 default: IEEE 1547-2018 6.4.1; confirm against utility settings. */
+#define DER_UV1_CAT_III_PICKUP_PU   0.88f
+#define DER_UV1_CAT_III_CLEARING_S  21.0f
+
+/** One must-trip setting (IEEE 1547-2018 6.4.1). */
+typedef struct {
+    float pickup_pu;   /* per unit of nominal applicable voltage */
+    float clearing_s;  /* start of abnormal condition to cease to energize */
+} der_trip_setting_t;
+
+/** Allowable range for one setting in the active category. */
+typedef struct {
+    float pickup_min_pu;
+    float pickup_max_pu;
+    float clearing_min_s;
+    float clearing_max_s;
+} der_trip_range_t;
+
+/**
+ * @brief  Validate a requested trip setting before it is applied.
+ * @param  req    Requested setting.
+ * @param  range  Allowable range for the active abnormal performance category.
+ * @return 0 if valid; -DER_ERR_PARAM on a NULL argument; -DER_ERR_RANGE if any
+ *         field is out of range or NaN.
+ */
+int der_trip_setting_validate(const der_trip_setting_t *req,
+                              const der_trip_range_t *range)
+{
+    int status;
+
+    if ((req == NULL) || (range == NULL)) {
+        status = -DER_ERR_PARAM;
+    } else if ((req->pickup_pu >= range->pickup_min_pu) &&
+               (req->pickup_pu <= range->pickup_max_pu) &&
+               (req->clearing_s >= range->clearing_min_s) &&
+               (req->clearing_s <= range->clearing_max_s)) {
+        status = 0;
+    } else {
+        status = -DER_ERR_RANGE;  /* reject and log; never clamp */
+    }
+
+    return status;
+}
+```
+
+## Interoperability (Clause 10)
+
+- The DER SHALL provide a local DER communication interface supporting at least one of IEEE 2030.5, IEEE 1815 (DNP3), or SunSpec Modbus, as the Area EPS operator requires.
+- The interface SHALL expose the nameplate, configuration, monitoring, and management information defined in IEEE 1547-2018 Clause 10, mapped to the protocol's standard information model (e.g., the IEEE 2030.5 DER function set or the SunSpec 700-series DER models).
+- Units and scale factors SHALL be applied exactly as the information model defines them, and every mapped point SHALL have a unit test that round-trips a known value.
+
+## Verification
+
+- Each function SHALL have unit tests just inside, at, and just outside each threshold, including the measurement accuracy limits.
+- Timing tests SHALL confirm that clearing times do not exceed their settings and that ride-through regions do not trip early.
+- Test sequences SHOULD mirror the IEEE 1547.1-2020 procedure for each function, so failures appear before certification testing.
+- Ride-through and anti-islanding SHALL be tested in simulation (controller or power hardware-in-the-loop) before laboratory certification. Islanding tests SHALL use a resonant RLC load as in IEEE 1547.1.
+- Any change to protection, ride-through, anti-islanding, enter service, or grid support code SHALL rerun the full regression suite for those functions.
+
+## Prohibited Agent Actions
+
+Cursor SHALL NOT:
+
+- Describe software or a DER as IEEE 1547 conformant or UL 1741 certified.
+- Hard-code a setting, threshold, or curve point without a cited source and confirmation against the Area EPS operator's settings.
+- Disable or bypass trip, anti-islanding, or enter service logic in production builds, including through debug flags or test modes.
+- Make protection depend on communications, cloud services, or other non-real-time software.
+- Change protection, ride-through, anti-islanding, enter service, or grid support behavior without telling the user that the change can affect certification (e.g., UL 1741 SB) and the utility interconnection agreement.
+
+## Related Rules
+
+- `regulations/ul9540.mdc`: energy storage systems whose inverters are grid-interactive
+- `regulations/iec61508.mdc`: when DER protection functions are also developed as safety functions
+- `c/misra-compliance.mdc`, `c/compiler-warnings.mdc`: embedded C firmware
+- `git/commit-atomicity.mdc`: commit settings tables together with the code that depends on them
